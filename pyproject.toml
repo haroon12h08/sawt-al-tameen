@@ -1,0 +1,35 @@
+[project]
+name = "preauth"
+version = "0.1.0"
+description = "Provider pre-authorisation case management and agent infrastructure (phase 1)"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.141",
+    "uvicorn>=0.53",
+    "sqlalchemy>=2.0.54",
+    "alembic>=1.20",
+    "pydantic>=2.13",
+]
+
+[project.optional-dependencies]
+postgres = ["psycopg[binary]>=3.3"]
+
+[dependency-groups]
+dev = ["pytest>=9.1", "httpx>=0.28"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/preauth"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+filterwarnings = [
+    "error::DeprecationWarning:preauth.*",
+    # Third-party deprecations inside Starlette's TestClient; not actionable in this codebase.
+    "ignore::DeprecationWarning:starlette.testclient",
+    "ignore:Using `httpx` with `starlette.testclient` is deprecated",
+]

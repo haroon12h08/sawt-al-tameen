@@ -1,0 +1,14 @@
+# Local PostgreSQL for development. Not a production configuration.
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: preauth
+      POSTGRES_PASSWORD: preauth
+      POSTGRES_DB: preauth
+    ports:
+      - "55432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U preauth -d preauth"]
+      interval: 2s
+      retries: 30

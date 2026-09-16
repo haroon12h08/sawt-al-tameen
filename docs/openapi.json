@@ -1,0 +1,4104 @@
+{
+  "components": {
+    "schemas": {
+      "ActorType": {
+        "enum": [
+          "PROVIDER_PORTAL",
+          "VOICE_AGENT",
+          "SYSTEM",
+          "HUMAN_REVIEWER"
+        ],
+        "title": "ActorType",
+        "type": "string"
+      },
+      "AuditEventType": {
+        "enum": [
+          "CASE_CREATED",
+          "CASE_STATUS_CHANGED",
+          "INFORMATION_COLLECTED",
+          "INFORMATION_MODIFIED",
+          "DOCUMENT_REGISTERED",
+          "VALIDATION_PASSED",
+          "VALIDATION_FAILED",
+          "RULES_EVALUATED",
+          "RECOMMENDATION_GENERATED",
+          "HUMAN_REVIEW_REQUESTED",
+          "CASE_ESCALATED",
+          "REVIEWER_ASSIGNED",
+          "HUMAN_DECISION_RECORDED",
+          "RECOMMENDATION_OVERRIDDEN",
+          "CASE_CLOSED"
+        ],
+        "title": "AuditEventType",
+        "type": "string"
+      },
+      "AuditEventView": {
+        "properties": {
+          "actor_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actor Id"
+          },
+          "actor_type": {
+            "$ref": "#/components/schemas/ActorType"
+          },
+          "data": {
+            "additionalProperties": true,
+            "title": "Data",
+            "type": "object"
+          },
+          "event_type": {
+            "$ref": "#/components/schemas/AuditEventType"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "occurred_at": {
+            "format": "date-time",
+            "title": "Occurred At",
+            "type": "string"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id"
+          },
+          "sequence": {
+            "title": "Sequence",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "sequence",
+          "event_type",
+          "actor_type",
+          "actor_id",
+          "occurred_at",
+          "request_id",
+          "data"
+        ],
+        "title": "AuditEventView",
+        "type": "object"
+      },
+      "CaseInformationUpdate": {
+        "additionalProperties": false,
+        "description": "Partial update of the information collected for a case. Only supplied fields are applied.",
+        "properties": {
+          "clinical_summary": {
+            "anyOf": [
+              {
+                "maxLength": 4000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Clinical Summary"
+          },
+          "conservative_treatment_weeks": {
+            "anyOf": [
+              {
+                "maximum": 520.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conservative Treatment Weeks"
+          },
+          "diagnosis_code": {
+            "anyOf": [
+              {
+                "pattern": "^[A-TV-Z][0-9][0-9AB](\\.[0-9A-TV-Z]{1,4})?$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Diagnosis Code"
+          },
+          "diagnosis_description": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Diagnosis Description"
+          },
+          "patient": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PatientIdentification"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "place_of_service": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PlaceOfService"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "policy_number": {
+            "anyOf": [
+              {
+                "pattern": "^[A-Z0-9][A-Z0-9-]{1,39}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Policy Number"
+          },
+          "procedure_code": {
+            "anyOf": [
+              {
+                "pattern": "^[A-Z0-9][A-Z0-9-]{1,39}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Procedure Code"
+          },
+          "provider_number": {
+            "anyOf": [
+              {
+                "pattern": "^[A-Z0-9][A-Z0-9-]{1,39}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider Number"
+          },
+          "requested_service_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requested Service Date"
+          },
+          "urgency": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Urgency"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "title": "CaseInformationUpdate",
+        "type": "object"
+      },
+      "CaseStatus": {
+        "enum": [
+          "RECEIVED",
+          "INFORMATION_COLLECTION",
+          "VALIDATION",
+          "RULE_EVALUATION",
+          "PENDING_INFORMATION",
+          "RECOMMENDATION_READY",
+          "PENDING_HUMAN_REVIEW",
+          "ESCALATED",
+          "APPROVED",
+          "DENIED",
+          "CLOSED"
+        ],
+        "title": "CaseStatus",
+        "type": "string"
+      },
+      "CaseStatusView": {
+        "properties": {
+          "case_id": {
+            "title": "Case Id",
+            "type": "string"
+          },
+          "case_reference": {
+            "title": "Case Reference",
+            "type": "string"
+          },
+          "final_decision": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReviewDecisionView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "possible_next_statuses": {
+            "items": {
+              "$ref": "#/components/schemas/CaseStatus"
+            },
+            "title": "Possible Next Statuses",
+            "type": "array"
+          },
+          "review_queue": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReviewQueue"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "$ref": "#/components/schemas/CaseStatus"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "case_id",
+          "case_reference",
+          "status",
+          "review_queue",
+          "possible_next_statuses",
+          "final_decision",
+          "updated_at"
+        ],
+        "title": "CaseStatusView",
+        "type": "object"
+      },
+      "CaseView": {
+        "properties": {
+          "assigned_reviewer_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assigned Reviewer Id"
+          },
+          "case_reference": {
+            "title": "Case Reference",
+            "type": "string"
+          },
+          "clinical_summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Clinical Summary"
+          },
+          "close_reason": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CloseReason"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "closed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closed At"
+          },
+          "conservative_treatment_weeks": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conservative Treatment Weeks"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "diagnosis_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Diagnosis Code"
+          },
+          "diagnosis_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Diagnosis Description"
+          },
+          "documents": {
+            "items": {
+              "$ref": "#/components/schemas/DocumentView"
+            },
+            "title": "Documents",
+            "type": "array"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "patient": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PatientView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "policy": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PolicyView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProviderView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "requested_service": {
+            "$ref": "#/components/schemas/RequestedServiceView"
+          },
+          "review_queue": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReviewQueue"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "review_requested_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Review Requested At"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CaseStatus"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "urgency": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Urgency"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "case_reference",
+          "status",
+          "urgency",
+          "provider",
+          "patient",
+          "policy",
+          "requested_service",
+          "diagnosis_code",
+          "diagnosis_description",
+          "conservative_treatment_weeks",
+          "clinical_summary",
+          "documents",
+          "review_queue",
+          "assigned_reviewer_id",
+          "review_requested_at",
+          "close_reason",
+          "created_at",
+          "updated_at",
+          "closed_at",
+          "version"
+        ],
+        "title": "CaseView",
+        "type": "object"
+      },
+      "CloseCaseCommand": {
+        "additionalProperties": false,
+        "properties": {
+          "note": {
+            "anyOf": [
+              {
+                "maxLength": 1000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "reason": {
+            "$ref": "#/components/schemas/CloseReason"
+          }
+        },
+        "required": [
+          "reason"
+        ],
+        "title": "CloseCaseCommand",
+        "type": "object"
+      },
+      "CloseReason": {
+        "enum": [
+          "WITHDRAWN_BY_PROVIDER",
+          "DECISION_COMMUNICATED"
+        ],
+        "title": "CloseReason",
+        "type": "string"
+      },
+      "CreateCaseCommand": {
+        "additionalProperties": false,
+        "properties": {
+          "information": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CaseInformationUpdate"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "title": "CreateCaseCommand",
+        "type": "object"
+      },
+      "CredentialingStatus": {
+        "enum": [
+          "ACTIVE",
+          "SUSPENDED",
+          "TERMINATED"
+        ],
+        "title": "CredentialingStatus",
+        "type": "string"
+      },
+      "DocumentType": {
+        "enum": [
+          "REFERRAL_LETTER",
+          "CLINICAL_NOTES",
+          "IMAGING_REPORT",
+          "LAB_RESULTS",
+          "PRIOR_TREATMENT_RECORD",
+          "OPERATIVE_PLAN"
+        ],
+        "title": "DocumentType",
+        "type": "string"
+      },
+      "DocumentView": {
+        "properties": {
+          "content_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content Sha256"
+          },
+          "document_type": {
+            "$ref": "#/components/schemas/DocumentType"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "media_type": {
+            "title": "Media Type",
+            "type": "string"
+          },
+          "registered_at": {
+            "format": "date-time",
+            "title": "Registered At",
+            "type": "string"
+          },
+          "registered_by_actor_id": {
+            "title": "Registered By Actor Id",
+            "type": "string"
+          },
+          "registered_by_actor_type": {
+            "$ref": "#/components/schemas/ActorType"
+          },
+          "storage_uri": {
+            "title": "Storage Uri",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "document_type",
+          "title",
+          "storage_uri",
+          "media_type",
+          "content_sha256",
+          "registered_at",
+          "registered_by_actor_type",
+          "registered_by_actor_id"
+        ],
+        "title": "DocumentView",
+        "type": "object"
+      },
+      "ErrorBody": {
+        "properties": {
+          "case_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Case Id"
+          },
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "details": {
+            "additionalProperties": true,
+            "title": "Details",
+            "type": "object"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "details",
+          "request_id",
+          "case_id"
+        ],
+        "title": "ErrorBody",
+        "type": "object"
+      },
+      "ErrorResponse": {
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/ErrorBody"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "title": "ErrorResponse",
+        "type": "object"
+      },
+      "EvaluationResultView": {
+        "properties": {
+          "case_id": {
+            "title": "Case Id",
+            "type": "string"
+          },
+          "missing_information": {
+            "items": {
+              "$ref": "#/components/schemas/MissingInformation"
+            },
+            "title": "Missing Information",
+            "type": "array"
+          },
+          "recommendation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RecommendationView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "$ref": "#/components/schemas/CaseStatus"
+          },
+          "validation_passed": {
+            "title": "Validation Passed",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "case_id",
+          "status",
+          "validation_passed",
+          "missing_information",
+          "recommendation"
+        ],
+        "title": "EvaluationResultView",
+        "type": "object"
+      },
+      "HumanDecisionCommand": {
+        "additionalProperties": false,
+        "properties": {
+          "decision": {
+            "$ref": "#/components/schemas/HumanDecisionType"
+          },
+          "rationale": {
+            "maxLength": 4000,
+            "minLength": 10,
+            "title": "Rationale",
+            "type": "string"
+          },
+          "recommendation_id": {
+            "maxLength": 36,
+            "minLength": 36,
+            "title": "Recommendation Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "recommendation_id",
+          "decision",
+          "rationale"
+        ],
+        "title": "HumanDecisionCommand",
+        "type": "object"
+      },
+      "HumanDecisionType": {
+        "enum": [
+          "APPROVE",
+          "DENY",
+          "REQUEST_INFORMATION",
+          "ESCALATE"
+        ],
+        "title": "HumanDecisionType",
+        "type": "string"
+      },
+      "IntakeRequirementView": {
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "provided": {
+            "title": "Provided",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "code",
+          "description",
+          "provided"
+        ],
+        "title": "IntakeRequirementView",
+        "type": "object"
+      },
+      "MissingInformation": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "source": {
+            "$ref": "#/components/schemas/MissingInformationSource"
+          }
+        },
+        "required": [
+          "code",
+          "description",
+          "source"
+        ],
+        "title": "MissingInformation",
+        "type": "object"
+      },
+      "MissingInformationSource": {
+        "description": "Who is able to supply a missing piece of information.",
+        "enum": [
+          "PROVIDER",
+          "INSURER"
+        ],
+        "title": "MissingInformationSource",
+        "type": "string"
+      },
+      "NetworkStatus": {
+        "enum": [
+          "IN_NETWORK",
+          "OUT_OF_NETWORK"
+        ],
+        "title": "NetworkStatus",
+        "type": "string"
+      },
+      "PatientIdentification": {
+        "additionalProperties": false,
+        "properties": {
+          "date_of_birth": {
+            "format": "date",
+            "title": "Date Of Birth",
+            "type": "string"
+          },
+          "member_id": {
+            "pattern": "^[A-Z0-9][A-Z0-9-]{1,39}$",
+            "title": "Member Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "member_id",
+          "date_of_birth"
+        ],
+        "title": "PatientIdentification",
+        "type": "object"
+      },
+      "PatientView": {
+        "properties": {
+          "date_of_birth": {
+            "format": "date",
+            "title": "Date Of Birth",
+            "type": "string"
+          },
+          "family_name": {
+            "title": "Family Name",
+            "type": "string"
+          },
+          "given_name": {
+            "title": "Given Name",
+            "type": "string"
+          },
+          "member_id": {
+            "title": "Member Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "member_id",
+          "given_name",
+          "family_name",
+          "date_of_birth"
+        ],
+        "title": "PatientView",
+        "type": "object"
+      },
+      "PlaceOfService": {
+        "enum": [
+          "INPATIENT",
+          "OUTPATIENT",
+          "OFFICE"
+        ],
+        "title": "PlaceOfService",
+        "type": "string"
+      },
+      "PolicyStatus": {
+        "enum": [
+          "ACTIVE",
+          "LAPSED",
+          "CANCELLED"
+        ],
+        "title": "PolicyStatus",
+        "type": "string"
+      },
+      "PolicyView": {
+        "properties": {
+          "effective_from": {
+            "format": "date",
+            "title": "Effective From",
+            "type": "string"
+          },
+          "effective_to": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective To"
+          },
+          "plan_code": {
+            "title": "Plan Code",
+            "type": "string"
+          },
+          "policy_number": {
+            "title": "Policy Number",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/PolicyStatus"
+          }
+        },
+        "required": [
+          "policy_number",
+          "plan_code",
+          "status",
+          "effective_from",
+          "effective_to"
+        ],
+        "title": "PolicyView",
+        "type": "object"
+      },
+      "ProviderView": {
+        "properties": {
+          "credentialing_status": {
+            "$ref": "#/components/schemas/CredentialingStatus"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "network_status": {
+            "$ref": "#/components/schemas/NetworkStatus"
+          },
+          "provider_number": {
+            "title": "Provider Number",
+            "type": "string"
+          }
+        },
+        "required": [
+          "provider_number",
+          "name",
+          "network_status",
+          "credentialing_status"
+        ],
+        "title": "ProviderView",
+        "type": "object"
+      },
+      "RecommendationOutcome": {
+        "enum": [
+          "RECOMMEND_APPROVAL",
+          "RECOMMEND_DENIAL",
+          "REQUEST_MORE_INFORMATION",
+          "ESCALATE"
+        ],
+        "title": "RecommendationOutcome",
+        "type": "string"
+      },
+      "RecommendationView": {
+        "properties": {
+          "advisory_only": {
+            "const": true,
+            "default": true,
+            "title": "Advisory Only",
+            "type": "boolean"
+          },
+          "case_id": {
+            "title": "Case Id",
+            "type": "string"
+          },
+          "determining_rule_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Determining Rule Ids",
+            "type": "array"
+          },
+          "engine_name": {
+            "title": "Engine Name",
+            "type": "string"
+          },
+          "engine_version": {
+            "title": "Engine Version",
+            "type": "string"
+          },
+          "evaluation_id": {
+            "title": "Evaluation Id",
+            "type": "string"
+          },
+          "evidence": {
+            "additionalProperties": true,
+            "title": "Evidence",
+            "type": "object"
+          },
+          "generated_at": {
+            "format": "date-time",
+            "title": "Generated At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "missing_information": {
+            "items": {
+              "$ref": "#/components/schemas/MissingInformation"
+            },
+            "title": "Missing Information",
+            "type": "array"
+          },
+          "outcome": {
+            "$ref": "#/components/schemas/RecommendationOutcome"
+          },
+          "rationale": {
+            "title": "Rationale",
+            "type": "string"
+          },
+          "rule_results": {
+            "items": {
+              "$ref": "#/components/schemas/RuleResultView"
+            },
+            "title": "Rule Results",
+            "type": "array"
+          },
+          "ruleset_name": {
+            "title": "Ruleset Name",
+            "type": "string"
+          },
+          "ruleset_version": {
+            "title": "Ruleset Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "case_id",
+          "evaluation_id",
+          "outcome",
+          "rationale",
+          "determining_rule_ids",
+          "evidence",
+          "missing_information",
+          "engine_name",
+          "engine_version",
+          "ruleset_name",
+          "ruleset_version",
+          "rule_results",
+          "generated_at"
+        ],
+        "title": "RecommendationView",
+        "type": "object"
+      },
+      "RegisterDocumentCommand": {
+        "additionalProperties": false,
+        "description": "Registers metadata for a document already stored in the document store.",
+        "properties": {
+          "content_sha256": {
+            "anyOf": [
+              {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content Sha256"
+          },
+          "document_type": {
+            "$ref": "#/components/schemas/DocumentType"
+          },
+          "media_type": {
+            "maxLength": 100,
+            "pattern": "^[a-z]+/[a-z0-9.+-]+$",
+            "title": "Media Type",
+            "type": "string"
+          },
+          "storage_uri": {
+            "maxLength": 500,
+            "pattern": "^[a-z][a-z0-9+.-]*://\\S+$",
+            "title": "Storage Uri",
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "document_type",
+          "title",
+          "storage_uri",
+          "media_type"
+        ],
+        "title": "RegisterDocumentCommand",
+        "type": "object"
+      },
+      "RequestedServiceView": {
+        "properties": {
+          "place_of_service": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PlaceOfService"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "procedure_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Procedure Code"
+          },
+          "procedure_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Procedure Description"
+          },
+          "requested_service_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requested Service Date"
+          }
+        },
+        "required": [
+          "procedure_code",
+          "procedure_description",
+          "requested_service_date",
+          "place_of_service"
+        ],
+        "title": "RequestedServiceView",
+        "type": "object"
+      },
+      "RequiredInformationView": {
+        "properties": {
+          "case_id": {
+            "title": "Case Id",
+            "type": "string"
+          },
+          "intake_complete": {
+            "title": "Intake Complete",
+            "type": "boolean"
+          },
+          "intake_requirements": {
+            "items": {
+              "$ref": "#/components/schemas/IntakeRequirementView"
+            },
+            "title": "Intake Requirements",
+            "type": "array"
+          },
+          "missing_information": {
+            "items": {
+              "$ref": "#/components/schemas/MissingInformation"
+            },
+            "title": "Missing Information",
+            "type": "array"
+          },
+          "ruleset_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ruleset Name"
+          },
+          "ruleset_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ruleset Version"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CaseStatus"
+          }
+        },
+        "required": [
+          "case_id",
+          "status",
+          "intake_complete",
+          "intake_requirements",
+          "missing_information",
+          "ruleset_name",
+          "ruleset_version"
+        ],
+        "title": "RequiredInformationView",
+        "type": "object"
+      },
+      "ReviewDecisionView": {
+        "properties": {
+          "decided_at": {
+            "format": "date-time",
+            "title": "Decided At",
+            "type": "string"
+          },
+          "decision": {
+            "$ref": "#/components/schemas/HumanDecisionType"
+          },
+          "from_status": {
+            "$ref": "#/components/schemas/CaseStatus"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "is_override": {
+            "title": "Is Override",
+            "type": "boolean"
+          },
+          "rationale": {
+            "title": "Rationale",
+            "type": "string"
+          },
+          "recommendation_id": {
+            "title": "Recommendation Id",
+            "type": "string"
+          },
+          "reviewer_id": {
+            "title": "Reviewer Id",
+            "type": "string"
+          },
+          "reviewer_role": {
+            "$ref": "#/components/schemas/ReviewerRole"
+          },
+          "sequence": {
+            "title": "Sequence",
+            "type": "integer"
+          },
+          "to_status": {
+            "$ref": "#/components/schemas/CaseStatus"
+          }
+        },
+        "required": [
+          "id",
+          "sequence",
+          "recommendation_id",
+          "decision",
+          "rationale",
+          "reviewer_id",
+          "reviewer_role",
+          "is_override",
+          "from_status",
+          "to_status",
+          "decided_at"
+        ],
+        "title": "ReviewDecisionView",
+        "type": "object"
+      },
+      "ReviewPacketView": {
+        "properties": {
+          "audit_history": {
+            "items": {
+              "$ref": "#/components/schemas/AuditEventView"
+            },
+            "title": "Audit History",
+            "type": "array"
+          },
+          "case": {
+            "$ref": "#/components/schemas/CaseView"
+          },
+          "current_recommendation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RecommendationView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "decisions": {
+            "items": {
+              "$ref": "#/components/schemas/ReviewDecisionView"
+            },
+            "title": "Decisions",
+            "type": "array"
+          },
+          "recommendation_history": {
+            "items": {
+              "$ref": "#/components/schemas/RecommendationView"
+            },
+            "title": "Recommendation History",
+            "type": "array"
+          }
+        },
+        "required": [
+          "case",
+          "current_recommendation",
+          "recommendation_history",
+          "decisions",
+          "audit_history"
+        ],
+        "title": "ReviewPacketView",
+        "type": "object"
+      },
+      "ReviewQueue": {
+        "enum": [
+          "CLINICAL_REVIEW",
+          "MEDICAL_DIRECTOR_REVIEW"
+        ],
+        "title": "ReviewQueue",
+        "type": "string"
+      },
+      "ReviewQueueItemView": {
+        "properties": {
+          "assigned_reviewer_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assigned Reviewer Id"
+          },
+          "case_id": {
+            "title": "Case Id",
+            "type": "string"
+          },
+          "case_reference": {
+            "title": "Case Reference",
+            "type": "string"
+          },
+          "procedure_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Procedure Code"
+          },
+          "review_queue": {
+            "$ref": "#/components/schemas/ReviewQueue"
+          },
+          "review_requested_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Review Requested At"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CaseStatus"
+          },
+          "urgency": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Urgency"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "case_id",
+          "case_reference",
+          "status",
+          "review_queue",
+          "urgency",
+          "procedure_code",
+          "review_requested_at",
+          "assigned_reviewer_id"
+        ],
+        "title": "ReviewQueueItemView",
+        "type": "object"
+      },
+      "ReviewerRole": {
+        "enum": [
+          "CLINICAL_REVIEWER",
+          "MEDICAL_DIRECTOR"
+        ],
+        "title": "ReviewerRole",
+        "type": "string"
+      },
+      "RuleOutcome": {
+        "enum": [
+          "PASS",
+          "FAIL",
+          "UNKNOWN"
+        ],
+        "title": "RuleOutcome",
+        "type": "string"
+      },
+      "RuleResultView": {
+        "properties": {
+          "evidence": {
+            "additionalProperties": true,
+            "title": "Evidence",
+            "type": "object"
+          },
+          "explanation": {
+            "title": "Explanation",
+            "type": "string"
+          },
+          "missing_information": {
+            "items": {
+              "$ref": "#/components/schemas/MissingInformation"
+            },
+            "title": "Missing Information",
+            "type": "array"
+          },
+          "outcome": {
+            "$ref": "#/components/schemas/RuleOutcome"
+          },
+          "rule_id": {
+            "title": "Rule Id",
+            "type": "string"
+          },
+          "rule_version": {
+            "title": "Rule Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "rule_id",
+          "rule_version",
+          "outcome",
+          "explanation",
+          "evidence",
+          "missing_information"
+        ],
+        "title": "RuleResultView",
+        "type": "object"
+      },
+      "Urgency": {
+        "enum": [
+          "STANDARD",
+          "EXPEDITED"
+        ],
+        "title": "Urgency",
+        "type": "string"
+      }
+    }
+  },
+  "info": {
+    "description": "\nBackend for provider pre-authorisation requests: case intake, validation, rule evaluation, advisory\nrecommendations, human review, and an immutable audit trail.\n\n**The system never issues final authorisations or denials.** Only an authorised human reviewer can move a case\nto `APPROVED` or `DENIED`.\n\n**Authentication assumption:** requests arrive through a gateway that authenticates the caller and sets\n`X-Actor-Type`, `X-Actor-Id`, and (for reviewers) `X-Actor-Roles`. The service must not be exposed directly.\n\nEvery response carries `X-Request-ID`. Errors use a uniform envelope: `{\"error\": {\"code\", \"message\", \"details\",\n\"request_id\", \"case_id\"}}`.\n",
+    "title": "Pre-Authorisation Case Service",
+    "version": "0.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/v1/agent/tools": {
+      "get": {
+        "description": "Tool names, descriptions, and JSON Schemas for inputs and outputs, suitable for registering with a tool-calling model. Contains no decision-making tools.\n\n**Authorisation:** Any authenticated actor.\n\n**State transitions:** None.",
+        "operationId": "list_tools_api_v1_agent_tools_get",
+        "parameters": [
+          {
+            "description": "Verified actor type set by the gateway",
+            "in": "header",
+            "name": "x-actor-type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Verified actor type set by the gateway",
+              "title": "X-Actor-Type"
+            }
+          },
+          {
+            "description": "Verified actor identifier set by the gateway",
+            "in": "header",
+            "name": "x-actor-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Verified actor identifier set by the gateway",
+              "title": "X-Actor-Id"
+            }
+          },
+          {
+            "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
+            "in": "header",
+            "name": "x-actor-roles",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
+              "title": "X-Actor-Roles"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "title": "Response List Tools Api V1 Agent Tools Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "ACTOR_REQUIRED / INVALID_ACTOR"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "REQUEST_VALIDATION_FAILED"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "INTERNAL_ERROR / INTEGRITY_VIOLATION"
+          }
+        },
+        "summary": "List agent tool definitions",
+        "tags": [
+          "Voice agent tools"
+        ]
+      }
+    },
+    "/api/v1/agent/tools/{tool_name}": {
+      "post": {
+        "description": "Invokes one tool. The body is the tool's arguments object and is validated strictly against that tool's `input_schema` (see `GET /api/v1/agent/tools`); the response matches its `output_schema`. Errors use the standard envelope and HTTP status of the underlying operation.\n\n**Authorisation:** Actor type `VOICE_AGENT` only.\n\n**State transitions:** Those of the underlying operation (see the corresponding provider-interaction endpoint).",
+        "operationId": "invoke_tool_api_v1_agent_tools__tool_name__post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tool_name",
+            "required": true,
+            "schema": {
+              "pattern": "^[a-z_]{1,64}$",
+              "title": "Tool Name",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Verified actor type set by the gateway",
+            "in": "header",
+            "name": "x-actor-type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Verified actor type set by the gateway",
+              "title": "X-Actor-Type"
+            }
+          },
+          {
+            "description": "Verified actor identifier set by the gateway",
+            "in": "header",
+            "name": "x-actor-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Verified actor identifier set by the gateway",
+              "title": "X-Actor-Id"
+            }
+          },
+          {
+            "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
+            "in": "header",
+            "name": "x-actor-roles",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
+              "title": "X-Actor-Roles"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": true,
+                "title": "Arguments",
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Invoke Tool Api V1 Agent Tools  Tool Name  Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "ACTOR_REQUIRED / INVALID_ACTOR"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "VOICE_AGENT_REQUIRED / TRANSITION_NOT_AUTHORIZED"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "TOOL_NOT_FOUND / CASE_NOT_FOUND / RECOMMENDATION_NOT_FOUND"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "INVALID_STATE_TRANSITION / CASE_NOT_EDITABLE / RECOMMENDATION_NOT_READY / CONCURRENT_MODIFICATION"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "REQUEST_VALIDATION_FAILED / TOOL_ARGUMENTS_INVALID / UNKNOWN_PROVIDER / MEMBER_NOT_VERIFIED / ..."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "INTERNAL_ERROR / INTEGRITY_VIOLATION"
+          }
+        },
+        "summary": "Invoke an agent tool",
+        "tags": [
+          "Voice agent tools"
+        ]
+      }
+    },
+    "/api/v1/cases": {
+      "post": {
+        "description": "Opens a new case, optionally with initial information. Returns the case with a short, speakable `case_reference` suitable for quoting to a caller.\n\n**Authorisation:** Actor type `PROVIDER_PORTAL` or `VOICE_AGENT`.\n\n**State transitions:** \u2192 `RECEIVED`; if information is supplied, `RECEIVED` \u2192 `INFORMATION_COLLECTION`.",
+        "operationId": "create_case_api_v1_cases_post",
+        "parameters": [
+          {
+            "description": "Verified actor type set by the gateway",
+            "in": "header",
+            "name": "x-actor-type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Verified actor type set by the gateway",
+              "title": "X-Actor-Type"
+            }
+          },
+          {
+            "description": "Verified actor identifier set by the gateway",
+            "in": "header",
+            "name": "x-actor-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Verified actor identifier set by the gateway",
+              "title": "X-Actor-Id"
+            }
+          },
+          {
+            "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
+            "in": "header",
+            "name": "x-actor-roles",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
+              "title": "X-Actor-Roles"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCaseCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "ACTOR_REQUIRED / INVALID_ACTOR"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "INTAKE_ACTOR_REQUIRED"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "REQUEST_VALIDATION_FAILED / UNKNOWN_PROVIDER / MEMBER_NOT_VERIFIED / UNKNOWN_POLICY / POLICY_MEMBER_MISMATCH / UNKNOWN_PROCEDURE / SERVICE_DATE_IN_PAST"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "INTERNAL_ERROR / INTEGRITY_VIOLATION"
+          }
+        },
+        "summary": "Create a pre-authorisation case",
+        "tags": [
+          "Provider interaction"
+        ]
+      }
+    },
+    "/api/v1/cases/by-reference/{case_reference}": {
+      "get": {
+        "description": "Resolves a caller-quoted case reference (e.g. `PA-7K3M9Q2B`).\n\n**Authorisation:** Any authenticated actor.\n\n**State transitions:** None.",
+        "operationId": "get_case_by_reference_api_v1_cases_by_reference__case_reference__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "case_reference",
+            "required": true,
+            "schema": {
+              "pattern": "^PA-[0-9A-Z]{8}$",
+              "title": "Case Reference",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Verified actor type set by the gateway",
+            "in": "header",
+            "name": "x-actor-type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Verified actor type set by the gateway",
+              "title": "X-Actor-Type"
+            }
+          },
+          {
+            "description": "Verified actor identifier set by the gateway",
+            "in": "header",
+            "name": "x-actor-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Verified actor identifier set by the gateway",
+              "title": "X-Actor-Id"
+            }
+          },
+          {
+            "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
+            "in": "header",
+            "name": "x-actor-roles",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
+              "title": "X-Actor-Roles"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "ACTOR_REQUIRED / INVALID_ACTOR"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "CASE_NOT_FOUND"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "REQUEST_VALIDATION_FAILED"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "INTERNAL_ERROR / INTEGRITY_VIOLATION"
+          }
+        },
+        "summary": "Look up a case by its reference",
+        "tags": [
+          "Provider interaction"
+        ]
+      }
+    },
+    "/api/v1/cases/{case_id}": {
+      "get": {
+        "description": "Returns all collected information, documents, and current status.\n\n**Authorisation:** Any authenticated actor.\n\n**State transitions:** None.",
+        "operationId": "get_case_api_v1_cases__case_id__get",
+        "parameters": [
+          {
+            "description": "Case UUID",
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "description": "Case UUID",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+              "title": "Case Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Verified actor type set by the gateway",
+            "in": "header",
+            "name": "x-actor-type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Verified actor type set by the gateway",
+              "title": "X-Actor-Type"
+            }
+          },
+          {
+            "description": "Verified actor identifier set by the gateway",
+            "in": "header",
+            "name": "x-actor-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Verified actor identifier set by the gateway",
+              "title": "X-Actor-Id"
+            }
+          },
+          {
+            "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
+            "in": "header",
+            "name": "x-actor-roles",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
+              "title": "X-Actor-Roles"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "ACTOR_REQUIRED / INVALID_ACTOR"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "CASE_NOT_FOUND"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "REQUEST_VALIDATION_FAILED"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "INTERNAL_ERROR / INTEGRITY_VIOLATION"
+          }
+        },
+        "summary": "Retrieve a case",
+        "tags": [
+          "Provider interaction"
+        ]
+      }
+    },
+    "/api/v1/cases/{case_id}/audit-events": {
+      "get": {
+        "description": "Immutable, ordered audit events for the case. Events are append-only at the database level.\n\n**Authorisation:** Actor type `HUMAN_REVIEWER` or `SYSTEM`.\n\n**State transitions:** None.",
+        "operationId": "audit_events_api_v1_cases__case_id__audit_events_get",
+        "parameters": [
+          {
+            "description": "Case UUID",
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "description": "Case UUID",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+              "title": "Case Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Verified actor type set by the gateway",
+            "in": "header",
+            "name": "x-actor-type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Verified actor type set by the gateway",
+              "title": "X-Actor-Type"
+            }
+          },
+          {
+            "description": "Verified actor identifier set by the gateway",
+            "in": "header",
+            "name": "x-actor-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Verified actor identifier set by the gateway",
+              "title": "X-Actor-Id"
+            }
+          },
+          {
+            "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
+            "in": "header",
+            "name": "x-actor-roles",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
+              "title": "X-Actor-Roles"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AuditEventView"
+                  },
+                  "title": "Response Audit Events Api V1 Cases  Case Id  Audit Events Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "ACTOR_REQUIRED / INVALID_ACTOR"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "HUMAN_REVIEWER_REQUIRED"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "CASE_NOT_FOUND"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "REQUEST_VALIDATION_FAILED"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "INTERNAL_ERROR / INTEGRITY_VIOLATION"
+          }
+        },
+        "summary": "Retrieve the audit trail",
+        "tags": [
+          "Audit"
+        ]
+      }
+    },
+    "/api/v1/cases/{case_id}/closure": {
+      "post": {
+        "description": "`WITHDRAWN_BY_PROVIDER` before review; `DECISION_COMMUNICATED` after a human decision.\n\n**Authorisation:** Withdrawal: `PROVIDER_PORTAL` or `VOICE_AGENT`. After a decision: `SYSTEM` or `HUMAN_REVIEWER`.\n\n**State transitions:** `RECEIVED` / `INFORMATION_COLLECTION` / `PENDING_INFORMATION` / `RECOMMENDATION_READY` / `APPROVED` / `DENIED` \u2192 `CLOSED` (terminal).",
+        "operationId": "close_case_api_v1_cases__case_id__closure_post",
+        "parameters": [
+          {
+            "description": "Case UUID",
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "description": "Case UUID",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+              "title": "Case Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Verified actor type set by the gateway",
+            "in": "header",
+            "name": "x-actor-type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Verified actor type set by the gateway",
+              "title": "X-Actor-Type"
+            }
+          },
+          {
+            "description": "Verified actor identifier set by the gateway",
+            "in": "header",
+            "name": "x-actor-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Verified actor identifier set by the gateway",
+              "title": "X-Actor-Id"
+            }
+          },
+          {
+            "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
+            "in": "header",
+            "name": "x-actor-roles",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
+              "title": "X-Actor-Roles"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CloseCaseCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "ACTOR_REQUIRED / INVALID_ACTOR"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "TRANSITION_NOT_AUTHORIZED"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "CASE_NOT_FOUND"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "INVALID_CLOSE_REASON / INVALID_STATE_TRANSITION / CONCURRENT_MODIFICATION"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "REQUEST_VALIDATION_FAILED"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "INTERNAL_ERROR / INTEGRITY_VIOLATION"
+          }
+        },
+        "summary": "Close a case",
+        "tags": [
+          "Provider interaction"
+        ]
+      }
+    },
+    "/api/v1/cases/{case_id}/documents": {
+      "post": {
+        "description": "Registers metadata for a document already placed in the document store (`storage_uri`). File upload itself is handled by the document store, not this service.\n\n**Authorisation:** Actor type `PROVIDER_PORTAL` or `VOICE_AGENT`.\n\n**State transitions:** Same as information update: editable states \u2192 `INFORMATION_COLLECTION`.",
+        "operationId": "register_document_api_v1_cases__case_id__documents_post",
+        "parameters": [
+          {
+            "description": "Case UUID",
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "description": "Case UUID",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+              "title": "Case Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Verified actor type set by the gateway",
+            "in": "header",
+            "name": "x-actor-type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Verified actor type set by the gateway",
+              "title": "X-Actor-Type"
+            }
+          },
+          {
+            "description": "Verified actor identifier set by the gateway",
+            "in": "header",
+            "name": "x-actor-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Verified actor identifier set by the gateway",
+              "title": "X-Actor-Id"
+            }
+          },
+          {
+            "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
+            "in": "header",
+            "name": "x-actor-roles",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
+              "title": "X-Actor-Roles"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDocumentCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "ACTOR_REQUIRED / INVALID_ACTOR"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "INTAKE_ACTOR_REQUIRED"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "CASE_NOT_FOUND"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "CASE_NOT_EDITABLE / CONCURRENT_MODIFICATION"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "REQUEST_VALIDATION_FAILED"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "INTERNAL_ERROR / INTEGRITY_VIOLATION"
+          }
+        },
+        "summary": "Register a supporting document",
+        "tags": [
+          "Provider interaction"
+        ]
+      }
+    },
+    "/api/v1/cases/{case_id}/evaluation": {
+      "post": {
+        "description": "Validates intake completeness, evaluates the ruleset, and generates an advisory recommendation, atomically. Incomplete intake is an expected outcome (HTTP 200, `validation_passed=false`), not an error.\n\n**Authorisation:** Actor type `PROVIDER_PORTAL` or `VOICE_AGENT`.\n\n**State transitions:** `INFORMATION_COLLECTION` \u2192 `VALIDATION` \u2192 either `PENDING_INFORMATION` (intake incomplete) or `RULE_EVALUATION` \u2192 `PENDING_INFORMATION` (recommendation `REQUEST_MORE_INFORMATION`) / `RECOMMENDATION_READY` (any other recommendation). Never reaches `APPROVED` or `DENIED`.",
+        "operationId": "submit_for_evaluation_api_v1_cases__case_id__evaluation_post",
+        "parameters": [
+          {
+            "description": "Case UUID",
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "description": "Case UUID",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+              "title": "Case Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Verified actor type set by the gateway",
+            "in": "header",
+            "name": "x-actor-type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Verified actor type set by the gateway",
+              "title": "X-Actor-Type"
+            }
+          },
+          {
+            "description": "Verified actor identifier set by the gateway",
+            "in": "header",
+            "name": "x-actor-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Verified actor identifier set by the gateway",
+              "title": "X-Actor-Id"
+            }
+          },
+          {
+            "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
+            "in": "header",
+            "name": "x-actor-roles",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
+              "title": "X-Actor-Roles"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvaluationResultView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "ACTOR_REQUIRED / INVALID_ACTOR"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "INTAKE_ACTOR_REQUIRED"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "CASE_NOT_FOUND"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "INVALID_STATE_TRANSITION / CONCURRENT_MODIFICATION"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "REQUEST_VALIDATION_FAILED"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "INTERNAL_ERROR / INTEGRITY_VIOLATION"
+          }
+        },
+        "summary": "Submit the case for evaluation",
+        "tags": [
+          "Provider interaction"
+        ]
+      }
+    },
+    "/api/v1/cases/{case_id}/human-review-request": {
+      "post": {
+        "description": "Routes the current recommendation to a human review queue. `ESCALATE` recommendations go to the medical director queue; all others to clinical review.\n\n**Authorisation:** Actor type `PROVIDER_PORTAL`, `VOICE_AGENT`, or `SYSTEM`.\n\n**State transitions:** `RECOMMENDATION_READY` \u2192 `PENDING_HUMAN_REVIEW` or `ESCALATED`.",
+        "operationId": "request_human_review_api_v1_cases__case_id__human_review_request_post",
+        "parameters": [
+          {
+            "description": "Case UUID",
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "description": "Case UUID",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+              "title": "Case Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Verified actor type set by the gateway",
+            "in": "header",
+            "name": "x-actor-type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Verified actor type set by the gateway",
+              "title": "X-Actor-Type"
+            }
+          },
+          {
+            "description": "Verified actor identifier set by the gateway",
+            "in": "header",
+            "name": "x-actor-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Verified actor identifier set by the gateway",
+              "title": "X-Actor-Id"
+            }
+          },
+          {
+            "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
+            "in": "header",
+            "name": "x-actor-roles",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
+              "title": "X-Actor-Roles"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseStatusView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "ACTOR_REQUIRED / INVALID_ACTOR"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "TRANSITION_NOT_AUTHORIZED"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "CASE_NOT_FOUND"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "RECOMMENDATION_NOT_READY / CONCURRENT_MODIFICATION"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "REQUEST_VALIDATION_FAILED"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "INTERNAL_ERROR / INTEGRITY_VIOLATION"
+          }
+        },
+        "summary": "Submit the case for human review",
+        "tags": [
+          "Provider interaction"
+        ]
+      }
+    },
+    "/api/v1/cases/{case_id}/information": {
+      "patch": {
+        "description": "Partial update: only fields present in the body are applied; explicit nulls are rejected. Identifiers are verified against reference data and any failure rejects the entire update. Records `INFORMATION_COLLECTED` and/or `INFORMATION_MODIFIED` audit events with previous values.\n\n**Authorisation:** Actor type `PROVIDER_PORTAL` or `VOICE_AGENT`.\n\n**State transitions:** `RECEIVED` / `PENDING_INFORMATION` / `RECOMMENDATION_READY` \u2192 `INFORMATION_COLLECTION` when anything changes (a changed case must be re-evaluated). Rejected in any other non-editable state.",
+        "operationId": "update_information_api_v1_cases__case_id__information_patch",
+        "parameters": [
+          {
+            "description": "Case UUID",
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "description": "Case UUID",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+              "title": "Case Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Verified actor type set by the gateway",
+            "in": "header",
+            "name": "x-actor-type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Verified actor type set by the gateway",
+              "title": "X-Actor-Type"
+            }
+          },
+          {
+            "description": "Verified actor identifier set by the gateway",
+            "in": "header",
+            "name": "x-actor-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Verified actor identifier set by the gateway",
+              "title": "X-Actor-Id"
+            }
+          },
+          {
+            "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
+            "in": "header",
+            "name": "x-actor-roles",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
+              "title": "X-Actor-Roles"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaseInformationUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "ACTOR_REQUIRED / INVALID_ACTOR"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "INTAKE_ACTOR_REQUIRED"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "CASE_NOT_FOUND"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "CASE_NOT_EDITABLE / CONCURRENT_MODIFICATION"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "REQUEST_VALIDATION_FAILED / UNKNOWN_PROVIDER / MEMBER_NOT_VERIFIED / UNKNOWN_POLICY / POLICY_MEMBER_MISMATCH / UNKNOWN_PROCEDURE / SERVICE_DATE_IN_PAST"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "INTERNAL_ERROR / INTEGRITY_VIOLATION"
+          }
+        },
+        "summary": "Submit or update collected information",
+        "tags": [
+          "Provider interaction"
+        ]
+      }
+    },
+    "/api/v1/cases/{case_id}/recommendation": {
+      "get": {
+        "description": "The most recent system recommendation with its rule results, evidence, rationale, and engine versions. `advisory_only` is always true: a recommendation is not an authorisation decision.\n\n**Authorisation:** Any authenticated actor.\n\n**State transitions:** None.",
+        "operationId": "latest_recommendation_api_v1_cases__case_id__recommendation_get",
+        "parameters": [
+          {
+            "description": "Case UUID",
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "description": "Case UUID",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+              "title": "Case Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Verified actor type set by the gateway",
+            "in": "header",
+            "name": "x-actor-type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Verified actor type set by the gateway",
+              "title": "X-Actor-Type"
+            }
+          },
+          {
+            "description": "Verified actor identifier set by the gateway",
+            "in": "header",
+            "name": "x-actor-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Verified actor identifier set by the gateway",
+              "title": "X-Actor-Id"
+            }
+          },
+          {
+            "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
+            "in": "header",
+            "name": "x-actor-roles",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
+              "title": "X-Actor-Roles"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecommendationView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "ACTOR_REQUIRED / INVALID_ACTOR"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "CASE_NOT_FOUND / RECOMMENDATION_NOT_FOUND"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "REQUEST_VALIDATION_FAILED"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "INTERNAL_ERROR / INTEGRITY_VIOLATION"
+          }
+        },
+        "summary": "Retrieve the latest recommendation",
+        "tags": [
+          "Provider interaction"
+        ]
+      }
+    },
+    "/api/v1/cases/{case_id}/required-information": {
+      "get": {
+        "description": "Lists intake requirements and what is still missing. When intake is complete the ruleset is run as a side-effect-free dry run to surface rule-level needs (e.g. document types). `source` distinguishes information the provider can supply from gaps the insurer must resolve.\n\n**Authorisation:** Any authenticated actor.\n\n**State transitions:** None. No audit event.",
+        "operationId": "required_information_api_v1_cases__case_id__required_information_get",
+        "parameters": [
+          {
+            "description": "Case UUID",
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "description": "Case UUID",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+              "title": "Case Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Verified actor type set by the gateway",
+            "in": "header",
+            "name": "x-actor-type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Verified actor type set by the gateway",
+              "title": "X-Actor-Type"
+            }
+          },
+          {
+            "description": "Verified actor identifier set by the gateway",
+            "in": "header",
+            "name": "x-actor-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Verified actor identifier set by the gateway",
+              "title": "X-Actor-Id"
+            }
+          },
+          {
+            "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
+            "in": "header",
+            "name": "x-actor-roles",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
+              "title": "X-Actor-Roles"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequiredInformationView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "ACTOR_REQUIRED / INVALID_ACTOR"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "CASE_NOT_FOUND"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "REQUEST_VALIDATION_FAILED"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "INTERNAL_ERROR / INTEGRITY_VIOLATION"
+          }
+        },
+        "summary": "Retrieve required and missing information",
+        "tags": [
+          "Provider interaction"
+        ]
+      }
+    },
+    "/api/v1/cases/{case_id}/status": {
+      "get": {
+        "description": "Current status, review queue, statuses reachable from here, and the final human decision if one exists.\n\n**Authorisation:** Any authenticated actor.\n\n**State transitions:** None.",
+        "operationId": "case_status_api_v1_cases__case_id__status_get",
+        "parameters": [
+          {
+            "description": "Case UUID",
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "description": "Case UUID",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+              "title": "Case Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Verified actor type set by the gateway",
+            "in": "header",
+            "name": "x-actor-type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Verified actor type set by the gateway",
+              "title": "X-Actor-Type"
+            }
+          },
+          {
+            "description": "Verified actor identifier set by the gateway",
+            "in": "header",
+            "name": "x-actor-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Verified actor identifier set by the gateway",
+              "title": "X-Actor-Id"
+            }
+          },
+          {
+            "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
+            "in": "header",
+            "name": "x-actor-roles",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
+              "title": "X-Actor-Roles"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseStatusView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "ACTOR_REQUIRED / INVALID_ACTOR"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "CASE_NOT_FOUND"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "REQUEST_VALIDATION_FAILED"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "INTERNAL_ERROR / INTEGRITY_VIOLATION"
+          }
+        },
+        "summary": "Retrieve case status",
+        "tags": [
+          "Provider interaction"
+        ]
+      }
+    },
+    "/api/v1/review/cases/{case_id}": {
+      "get": {
+        "description": "Everything a reviewer needs: case details, provider request, collected information, documents, current and historical recommendations with rule results and evidence, prior decisions, and full audit history.\n\n**Authorisation:** Actor type `HUMAN_REVIEWER`.\n\n**State transitions:** None.",
+        "operationId": "review_packet_api_v1_review_cases__case_id__get",
+        "parameters": [
+          {
+            "description": "Case UUID",
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "description": "Case UUID",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+              "title": "Case Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Verified actor type set by the gateway",
+            "in": "header",
+            "name": "x-actor-type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Verified actor type set by the gateway",
+              "title": "X-Actor-Type"
+            }
+          },
+          {
+            "description": "Verified actor identifier set by the gateway",
+            "in": "header",
+            "name": "x-actor-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Verified actor identifier set by the gateway",
+              "title": "X-Actor-Id"
+            }
+          },
+          {
+            "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
+            "in": "header",
+            "name": "x-actor-roles",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
+              "title": "X-Actor-Roles"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewPacketView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "ACTOR_REQUIRED / INVALID_ACTOR"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "HUMAN_REVIEWER_REQUIRED"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "CASE_NOT_FOUND"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "REQUEST_VALIDATION_FAILED"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "INTERNAL_ERROR / INTEGRITY_VIOLATION"
+          }
+        },
+        "summary": "Retrieve the review packet",
+        "tags": [
+          "Human review"
+        ]
+      }
+    },
+    "/api/v1/review/cases/{case_id}/assignment": {
+      "post": {
+        "description": "Self-assignment. A decision can only be recorded by the assigned reviewer. Reassignment is allowed and audited with the previous assignee.\n\n**Authorisation:** Actor type `HUMAN_REVIEWER` with role `CLINICAL_REVIEWER` (case `PENDING_HUMAN_REVIEW`) or `MEDICAL_DIRECTOR` (case `ESCALATED`).\n\n**State transitions:** None (records `REVIEWER_ASSIGNED`).",
+        "operationId": "assign_api_v1_review_cases__case_id__assignment_post",
+        "parameters": [
+          {
+            "description": "Case UUID",
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "description": "Case UUID",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+              "title": "Case Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Verified actor type set by the gateway",
+            "in": "header",
+            "name": "x-actor-type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Verified actor type set by the gateway",
+              "title": "X-Actor-Type"
+            }
+          },
+          {
+            "description": "Verified actor identifier set by the gateway",
+            "in": "header",
+            "name": "x-actor-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Verified actor identifier set by the gateway",
+              "title": "X-Actor-Id"
+            }
+          },
+          {
+            "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
+            "in": "header",
+            "name": "x-actor-roles",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
+              "title": "X-Actor-Roles"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseStatusView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "ACTOR_REQUIRED / INVALID_ACTOR"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "HUMAN_REVIEWER_REQUIRED / INSUFFICIENT_REVIEWER_ROLE"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "CASE_NOT_FOUND"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "CASE_NOT_UNDER_REVIEW / CONCURRENT_MODIFICATION"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "REQUEST_VALIDATION_FAILED"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "INTERNAL_ERROR / INTEGRITY_VIOLATION"
+          }
+        },
+        "summary": "Assign the case to yourself",
+        "tags": [
+          "Human review"
+        ]
+      }
+    },
+    "/api/v1/review/cases/{case_id}/decision": {
+      "post": {
+        "description": "Records the reviewer's decision against the current recommendation (`recommendation_id` must be the latest; guards against deciding on stale information). A rationale is mandatory. The system recommendation is never modified; departures are flagged `is_override` and audited as `RECOMMENDATION_OVERRIDDEN`.\n\n**Authorisation:** Actor type `HUMAN_REVIEWER` with role `CLINICAL_REVIEWER` (case `PENDING_HUMAN_REVIEW`) or `MEDICAL_DIRECTOR` (case `ESCALATED`). Must be the assigned reviewer.\n\n**State transitions:** `PENDING_HUMAN_REVIEW` \u2192 `APPROVED` / `DENIED` / `PENDING_INFORMATION` / `ESCALATED`; `ESCALATED` \u2192 `APPROVED` / `DENIED` / `PENDING_INFORMATION`.",
+        "operationId": "record_decision_api_v1_review_cases__case_id__decision_post",
+        "parameters": [
+          {
+            "description": "Case UUID",
+            "in": "path",
+            "name": "case_id",
+            "required": true,
+            "schema": {
+              "description": "Case UUID",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+              "title": "Case Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Verified actor type set by the gateway",
+            "in": "header",
+            "name": "x-actor-type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Verified actor type set by the gateway",
+              "title": "X-Actor-Type"
+            }
+          },
+          {
+            "description": "Verified actor identifier set by the gateway",
+            "in": "header",
+            "name": "x-actor-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Verified actor identifier set by the gateway",
+              "title": "X-Actor-Id"
+            }
+          },
+          {
+            "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
+            "in": "header",
+            "name": "x-actor-roles",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
+              "title": "X-Actor-Roles"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HumanDecisionCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewDecisionView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "ACTOR_REQUIRED / INVALID_ACTOR"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "HUMAN_REVIEWER_REQUIRED / INSUFFICIENT_REVIEWER_ROLE / REVIEWER_NOT_ASSIGNED"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "CASE_NOT_FOUND"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "CASE_NOT_UNDER_REVIEW / STALE_RECOMMENDATION / INVALID_STATE_TRANSITION / CONCURRENT_MODIFICATION"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "REQUEST_VALIDATION_FAILED"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "INTERNAL_ERROR / INTEGRITY_VIOLATION"
+          }
+        },
+        "summary": "Record a human decision",
+        "tags": [
+          "Human review"
+        ]
+      }
+    },
+    "/api/v1/review/queues/{queue}": {
+      "get": {
+        "description": "Cases awaiting review in the queue; expedited first, then oldest first.\n\n**Authorisation:** Actor type `HUMAN_REVIEWER`.\n\n**State transitions:** None.",
+        "operationId": "review_queue_api_v1_review_queues__queue__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "queue",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ReviewQueue"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Verified actor type set by the gateway",
+            "in": "header",
+            "name": "x-actor-type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Verified actor type set by the gateway",
+              "title": "X-Actor-Type"
+            }
+          },
+          {
+            "description": "Verified actor identifier set by the gateway",
+            "in": "header",
+            "name": "x-actor-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Verified actor identifier set by the gateway",
+              "title": "X-Actor-Id"
+            }
+          },
+          {
+            "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
+            "in": "header",
+            "name": "x-actor-roles",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
+              "title": "X-Actor-Roles"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ReviewQueueItemView"
+                  },
+                  "title": "Response Review Queue Api V1 Review Queues  Queue  Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "ACTOR_REQUIRED / INVALID_ACTOR"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "HUMAN_REVIEWER_REQUIRED"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "REQUEST_VALIDATION_FAILED"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "INTERNAL_ERROR / INTEGRITY_VIOLATION"
+          }
+        },
+        "summary": "List a review queue",
+        "tags": [
+          "Human review"
+        ]
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Response Health Health Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Liveness check",
+        "tags": [
+          "Operations"
+        ]
+      }
+    }
+  }
+}
