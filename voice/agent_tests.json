@@ -43,7 +43,7 @@
     },
     {
       "name": "ambiguous_escalation",
-      "description": "Sleeve gastrectomy: ambiguous under ESC-003.",
+      "description": "Sleeve gastrectomy: ambiguous under ESC-001.",
       "user_turns": [
         "Noura at Yas Horizon Specialist Hospital, PRV-30023. Policy POL-SA-2026-100011, born 2 May 1981.",
         "Sleeve gastrectomy, SP-20110, 48,000 dirhams.",

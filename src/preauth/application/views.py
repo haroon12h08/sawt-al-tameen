@@ -234,6 +234,8 @@ class CoverageCheckView(View):
     estimated_cost_aed: int | None
     missing_information: list[MissingInformation]
     escalation_citations: list[EscalationRuleFacts]
+    # The specific reason this case needs a human, in the schedule's own words; falls back to the rule text.
+    escalation_reason: str | None
     sources: list[SourceAttributionView]
     review_queue: ReviewQueue | None
     next_step: str

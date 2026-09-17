@@ -193,10 +193,10 @@ def scenario_ambiguous(services) -> None:
     )
     cited = [c.rule_id for c in result.escalation_citations]
     call.check("escalated rather than decided", result.outcome is RecommendationOutcome.ESCALATE)
-    call.check("cites ESC-003 from the catalogue", "ESC-003" in cited)
+    call.check("cites ESC-001 from the catalogue", "ESC-001" in cited)
     call.check("citation carries the rule text", bool(result.escalation_citations[0].situation))
     call.check("routed to the medical director queue", result.status.value == "ESCALATED")
-    citation = next(c for c in result.escalation_citations if c.rule_id == "ESC-003")
+    citation = next(c for c in result.escalation_citations if c.rule_id == "ESC-001")
     logged = call.tool(
         "log_transcript",
         services.desk.log_transcript(AGENT, LogTranscriptCommand(
@@ -206,7 +206,7 @@ def scenario_ambiguous(services) -> None:
             case_reference=result.case_reference, callback_phone="+971501234567", caller_name="Noura")),
         "logged + callback raised",
     )
-    call.agent(f"This one needs a closer look from our team rather than a same-call answer, because {citation.situation[:120]}... "
+    call.agent(f"This one needs a closer look from our team rather than a same-call answer, because {result.escalation_reason} "
                f"I'm logging it now and a reviewer will come back to you. Elective inpatient requests are answered "
                f"within twenty-four hours. Case reference {result.case_reference}.")
     call.check("no outcome was guessed", "approve" not in call.lines[-1].lower())

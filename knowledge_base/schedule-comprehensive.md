@@ -153,7 +153,7 @@ Category: surgical. Specialty: Bariatric Surgery. Typical billed amount: AED 48,
 Covered. Pre-authorisation required: yes. Member co-payment: 0%.
 Waiting period: 12 months from policy inception.
 Required supporting documents: CLINICAL_NOTES, OPERATIVE_PLAN, PRIOR_TREATMENT_RECORD.
-Referred for human review (ESC-003): Eligibility depends on BMI thresholds, documented supervised weight-management attempts and comorbidities; submissions rarely evidence all three.
+Referred for human review (ESC-001): Eligibility depends on BMI thresholds, documented supervised weight-management attempts and comorbidities; submissions rarely evidence all three.
 
 ### Section 4.21 SP-20120: Septoplasty for deviated nasal septum
 

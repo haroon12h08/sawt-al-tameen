@@ -231,6 +231,7 @@ class DeskService:
                     estimated_cost_aed=case.estimated_cost_aed,
                     missing_information=result.missing_information,
                     escalation_citations=[],
+                    escalation_reason=None,
                     sources=[],
                     review_queue=None,
                     next_step=NEXT_STEPS[RecommendationOutcome.REQUEST_MORE_INFORMATION],
@@ -243,6 +244,19 @@ class DeskService:
         with self._uow() as uow:
             case = uow.cases.get(case_id)
             evidence = recommendation.evidence.get("AUTH-001-PRE-AUTHORISATION-REQUIRED", {})
+            # The benefit schedule leads: it is the document that answers a coverage question, and the agent
+            # reads the first source back to the caller.
+            sources = sorted(
+                recommendation.sources,
+                key=lambda s: (
+                    0 if "Schedule of Benefits" in s.document and s.section.startswith("Section 4") else
+                    1 if "Schedule of Benefits" in s.document else 2
+                ),
+            )
+            decisive = [
+                r for r in recommendation.rule_results
+                if r.escalation_rule_id and r.rule_id in recommendation.determining_rule_ids
+            ]
             coverage_evidence = recommendation.evidence.get("COV-002-TIER-COVERS-PROCEDURE", {})
             return CoverageCheckView(
                 case_reference=case.case_reference,
@@ -256,7 +270,8 @@ class DeskService:
                 estimated_cost_aed=case.estimated_cost_aed,
                 missing_information=recommendation.missing_information,
                 escalation_citations=recommendation.escalation_citations,
-                sources=recommendation.sources,
+                escalation_reason=decisive[0].explanation if decisive else None,
+                sources=sources,
                 review_queue=QUEUE_FOR_STATUS.get(case.status),
                 next_step=NEXT_STEPS[recommendation.outcome],
             )

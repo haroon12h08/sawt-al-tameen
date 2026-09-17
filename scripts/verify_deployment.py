@@ -30,7 +30,7 @@ PROVIDER = "PRV-30011"                          # Al Hudaiba Crescent Hospital, 
 MEMBER = ("POL-SA-2026-100001", "1986-04-17")   # Fatima Al Mansoori, Executive tier
 LAPSED_MEMBER = ("POL-SA-2026-100008", "1990-12-04")
 PROCEDURE = "SP-20040"                          # Knee arthroscopy: covered, needs three documents
-AMBIGUOUS_PROCEDURE = "SP-20110"                # Sleeve gastrectomy: ambiguous, escalates under ESC-003
+AMBIGUOUS_PROCEDURE = "SP-20110"                # Sleeve gastrectomy: ambiguous, escalates under ESC-001
 REVIEWER = {"X-Actor-Type": "HUMAN_REVIEWER", "X-Actor-Id": "verify-reviewer", "X-Actor-Roles": "CLINICAL_REVIEWER"}
 
 passed: list[str] = []

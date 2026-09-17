@@ -74,9 +74,9 @@ def test_evaluation_records_the_escalation_rules_it_cited(services):
     )
     result = check(services, verification, procedure_code="SP-20110", cost=48000)
     evaluated = next(e for e in history(services, result.case_id) if e.event_type is E.RULES_EVALUATED)
-    assert "ESC-003" in evaluated.data["escalation_rule_ids"]
+    assert "ESC-001" in evaluated.data["escalation_rule_ids"]
     generated = next(e for e in history(services, result.case_id) if e.event_type is E.RECOMMENDATION_GENERATED)
-    assert "ESC-003" in generated.data["escalation_rule_ids"]
+    assert "ESC-001" in generated.data["escalation_rule_ids"]
 
 
 def test_request_id_is_recorded(services):

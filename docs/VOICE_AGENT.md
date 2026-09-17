@@ -144,5 +144,5 @@ Synthetic data to use on a call:
 |---|---|
 | Providers | `PRV-30011` Al Hudaiba Crescent Hospital (Basic network, orthopaedics), `PRV-30023` Yas Horizon (Comprehensive, bariatric), `PRV-30020` Mirdif Vision (suspended), `PRV-30030` Gulf Meridian (Executive only) |
 | Members | `POL-SA-2026-100001` / 1986-04-17 (Executive), `POL-SA-2026-100003` / 1991-07-29 (Basic), `POL-SA-2026-100011` / 1981-05-02 (Comprehensive), `POL-SA-2026-100008` / 1990-12-04 (lapsed) |
-| Procedures | `SP-20040` arthroscopy (covered, needs 3 documents), `SP-20050` knee replacement (Enhanced and above), `SP-20110` sleeve gastrectomy (escalates, ESC-003), `SP-20140` cosmetic rhinoplasty (excluded), `SP-10010` chest X-ray (no pre-auth needed) |
+| Procedures | `SP-20040` arthroscopy (covered, needs 3 documents), `SP-20050` knee replacement (Enhanced and above), `SP-20110` sleeve gastrectomy (escalates, ESC-001), `SP-20140` cosmetic rhinoplasty (excluded), `SP-10010` chest X-ray (no pre-auth needed) |
 | Onboarding | `ONB-APP-2026-0007` (two documents outstanding) |

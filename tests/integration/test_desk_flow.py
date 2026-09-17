@@ -270,7 +270,7 @@ def test_ambiguous_case_records_the_rule_on_the_evaluation(services):
     recommendation = services.queries.get_latest_recommendation(result.case_id, REVIEWER)
     decisive = [r for r in recommendation.rule_results if r.rule_id == "COV-003-SCHEDULE-DECIDABLE"]
     assert decisive[0].outcome is RuleOutcome.UNKNOWN
-    assert decisive[0].escalation_rule_id == "ESC-003"
+    assert decisive[0].escalation_rule_id == "ESC-001"
     assert decisive[0].sources
 
 

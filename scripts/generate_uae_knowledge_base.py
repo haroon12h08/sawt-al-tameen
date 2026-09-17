@@ -171,7 +171,7 @@ PROCEDURES: list[P] = [
     ("SP-20090", "Cataract extraction with intraocular lens", "surgical", "Ophthalmology", 12500, "ALWAYS", "BASIC", 0,
      ["Premium multifocal lenses are an upgrade payable by the member"], None),
     ("SP-20110", "Bariatric surgery, sleeve gastrectomy", "surgical", "Bariatric Surgery", 48000, "ALWAYS", "COMPREHENSIVE", 12, [],
-     {"escalation_rule_id": "ESC-003",
+     {"escalation_rule_id": "ESC-001",
       "reason": "Eligibility depends on BMI thresholds, documented supervised weight-management attempts and "
                 "comorbidities; submissions rarely evidence all three."}),
     ("SP-20120", "Septoplasty for deviated nasal septum", "surgical", "ENT", 18000, "ALWAYS", "BASIC", 0, [],

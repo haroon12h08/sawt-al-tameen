@@ -1235,7 +1235,7 @@
       },
       "decision_class": "AMBIGUOUS",
       "escalation": {
-        "escalation_rule_id": "ESC-003",
+        "escalation_rule_id": "ESC-001",
         "reason": "Eligibility depends on BMI thresholds, documented supervised weight-management attempts and comorbidities; submissions rarely evidence all three."
       }
     },
