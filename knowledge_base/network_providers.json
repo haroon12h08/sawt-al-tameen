@@ -1,0 +1,476 @@
+{
+  "disclaimer": "SYNTHETIC TEST DATA. Fictional insurer, plans, providers, members and procedure codes. Structurally modelled on UAE health-insurance regulation (DHA/DOH) for demonstration only. Not real policy data and not valid for any real authorisation decision.",
+  "providers": [
+    {
+      "provider_id": "PRV-30011",
+      "name": "Al Hudaiba Crescent Hospital",
+      "emirate": "Dubai",
+      "area": "Al Hudaiba",
+      "facility_type": "hospital",
+      "regulator": "DHA",
+      "facility_licence_number": "SYN-DHA-30011",
+      "networks": [
+        "BASIC_NETWORK",
+        "ENHANCED_NETWORK",
+        "COMPREHENSIVE_NETWORK",
+        "EXECUTIVE_NETWORK"
+      ],
+      "specialties": [
+        "General Surgery",
+        "Orthopaedics",
+        "Cardiology",
+        "Radiology",
+        "Laboratory",
+        "Emergency Medicine",
+        "Obstetrics",
+        "Neonatology",
+        "Preventive Medicine"
+      ],
+      "status": "active",
+      "accepts_direct_billing": true,
+      "notes": "In network and accepting pre-authorisation requests."
+    },
+    {
+      "provider_id": "PRV-30012",
+      "name": "Jumeirah Dunes Specialist Centre",
+      "emirate": "Dubai",
+      "area": "Jumeirah 2",
+      "facility_type": "clinic",
+      "regulator": "DHA",
+      "facility_licence_number": "SYN-DHA-30012",
+      "networks": [
+        "ENHANCED_NETWORK",
+        "COMPREHENSIVE_NETWORK",
+        "EXECUTIVE_NETWORK"
+      ],
+      "specialties": [
+        "Dermatology",
+        "ENT",
+        "Ophthalmology",
+        "Radiology",
+        "Preventive Medicine",
+        "Plastic Surgery"
+      ],
+      "status": "active",
+      "accepts_direct_billing": true,
+      "notes": "In network and accepting pre-authorisation requests."
+    },
+    {
+      "provider_id": "PRV-30013",
+      "name": "Marina Pearl Day Surgery",
+      "emirate": "Dubai",
+      "area": "Dubai Marina",
+      "facility_type": "day_surgery",
+      "regulator": "DHA",
+      "facility_licence_number": "SYN-DHA-30013",
+      "networks": [
+        "ENHANCED_NETWORK",
+        "COMPREHENSIVE_NETWORK",
+        "EXECUTIVE_NETWORK"
+      ],
+      "specialties": [
+        "General Surgery",
+        "Orthopaedics",
+        "ENT",
+        "Ophthalmology"
+      ],
+      "status": "active",
+      "accepts_direct_billing": true,
+      "notes": "In network and accepting pre-authorisation requests."
+    },
+    {
+      "provider_id": "PRV-30014",
+      "name": "Deira Riverside Polyclinic",
+      "emirate": "Dubai",
+      "area": "Deira",
+      "facility_type": "clinic",
+      "regulator": "DHA",
+      "facility_licence_number": "SYN-DHA-30014",
+      "networks": [
+        "BASIC_NETWORK",
+        "ENHANCED_NETWORK",
+        "COMPREHENSIVE_NETWORK",
+        "EXECUTIVE_NETWORK"
+      ],
+      "specialties": [
+        "Laboratory",
+        "Radiology",
+        "Preventive Medicine",
+        "Endocrinology"
+      ],
+      "status": "active",
+      "accepts_direct_billing": true,
+      "notes": "In network and accepting pre-authorisation requests."
+    },
+    {
+      "provider_id": "PRV-30015",
+      "name": "Al Barsha Meadows Medical Centre",
+      "emirate": "Dubai",
+      "area": "Al Barsha",
+      "facility_type": "clinic",
+      "regulator": "DHA",
+      "facility_licence_number": "SYN-DHA-30015",
+      "networks": [
+        "BASIC_NETWORK",
+        "ENHANCED_NETWORK",
+        "COMPREHENSIVE_NETWORK",
+        "EXECUTIVE_NETWORK"
+      ],
+      "specialties": [
+        "Laboratory",
+        "Preventive Medicine",
+        "Psychology",
+        "Psychiatry"
+      ],
+      "status": "active",
+      "accepts_direct_billing": true,
+      "notes": "In network and accepting pre-authorisation requests."
+    },
+    {
+      "provider_id": "PRV-30016",
+      "name": "Silicon Oasis Family Clinic",
+      "emirate": "Dubai",
+      "area": "Dubai Silicon Oasis",
+      "facility_type": "clinic",
+      "regulator": "DHA",
+      "facility_licence_number": "SYN-DHA-30016",
+      "networks": [
+        "BASIC_NETWORK",
+        "ENHANCED_NETWORK",
+        "COMPREHENSIVE_NETWORK",
+        "EXECUTIVE_NETWORK"
+      ],
+      "specialties": [
+        "Preventive Medicine",
+        "Laboratory",
+        "Optometry"
+      ],
+      "status": "pending-onboarding",
+      "accepts_direct_billing": false,
+      "notes": "Onboarding incomplete; not yet eligible to submit pre-authorisation requests."
+    },
+    {
+      "provider_id": "PRV-30017",
+      "name": "Zabeel Heights Cardiac Institute",
+      "emirate": "Dubai",
+      "area": "Zabeel",
+      "facility_type": "hospital",
+      "regulator": "DHA",
+      "facility_licence_number": "SYN-DHA-30017",
+      "networks": [
+        "COMPREHENSIVE_NETWORK",
+        "EXECUTIVE_NETWORK"
+      ],
+      "specialties": [
+        "Cardiology",
+        "Cardiothoracic Surgery",
+        "Radiology",
+        "Nuclear Medicine",
+        "Emergency Medicine"
+      ],
+      "status": "active",
+      "accepts_direct_billing": true,
+      "notes": "In network and accepting pre-authorisation requests."
+    },
+    {
+      "provider_id": "PRV-30018",
+      "name": "Falcon Bay Oncology Centre",
+      "emirate": "Dubai",
+      "area": "Dubai Healthcare City",
+      "facility_type": "hospital",
+      "regulator": "DHA",
+      "facility_licence_number": "SYN-DHA-30018",
+      "networks": [
+        "COMPREHENSIVE_NETWORK",
+        "EXECUTIVE_NETWORK"
+      ],
+      "specialties": [
+        "Oncology",
+        "Radiology",
+        "Nuclear Medicine",
+        "Laboratory",
+        "Genetics"
+      ],
+      "status": "active",
+      "accepts_direct_billing": true,
+      "notes": "In network and accepting pre-authorisation requests."
+    },
+    {
+      "provider_id": "PRV-30019",
+      "name": "Palm Grove Dental Studio",
+      "emirate": "Dubai",
+      "area": "Al Quoz",
+      "facility_type": "clinic",
+      "regulator": "DHA",
+      "facility_licence_number": "SYN-DHA-30019",
+      "networks": [
+        "ENHANCED_NETWORK",
+        "COMPREHENSIVE_NETWORK",
+        "EXECUTIVE_NETWORK"
+      ],
+      "specialties": [
+        "Dentistry"
+      ],
+      "status": "active",
+      "accepts_direct_billing": true,
+      "notes": "In network and accepting pre-authorisation requests."
+    },
+    {
+      "provider_id": "PRV-30020",
+      "name": "Mirdif Vision Optical Centre",
+      "emirate": "Dubai",
+      "area": "Mirdif",
+      "facility_type": "clinic",
+      "regulator": "DHA",
+      "facility_licence_number": "SYN-DHA-30020",
+      "networks": [
+        "ENHANCED_NETWORK",
+        "COMPREHENSIVE_NETWORK",
+        "EXECUTIVE_NETWORK"
+      ],
+      "specialties": [
+        "Optometry",
+        "Ophthalmology"
+      ],
+      "status": "suspended",
+      "accepts_direct_billing": false,
+      "notes": "Suspended pending resolution of an onboarding document; requests must be escalated."
+    },
+    {
+      "provider_id": "PRV-30021",
+      "name": "Corniche Lagoon Hospital",
+      "emirate": "Abu Dhabi",
+      "area": "Corniche",
+      "facility_type": "hospital",
+      "regulator": "DOH",
+      "facility_licence_number": "SYN-DOH-30021",
+      "networks": [
+        "BASIC_NETWORK",
+        "ENHANCED_NETWORK",
+        "COMPREHENSIVE_NETWORK",
+        "EXECUTIVE_NETWORK"
+      ],
+      "specialties": [
+        "General Surgery",
+        "Obstetrics",
+        "Neonatology",
+        "Emergency Medicine",
+        "Radiology",
+        "Laboratory",
+        "Gastroenterology"
+      ],
+      "status": "active",
+      "accepts_direct_billing": true,
+      "notes": "In network and accepting pre-authorisation requests."
+    },
+    {
+      "provider_id": "PRV-30022",
+      "name": "Khalifa City Family Medicine Centre",
+      "emirate": "Abu Dhabi",
+      "area": "Khalifa City A",
+      "facility_type": "clinic",
+      "regulator": "DOH",
+      "facility_licence_number": "SYN-DOH-30022",
+      "networks": [
+        "BASIC_NETWORK",
+        "ENHANCED_NETWORK",
+        "COMPREHENSIVE_NETWORK",
+        "EXECUTIVE_NETWORK"
+      ],
+      "specialties": [
+        "Preventive Medicine",
+        "Laboratory",
+        "Endocrinology",
+        "Psychology"
+      ],
+      "status": "active",
+      "accepts_direct_billing": true,
+      "notes": "In network and accepting pre-authorisation requests."
+    },
+    {
+      "provider_id": "PRV-30023",
+      "name": "Yas Horizon Specialist Hospital",
+      "emirate": "Abu Dhabi",
+      "area": "Yas Island",
+      "facility_type": "hospital",
+      "regulator": "DOH",
+      "facility_licence_number": "SYN-DOH-30023",
+      "networks": [
+        "COMPREHENSIVE_NETWORK",
+        "EXECUTIVE_NETWORK"
+      ],
+      "specialties": [
+        "Neurosurgery",
+        "Orthopaedics",
+        "Urology",
+        "Bariatric Surgery",
+        "Radiology",
+        "Emergency Medicine",
+        "Rheumatology"
+      ],
+      "status": "active",
+      "accepts_direct_billing": true,
+      "notes": "In network and accepting pre-authorisation requests."
+    },
+    {
+      "provider_id": "PRV-30024",
+      "name": "Al Reem Sands Medical Centre",
+      "emirate": "Abu Dhabi",
+      "area": "Al Reem Island",
+      "facility_type": "clinic",
+      "regulator": "DOH",
+      "facility_licence_number": "SYN-DOH-30024",
+      "networks": [
+        "ENHANCED_NETWORK",
+        "COMPREHENSIVE_NETWORK",
+        "EXECUTIVE_NETWORK"
+      ],
+      "specialties": [
+        "Pulmonology",
+        "Cardiology",
+        "Laboratory",
+        "Radiology"
+      ],
+      "status": "active",
+      "accepts_direct_billing": true,
+      "notes": "In network and accepting pre-authorisation requests."
+    },
+    {
+      "provider_id": "PRV-30025",
+      "name": "Mussafah Gateway Clinic",
+      "emirate": "Abu Dhabi",
+      "area": "Mussafah",
+      "facility_type": "clinic",
+      "regulator": "DOH",
+      "facility_licence_number": "SYN-DOH-30025",
+      "networks": [
+        "BASIC_NETWORK",
+        "ENHANCED_NETWORK",
+        "COMPREHENSIVE_NETWORK",
+        "EXECUTIVE_NETWORK"
+      ],
+      "specialties": [
+        "Preventive Medicine",
+        "Laboratory",
+        "Nephrology"
+      ],
+      "status": "active",
+      "accepts_direct_billing": true,
+      "notes": "In network and accepting pre-authorisation requests."
+    },
+    {
+      "provider_id": "PRV-30026",
+      "name": "Al Majaz Waterfront Hospital",
+      "emirate": "Sharjah",
+      "area": "Al Majaz",
+      "facility_type": "hospital",
+      "regulator": "MOHAP",
+      "facility_licence_number": "SYN-MOH-30026",
+      "networks": [
+        "BASIC_NETWORK",
+        "ENHANCED_NETWORK",
+        "COMPREHENSIVE_NETWORK",
+        "EXECUTIVE_NETWORK"
+      ],
+      "specialties": [
+        "General Surgery",
+        "Obstetrics",
+        "Emergency Medicine",
+        "Radiology",
+        "Laboratory",
+        "Nephrology"
+      ],
+      "status": "active",
+      "accepts_direct_billing": true,
+      "notes": "In network and accepting pre-authorisation requests."
+    },
+    {
+      "provider_id": "PRV-30027",
+      "name": "Al Nahda Crescent Polyclinic",
+      "emirate": "Sharjah",
+      "area": "Al Nahda",
+      "facility_type": "clinic",
+      "regulator": "MOHAP",
+      "facility_licence_number": "SYN-MOH-30027",
+      "networks": [
+        "BASIC_NETWORK",
+        "ENHANCED_NETWORK",
+        "COMPREHENSIVE_NETWORK",
+        "EXECUTIVE_NETWORK"
+      ],
+      "specialties": [
+        "Preventive Medicine",
+        "Dentistry",
+        "Optometry",
+        "Laboratory"
+      ],
+      "status": "active",
+      "accepts_direct_billing": true,
+      "notes": "In network and accepting pre-authorisation requests."
+    },
+    {
+      "provider_id": "PRV-30028",
+      "name": "Sharjah Skyline Fertility Centre",
+      "emirate": "Sharjah",
+      "area": "Al Khan",
+      "facility_type": "clinic",
+      "regulator": "MOHAP",
+      "facility_licence_number": "SYN-MOH-30028",
+      "networks": [
+        "EXECUTIVE_NETWORK"
+      ],
+      "specialties": [
+        "Reproductive Medicine",
+        "Obstetrics",
+        "Laboratory"
+      ],
+      "status": "pending-onboarding",
+      "accepts_direct_billing": false,
+      "notes": "Onboarding incomplete; not yet eligible to submit pre-authorisation requests."
+    },
+    {
+      "provider_id": "PRV-30029",
+      "name": "Emirates Ridge Rehabilitation Hospital",
+      "emirate": "Dubai",
+      "area": "Nad Al Sheba",
+      "facility_type": "hospital",
+      "regulator": "DHA",
+      "facility_licence_number": "SYN-DHA-30029",
+      "networks": [
+        "COMPREHENSIVE_NETWORK",
+        "EXECUTIVE_NETWORK"
+      ],
+      "specialties": [
+        "Psychiatry",
+        "Psychology",
+        "Orthopaedics",
+        "Neurosurgery"
+      ],
+      "status": "active",
+      "accepts_direct_billing": true,
+      "notes": "In network and accepting pre-authorisation requests."
+    },
+    {
+      "provider_id": "PRV-30030",
+      "name": "Gulf Meridian Robotic Surgery Institute",
+      "emirate": "Abu Dhabi",
+      "area": "Al Maryah Island",
+      "facility_type": "hospital",
+      "regulator": "DOH",
+      "facility_licence_number": "SYN-DOH-30030",
+      "networks": [
+        "EXECUTIVE_NETWORK"
+      ],
+      "specialties": [
+        "Urology",
+        "General Surgery",
+        "Bariatric Surgery",
+        "Oncology",
+        "Radiology"
+      ],
+      "status": "active",
+      "accepts_direct_billing": true,
+      "notes": "In network and accepting pre-authorisation requests."
+    }
+  ]
+}

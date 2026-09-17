@@ -1,0 +1,260 @@
+{
+  "disclaimer": "SYNTHETIC TEST DATA. Fictional insurer, plans, providers, members and procedure codes. Structurally modelled on UAE health-insurance regulation (DHA/DOH) for demonstration only. Not real policy data and not valid for any real authorisation decision.",
+  "process_note": "Supplier and provider onboarding is handled by the network department, not by the pre-authorisation desk. Callers asking about onboarding are handed to a human (escalation rule ESC-008).",
+  "checklist": [
+    {
+      "requirement_id": "ONB-001",
+      "name": "Valid UAE trade licence",
+      "issuing_authority": "Department of Economy and Tourism (Dubai) or equivalent",
+      "mandatory": true,
+      "validity_months": 12,
+      "status": "missing",
+      "allowed_statuses": [
+        "submitted",
+        "missing",
+        "expired",
+        "not_required"
+      ],
+      "notes": "Must name the facility exactly as it will appear in the network directory."
+    },
+    {
+      "requirement_id": "ONB-002",
+      "name": "DHA or DOH health facility licence",
+      "issuing_authority": "Dubai Health Authority / Department of Health - Abu Dhabi",
+      "mandatory": true,
+      "validity_months": 12,
+      "status": "missing",
+      "allowed_statuses": [
+        "submitted",
+        "missing",
+        "expired",
+        "not_required"
+      ],
+      "notes": "Facility licence, not an individual practitioner licence."
+    },
+    {
+      "requirement_id": "ONB-003",
+      "name": "Medical malpractice insurance certificate",
+      "issuing_authority": "Licensed UAE insurer",
+      "mandatory": true,
+      "validity_months": 12,
+      "status": "missing",
+      "allowed_statuses": [
+        "submitted",
+        "missing",
+        "expired",
+        "not_required"
+      ],
+      "notes": "Minimum indemnity AED 1,000,000 per claim."
+    },
+    {
+      "requirement_id": "ONB-004",
+      "name": "Practitioner licence schedule",
+      "issuing_authority": "DHA / DOH / MOHAP",
+      "mandatory": true,
+      "validity_months": 12,
+      "status": "missing",
+      "allowed_statuses": [
+        "submitted",
+        "missing",
+        "expired",
+        "not_required"
+      ],
+      "notes": "One licence per treating clinician, matched to the declared specialties."
+    },
+    {
+      "requirement_id": "ONB-005",
+      "name": "Bank IBAN verification letter",
+      "issuing_authority": "UAE-licensed bank",
+      "mandatory": true,
+      "validity_months": 6,
+      "status": "missing",
+      "allowed_statuses": [
+        "submitted",
+        "missing",
+        "expired",
+        "not_required"
+      ],
+      "notes": "Account name must match the trade licence holder."
+    },
+    {
+      "requirement_id": "ONB-006",
+      "name": "Signed tariff agreement",
+      "issuing_authority": "Insurer network department",
+      "mandatory": true,
+      "validity_months": 24,
+      "status": "missing",
+      "allowed_statuses": [
+        "submitted",
+        "missing",
+        "expired",
+        "not_required"
+      ],
+      "notes": "Countersigned schedule of agreed rates in AED."
+    },
+    {
+      "requirement_id": "ONB-007",
+      "name": "VAT registration certificate",
+      "issuing_authority": "Federal Tax Authority",
+      "mandatory": false,
+      "validity_months": 0,
+      "status": "missing",
+      "allowed_statuses": [
+        "submitted",
+        "missing",
+        "expired",
+        "not_required"
+      ],
+      "notes": "Required only where annual turnover exceeds the mandatory registration threshold."
+    },
+    {
+      "requirement_id": "ONB-008",
+      "name": "Facility inspection report",
+      "issuing_authority": "Insurer network department",
+      "mandatory": false,
+      "validity_months": 24,
+      "status": "missing",
+      "allowed_statuses": [
+        "submitted",
+        "missing",
+        "expired",
+        "not_required"
+      ],
+      "notes": "Required for inpatient and day-surgery facilities."
+    }
+  ],
+  "example_applications": [
+    {
+      "application_id": "ONB-APP-2026-0007",
+      "provider_id": "PRV-30016",
+      "provider_name": "Silicon Oasis Family Clinic",
+      "provider_status": "pending-onboarding",
+      "documents": [
+        {
+          "requirement_id": "ONB-001",
+          "status": "submitted"
+        },
+        {
+          "requirement_id": "ONB-002",
+          "status": "submitted"
+        },
+        {
+          "requirement_id": "ONB-003",
+          "status": "expired"
+        },
+        {
+          "requirement_id": "ONB-004",
+          "status": "submitted"
+        },
+        {
+          "requirement_id": "ONB-005",
+          "status": "submitted"
+        },
+        {
+          "requirement_id": "ONB-006",
+          "status": "missing"
+        },
+        {
+          "requirement_id": "ONB-007",
+          "status": "submitted"
+        },
+        {
+          "requirement_id": "ONB-008",
+          "status": "not_required"
+        }
+      ],
+      "outstanding": [
+        "ONB-003",
+        "ONB-006"
+      ]
+    },
+    {
+      "application_id": "ONB-APP-2026-0011",
+      "provider_id": "PRV-30028",
+      "provider_name": "Sharjah Skyline Fertility Centre",
+      "provider_status": "pending-onboarding",
+      "documents": [
+        {
+          "requirement_id": "ONB-001",
+          "status": "submitted"
+        },
+        {
+          "requirement_id": "ONB-002",
+          "status": "submitted"
+        },
+        {
+          "requirement_id": "ONB-003",
+          "status": "submitted"
+        },
+        {
+          "requirement_id": "ONB-004",
+          "status": "missing"
+        },
+        {
+          "requirement_id": "ONB-005",
+          "status": "submitted"
+        },
+        {
+          "requirement_id": "ONB-006",
+          "status": "missing"
+        },
+        {
+          "requirement_id": "ONB-007",
+          "status": "missing"
+        },
+        {
+          "requirement_id": "ONB-008",
+          "status": "submitted"
+        }
+      ],
+      "outstanding": [
+        "ONB-004",
+        "ONB-006",
+        "ONB-007"
+      ]
+    },
+    {
+      "application_id": "ONB-APP-2026-0014",
+      "provider_id": "PRV-30020",
+      "provider_name": "Mirdif Vision Optical Centre",
+      "provider_status": "suspended",
+      "documents": [
+        {
+          "requirement_id": "ONB-001",
+          "status": "submitted"
+        },
+        {
+          "requirement_id": "ONB-002",
+          "status": "expired"
+        },
+        {
+          "requirement_id": "ONB-003",
+          "status": "submitted"
+        },
+        {
+          "requirement_id": "ONB-004",
+          "status": "submitted"
+        },
+        {
+          "requirement_id": "ONB-005",
+          "status": "submitted"
+        },
+        {
+          "requirement_id": "ONB-006",
+          "status": "submitted"
+        },
+        {
+          "requirement_id": "ONB-007",
+          "status": "submitted"
+        },
+        {
+          "requirement_id": "ONB-008",
+          "status": "not_required"
+        }
+      ],
+      "outstanding": [
+        "ONB-002"
+      ]
+    }
+  ]
+}

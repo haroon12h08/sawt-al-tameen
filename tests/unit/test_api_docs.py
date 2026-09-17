@@ -41,3 +41,11 @@ def test_database_url_normalisation():
     assert normalise_database_url("postgres://u:p@h/db?sslmode=require") == "postgresql+psycopg://u:p@h/db?sslmode=require"
     assert normalise_database_url("postgresql://u:p@h/db") == "postgresql+psycopg://u:p@h/db"
     assert normalise_database_url("sqlite:///./x.db") == "sqlite:///./x.db"
+
+
+def test_uae_knowledge_base_is_current_and_consistent():
+    result = subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "generate_uae_knowledge_base.py"), "--check"],
+        capture_output=True, text=True,
+    )
+    assert result.returncode == 0, result.stderr

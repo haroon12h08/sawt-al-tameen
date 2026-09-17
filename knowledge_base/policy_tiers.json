@@ -1,0 +1,196 @@
+{
+  "disclaimer": "SYNTHETIC TEST DATA. Fictional insurer, plans, providers, members and procedure codes. Structurally modelled on UAE health-insurance regulation (DHA/DOH) for demonstration only. Not real policy data and not valid for any real authorisation decision.",
+  "currency": "AED",
+  "insurer": "Sawt Assurance (fictional)",
+  "effective_from": "2026-01-01",
+  "regulatory_context": "The Basic tier mirrors the structure of the DHA-mandated Essential Benefits Plan (minimum cover for lower-income employees in Dubai). Abu Dhabi equivalents are regulated by DOH. Higher tiers are commercial products with wider networks and higher limits. All values here are invented.",
+  "network_hierarchy": [
+    "BASIC_NETWORK",
+    "ENHANCED_NETWORK",
+    "COMPREHENSIVE_NETWORK",
+    "EXECUTIVE_NETWORK"
+  ],
+  "network_hierarchy_note": "Networks are nested: any provider in the Basic Network is also reachable on Enhanced, Comprehensive and Executive. Only Executive covers out-of-network treatment.",
+  "tiers": [
+    {
+      "tier_id": "BASIC",
+      "name": "Basic",
+      "product_name": "Sawt Assurance Basic (Essential Benefits equivalent)",
+      "regulatory_basis": "Modelled on the DHA-mandated Essential Benefits Plan minimum cover. Figures fictional.",
+      "eligibility_note": "Mandatory minimum cover for employees earning up to AED 4,000 per month and their domestic workers.",
+      "annual_limit_aed": 150000,
+      "sub_limits_aed": {
+        "inpatient": 150000,
+        "outpatient": 30000,
+        "pharmacy": 1500,
+        "maternity": 7000,
+        "dental": 0,
+        "optical": 0,
+        "mental_health": 0
+      },
+      "network": {
+        "network_id": "BASIC_NETWORK",
+        "name": "Basic Network",
+        "geography": "Dubai and Northern Emirates",
+        "out_of_network_cover": false
+      },
+      "co_payments_percent": {
+        "outpatient_consultation": 20,
+        "diagnostics": 20,
+        "inpatient": 20,
+        "pharmacy": 30,
+        "emergency": 0
+      },
+      "co_payment_caps_aed": {
+        "outpatient_consultation": 50,
+        "inpatient_per_encounter": 500,
+        "annual_out_of_pocket": 4000
+      },
+      "pre_authorisation_threshold_aed": 1000,
+      "waiting_periods_months": {
+        "maternity": 12,
+        "pre_existing_conditions": 6,
+        "chronic_conditions": 6,
+        "dental": 0,
+        "optical": 0
+      },
+      "deductible_aed": 0,
+      "notes": "Emergency treatment is never subject to pre-authorisation; notify within 24 hours of admission."
+    },
+    {
+      "tier_id": "ENHANCED",
+      "name": "Enhanced",
+      "product_name": "Sawt Assurance Enhanced",
+      "regulatory_basis": "Above-minimum commercial plan. Figures fictional.",
+      "eligibility_note": "Salaried employees above the mandated minimum band; dependants may be added.",
+      "annual_limit_aed": 500000,
+      "sub_limits_aed": {
+        "inpatient": 500000,
+        "outpatient": 75000,
+        "pharmacy": 5000,
+        "maternity": 15000,
+        "dental": 2500,
+        "optical": 1200,
+        "mental_health": 10000
+      },
+      "network": {
+        "network_id": "ENHANCED_NETWORK",
+        "name": "Enhanced Network",
+        "geography": "United Arab Emirates",
+        "out_of_network_cover": false
+      },
+      "co_payments_percent": {
+        "outpatient_consultation": 20,
+        "diagnostics": 15,
+        "inpatient": 10,
+        "pharmacy": 20,
+        "emergency": 0
+      },
+      "co_payment_caps_aed": {
+        "outpatient_consultation": 50,
+        "inpatient_per_encounter": 500,
+        "annual_out_of_pocket": 7500
+      },
+      "pre_authorisation_threshold_aed": 2500,
+      "waiting_periods_months": {
+        "maternity": 12,
+        "pre_existing_conditions": 6,
+        "chronic_conditions": 6,
+        "dental": 6,
+        "optical": 6
+      },
+      "deductible_aed": 0,
+      "notes": "Dental and optical benefits carry a six-month waiting period from policy inception."
+    },
+    {
+      "tier_id": "COMPREHENSIVE",
+      "name": "Comprehensive",
+      "product_name": "Sawt Assurance Comprehensive",
+      "regulatory_basis": "Above-minimum commercial plan. Figures fictional.",
+      "eligibility_note": "Mid-to-senior staff and their dependants.",
+      "annual_limit_aed": 1000000,
+      "sub_limits_aed": {
+        "inpatient": 1000000,
+        "outpatient": 150000,
+        "pharmacy": 10000,
+        "maternity": 30000,
+        "dental": 6000,
+        "optical": 2000,
+        "mental_health": 25000
+      },
+      "network": {
+        "network_id": "COMPREHENSIVE_NETWORK",
+        "name": "Comprehensive Network",
+        "geography": "United Arab Emirates, with GCC emergency cover",
+        "out_of_network_cover": false
+      },
+      "co_payments_percent": {
+        "outpatient_consultation": 10,
+        "diagnostics": 10,
+        "inpatient": 0,
+        "pharmacy": 10,
+        "emergency": 0
+      },
+      "co_payment_caps_aed": {
+        "outpatient_consultation": 50,
+        "inpatient_per_encounter": 0,
+        "annual_out_of_pocket": 10000
+      },
+      "pre_authorisation_threshold_aed": 5000,
+      "waiting_periods_months": {
+        "maternity": 12,
+        "pre_existing_conditions": 3,
+        "chronic_conditions": 3,
+        "dental": 3,
+        "optical": 3
+      },
+      "deductible_aed": 0,
+      "notes": "Chronic-condition management is covered after a three-month waiting period."
+    },
+    {
+      "tier_id": "EXECUTIVE",
+      "name": "Executive",
+      "product_name": "Sawt Assurance Executive",
+      "regulatory_basis": "Top commercial tier. Figures fictional.",
+      "eligibility_note": "Executive grades and their dependants; worldwide cover excluding the USA.",
+      "annual_limit_aed": 3000000,
+      "sub_limits_aed": {
+        "inpatient": 3000000,
+        "outpatient": 400000,
+        "pharmacy": 25000,
+        "maternity": 60000,
+        "dental": 15000,
+        "optical": 4000,
+        "mental_health": 60000
+      },
+      "network": {
+        "network_id": "EXECUTIVE_NETWORK",
+        "name": "Executive Network",
+        "geography": "Worldwide excluding the USA",
+        "out_of_network_cover": true
+      },
+      "co_payments_percent": {
+        "outpatient_consultation": 0,
+        "diagnostics": 0,
+        "inpatient": 0,
+        "pharmacy": 0,
+        "emergency": 0
+      },
+      "co_payment_caps_aed": {
+        "outpatient_consultation": 0,
+        "inpatient_per_encounter": 0,
+        "annual_out_of_pocket": 0
+      },
+      "pre_authorisation_threshold_aed": 10000,
+      "waiting_periods_months": {
+        "maternity": 12,
+        "pre_existing_conditions": 0,
+        "chronic_conditions": 0,
+        "dental": 0,
+        "optical": 0
+      },
+      "deductible_aed": 0,
+      "notes": "Out-of-network treatment is reimbursed at 80% of the agreed tariff after pre-authorisation."
+    }
+  ]
+}

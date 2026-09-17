@@ -60,8 +60,19 @@ def keyterms() -> list[str]:
     return list(dict.fromkeys(terms))
 
 
-def knowledge_base_documents() -> dict[str, str]:
-    return {p.stem: p.read_text() for p in sorted((ROOT / "voice" / "knowledge_base").glob("*.md"))}
+def knowledge_base_documents(include_uae: bool = False) -> dict[str, str]:
+    """Documents uploaded to the agent's knowledge base.
+
+    By default these are generated from the backend's own seed data, so the sources the rules cite are retrievable.
+    ``--include-uae-knowledge-base`` adds the standalone synthetic UAE catalogue under knowledge_base/; the two
+    describe different fictional product families, so loading both will give contradictory plan answers.
+    """
+    documents = {p.stem: p.read_text() for p in sorted((ROOT / "voice" / "knowledge_base").glob("*.md"))}
+    if include_uae:
+        for path in sorted((ROOT / "knowledge_base").glob("*")):
+            if path.suffix in (".md", ".json"):
+                documents[f"uae-{path.stem}"] = path.read_text()
+    return documents
 
 
 def system_tool(name: str) -> dict[str, Any]:
@@ -129,7 +140,13 @@ def main() -> int:
     parser.add_argument("--llm", default=DEFAULT_LLM)
     parser.add_argument("--tts-model", default=DEFAULT_TTS_MODEL)
     parser.add_argument("--voice-id", default=DEFAULT_VOICE_ID)
+    parser.add_argument(
+        "--include-uae-knowledge-base",
+        action="store_true",
+        help="also upload knowledge_base/ (the standalone synthetic UAE catalogue)",
+    )
     args = parser.parse_args()
+    documents = knowledge_base_documents(args.include_uae_knowledge_base)
 
     base_url = os.environ.get("PREAUTH_PUBLIC_BASE_URL", "").rstrip("/")
     token = os.environ.get("PREAUTH_VOICE_AGENT_TOKEN", "")
@@ -137,7 +154,7 @@ def main() -> int:
     if args.dry_run:
         base_url = base_url or "https://YOUR-PUBLIC-URL"
         tools = all_webhook_tool_configs(base_url=base_url, authorization_secret_id="<secret_id>")
-        kb = [{"type": "text", "name": n, "id": "<document_id>", "usage_mode": "auto"} for n in knowledge_base_documents()]
+        kb = [{"type": "text", "name": n, "id": "<document_id>", "usage_mode": "auto"} for n in documents]
         print(json.dumps({"tools": tools, "agent": agent_payload(
             tool_ids=["<tool_id>"] * len(tools), knowledge_base=kb,
             llm=args.llm, tts_model=args.tts_model, voice_id=args.voice_id,
@@ -180,7 +197,7 @@ def main() -> int:
 
     # 3. Knowledge base (a new document is uploaded only when its content changed).
     kb_state = state.setdefault("knowledge_base", {})
-    for name, text in knowledge_base_documents().items():
+    for name, text in documents.items():
         if kb_state.get(name, {}).get("digest") != _digest(text):
             created = client.request("POST", "/v1/convai/knowledge-base/text", {"name": name, "text": text})
             kb_state[name] = {"id": created["id"], "digest": _digest(text)}
@@ -189,7 +206,7 @@ def main() -> int:
     knowledge_base = [
         {"type": "text", "name": name, "id": entry["id"], "usage_mode": "auto"}
         for name, entry in kb_state.items()
-        if name in knowledge_base_documents()
+        if name in documents
     ]
 
     # 4. Agent.

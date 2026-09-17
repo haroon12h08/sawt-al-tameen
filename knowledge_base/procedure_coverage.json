@@ -1,0 +1,2524 @@
+{
+  "disclaimer": "SYNTHETIC TEST DATA. Fictional insurer, plans, providers, members and procedure codes. Structurally modelled on UAE health-insurance regulation (DHA/DOH) for demonstration only. Not real policy data and not valid for any real authorisation decision.",
+  "currency": "AED",
+  "code_system_note": "Codes use a synthetic SP-##### scheme. They are shaped like procedure codes for demonstration but are not CPT codes and do not map to any real code set.",
+  "pre_authorisation_rules": {
+    "ALWAYS": "Pre-authorisation is required on every tier that covers the procedure.",
+    "ABOVE_TIER_THRESHOLD": "Pre-authorisation is required where the billed amount reaches the tier's pre-authorisation threshold.",
+    "NEVER": "No pre-authorisation required; claim submitted directly."
+  },
+  "decision_classes": {
+    "CLEAR": "The rules decide the case; the assistant prepares a recommendation for human sign-off.",
+    "EXCLUDED": "Excluded on every tier; prepare a denial recommendation for human sign-off.",
+    "AMBIGUOUS": "Escalate to a human reviewer; see escalation_rules.md."
+  },
+  "procedures": [
+    {
+      "code": "SP-10010",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "Chest X-ray, two views",
+      "category": "diagnostic",
+      "specialty_required": "Radiology",
+      "typical_billed_amount_aed": 180,
+      "pre_authorisation_rule": "NEVER",
+      "minimum_tier": "BASIC",
+      "waiting_period_months": 0,
+      "waiting_period_waived_for_emergency": false,
+      "exclusions": [],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": 20,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "ENHANCED": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": 15,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "COMPREHENSIVE": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": 10,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "CLEAR",
+      "escalation": null
+    },
+    {
+      "code": "SP-10020",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "Ultrasound, abdomen complete",
+      "category": "diagnostic",
+      "specialty_required": "Radiology",
+      "typical_billed_amount_aed": 520,
+      "pre_authorisation_rule": "ABOVE_TIER_THRESHOLD",
+      "minimum_tier": "BASIC",
+      "waiting_period_months": 0,
+      "waiting_period_waived_for_emergency": false,
+      "exclusions": [],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": 20,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "ENHANCED": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": 15,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "COMPREHENSIVE": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": 10,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "CLEAR",
+      "escalation": null
+    },
+    {
+      "code": "SP-10030",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "CT scan, head, without contrast",
+      "category": "diagnostic",
+      "specialty_required": "Radiology",
+      "typical_billed_amount_aed": 1450,
+      "pre_authorisation_rule": "ABOVE_TIER_THRESHOLD",
+      "minimum_tier": "BASIC",
+      "waiting_period_months": 0,
+      "waiting_period_waived_for_emergency": false,
+      "exclusions": [],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": 20,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "ENHANCED": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": 15,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "COMPREHENSIVE": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": 10,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "CLEAR",
+      "escalation": null
+    },
+    {
+      "code": "SP-10040",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "MRI, brain, without contrast",
+      "category": "diagnostic",
+      "specialty_required": "Radiology",
+      "typical_billed_amount_aed": 2600,
+      "pre_authorisation_rule": "ALWAYS",
+      "minimum_tier": "BASIC",
+      "waiting_period_months": 0,
+      "waiting_period_waived_for_emergency": false,
+      "exclusions": [],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": 20,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "ENHANCED": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": 15,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "COMPREHENSIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": 10,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "CLEAR",
+      "escalation": null
+    },
+    {
+      "code": "SP-10050",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "MRI, knee, without contrast",
+      "category": "diagnostic",
+      "specialty_required": "Radiology",
+      "typical_billed_amount_aed": 2400,
+      "pre_authorisation_rule": "ALWAYS",
+      "minimum_tier": "BASIC",
+      "waiting_period_months": 0,
+      "waiting_period_waived_for_emergency": false,
+      "exclusions": [
+        "Not covered when requested solely for screening without clinical findings"
+      ],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": 20,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "ENHANCED": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": 15,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "COMPREHENSIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": 10,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "CLEAR",
+      "escalation": null
+    },
+    {
+      "code": "SP-10060",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "PET-CT, whole body",
+      "category": "diagnostic",
+      "specialty_required": "Nuclear Medicine",
+      "typical_billed_amount_aed": 9800,
+      "pre_authorisation_rule": "ALWAYS",
+      "minimum_tier": "ENHANCED",
+      "waiting_period_months": 0,
+      "waiting_period_waived_for_emergency": false,
+      "exclusions": [],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Benefit starts at the Enhanced tier"
+        },
+        "ENHANCED": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": 15,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "COMPREHENSIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": 10,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "CLEAR",
+      "escalation": null
+    },
+    {
+      "code": "SP-10070",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "Echocardiogram, transthoracic",
+      "category": "diagnostic",
+      "specialty_required": "Cardiology",
+      "typical_billed_amount_aed": 650,
+      "pre_authorisation_rule": "ABOVE_TIER_THRESHOLD",
+      "minimum_tier": "BASIC",
+      "waiting_period_months": 0,
+      "waiting_period_waived_for_emergency": false,
+      "exclusions": [],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": 20,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "ENHANCED": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": 15,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "COMPREHENSIVE": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": 10,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "CLEAR",
+      "escalation": null
+    },
+    {
+      "code": "SP-10090",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "Complete blood count",
+      "category": "diagnostic",
+      "specialty_required": "Laboratory",
+      "typical_billed_amount_aed": 60,
+      "pre_authorisation_rule": "NEVER",
+      "minimum_tier": "BASIC",
+      "waiting_period_months": 0,
+      "waiting_period_waived_for_emergency": false,
+      "exclusions": [],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": 20,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "ENHANCED": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": 15,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "COMPREHENSIVE": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": 10,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "CLEAR",
+      "escalation": null
+    },
+    {
+      "code": "SP-10110",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "Hereditary cancer multigene panel",
+      "category": "diagnostic",
+      "specialty_required": "Genetics",
+      "typical_billed_amount_aed": 7500,
+      "pre_authorisation_rule": "ALWAYS",
+      "minimum_tier": "COMPREHENSIVE",
+      "waiting_period_months": 0,
+      "waiting_period_waived_for_emergency": false,
+      "exclusions": [
+        "Not covered for population screening without a qualifying family history"
+      ],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Benefit starts at the Comprehensive tier"
+        },
+        "ENHANCED": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Benefit starts at the Comprehensive tier"
+        },
+        "COMPREHENSIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": 10,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "AMBIGUOUS",
+      "escalation": {
+        "escalation_rule_id": "ESC-005",
+        "reason": "Genetic panels are not listed individually in the benefit schedule; eligibility depends on family history criteria that the schedule does not define."
+      }
+    },
+    {
+      "code": "SP-10120",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "Sleep study, attended polysomnography",
+      "category": "diagnostic",
+      "specialty_required": "Pulmonology",
+      "typical_billed_amount_aed": 3200,
+      "pre_authorisation_rule": "ALWAYS",
+      "minimum_tier": "ENHANCED",
+      "waiting_period_months": 0,
+      "waiting_period_waived_for_emergency": false,
+      "exclusions": [],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Benefit starts at the Enhanced tier"
+        },
+        "ENHANCED": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": 15,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "COMPREHENSIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": 10,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "AMBIGUOUS",
+      "escalation": {
+        "escalation_rule_id": "ESC-004",
+        "reason": "Attended and home sleep studies are frequently coded interchangeably; the tariff differs and the submitted code often disagrees with the clinical notes."
+      }
+    },
+    {
+      "code": "SP-10130",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "Colonoscopy, diagnostic",
+      "category": "diagnostic",
+      "specialty_required": "Gastroenterology",
+      "typical_billed_amount_aed": 3800,
+      "pre_authorisation_rule": "ALWAYS",
+      "minimum_tier": "BASIC",
+      "waiting_period_months": 0,
+      "waiting_period_waived_for_emergency": false,
+      "exclusions": [],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": 20,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "ENHANCED": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": 15,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "COMPREHENSIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": 10,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "CLEAR",
+      "escalation": null
+    },
+    {
+      "code": "SP-20010",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "Appendectomy, laparoscopic",
+      "category": "surgical",
+      "specialty_required": "General Surgery",
+      "typical_billed_amount_aed": 18500,
+      "pre_authorisation_rule": "ALWAYS",
+      "minimum_tier": "BASIC",
+      "waiting_period_months": 0,
+      "waiting_period_waived_for_emergency": false,
+      "exclusions": [],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": 20,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "ENHANCED": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": 10,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "COMPREHENSIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "CLEAR",
+      "escalation": null
+    },
+    {
+      "code": "SP-20020",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "Cholecystectomy, laparoscopic",
+      "category": "surgical",
+      "specialty_required": "General Surgery",
+      "typical_billed_amount_aed": 24000,
+      "pre_authorisation_rule": "ALWAYS",
+      "minimum_tier": "BASIC",
+      "waiting_period_months": 0,
+      "waiting_period_waived_for_emergency": false,
+      "exclusions": [],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": 20,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "ENHANCED": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": 10,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "COMPREHENSIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "CLEAR",
+      "escalation": null
+    },
+    {
+      "code": "SP-20040",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "Knee arthroscopy with partial meniscectomy",
+      "category": "surgical",
+      "specialty_required": "Orthopaedics",
+      "typical_billed_amount_aed": 21000,
+      "pre_authorisation_rule": "ALWAYS",
+      "minimum_tier": "BASIC",
+      "waiting_period_months": 0,
+      "waiting_period_waived_for_emergency": false,
+      "exclusions": [
+        "Requires documented failure of at least six weeks of conservative treatment"
+      ],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": 20,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "ENHANCED": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": 10,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "COMPREHENSIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "CLEAR",
+      "escalation": null
+    },
+    {
+      "code": "SP-20050",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "Total knee replacement",
+      "category": "surgical",
+      "specialty_required": "Orthopaedics",
+      "typical_billed_amount_aed": 62000,
+      "pre_authorisation_rule": "ALWAYS",
+      "minimum_tier": "ENHANCED",
+      "waiting_period_months": 0,
+      "waiting_period_waived_for_emergency": false,
+      "exclusions": [],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Benefit starts at the Enhanced tier"
+        },
+        "ENHANCED": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": 10,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "COMPREHENSIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "CLEAR",
+      "escalation": null
+    },
+    {
+      "code": "SP-20060",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "Spinal fusion, single level",
+      "category": "surgical",
+      "specialty_required": "Neurosurgery",
+      "typical_billed_amount_aed": 95000,
+      "pre_authorisation_rule": "ALWAYS",
+      "minimum_tier": "COMPREHENSIVE",
+      "waiting_period_months": 0,
+      "waiting_period_waived_for_emergency": false,
+      "exclusions": [],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Benefit starts at the Comprehensive tier"
+        },
+        "ENHANCED": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Benefit starts at the Comprehensive tier"
+        },
+        "COMPREHENSIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "AMBIGUOUS",
+      "escalation": {
+        "escalation_rule_id": "ESC-002",
+        "reason": "The benefit schedule covers spinal fusion for instability, while the exclusions list degenerative disc disease without instability. Both clauses apply to most submitted cases."
+      }
+    },
+    {
+      "code": "SP-20070",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "Coronary angioplasty with stent",
+      "category": "surgical",
+      "specialty_required": "Cardiology",
+      "typical_billed_amount_aed": 78000,
+      "pre_authorisation_rule": "ALWAYS",
+      "minimum_tier": "ENHANCED",
+      "waiting_period_months": 0,
+      "waiting_period_waived_for_emergency": false,
+      "exclusions": [],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Benefit starts at the Enhanced tier"
+        },
+        "ENHANCED": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": 10,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "COMPREHENSIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "CLEAR",
+      "escalation": null
+    },
+    {
+      "code": "SP-20080",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "Coronary artery bypass graft",
+      "category": "surgical",
+      "specialty_required": "Cardiothoracic Surgery",
+      "typical_billed_amount_aed": 145000,
+      "pre_authorisation_rule": "ALWAYS",
+      "minimum_tier": "ENHANCED",
+      "waiting_period_months": 0,
+      "waiting_period_waived_for_emergency": false,
+      "exclusions": [],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Benefit starts at the Enhanced tier"
+        },
+        "ENHANCED": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": 10,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "COMPREHENSIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "CLEAR",
+      "escalation": null
+    },
+    {
+      "code": "SP-20090",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "Cataract extraction with intraocular lens",
+      "category": "surgical",
+      "specialty_required": "Ophthalmology",
+      "typical_billed_amount_aed": 12500,
+      "pre_authorisation_rule": "ALWAYS",
+      "minimum_tier": "BASIC",
+      "waiting_period_months": 0,
+      "waiting_period_waived_for_emergency": false,
+      "exclusions": [
+        "Premium multifocal lenses are an upgrade payable by the member"
+      ],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": 20,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "ENHANCED": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": 10,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "COMPREHENSIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "CLEAR",
+      "escalation": null
+    },
+    {
+      "code": "SP-20110",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "Bariatric surgery, sleeve gastrectomy",
+      "category": "surgical",
+      "specialty_required": "Bariatric Surgery",
+      "typical_billed_amount_aed": 48000,
+      "pre_authorisation_rule": "ALWAYS",
+      "minimum_tier": "COMPREHENSIVE",
+      "waiting_period_months": 12,
+      "waiting_period_waived_for_emergency": false,
+      "exclusions": [],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Benefit starts at the Comprehensive tier"
+        },
+        "ENHANCED": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Benefit starts at the Comprehensive tier"
+        },
+        "COMPREHENSIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "AMBIGUOUS",
+      "escalation": {
+        "escalation_rule_id": "ESC-003",
+        "reason": "Eligibility depends on BMI thresholds, documented supervised weight-management attempts and comorbidities; submissions rarely evidence all three."
+      }
+    },
+    {
+      "code": "SP-20120",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "Septoplasty for deviated nasal septum",
+      "category": "surgical",
+      "specialty_required": "ENT",
+      "typical_billed_amount_aed": 18000,
+      "pre_authorisation_rule": "ALWAYS",
+      "minimum_tier": "BASIC",
+      "waiting_period_months": 0,
+      "waiting_period_waived_for_emergency": false,
+      "exclusions": [],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": 20,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "ENHANCED": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": 10,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "COMPREHENSIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "AMBIGUOUS",
+      "escalation": {
+        "escalation_rule_id": "ESC-006",
+        "reason": "Functional septoplasty is covered but cosmetic rhinoplasty is excluded; combined procedures need a clinician to separate the functional component."
+      }
+    },
+    {
+      "code": "SP-20130",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "Robotic-assisted radical prostatectomy",
+      "category": "surgical",
+      "specialty_required": "Urology",
+      "typical_billed_amount_aed": 88000,
+      "pre_authorisation_rule": "ALWAYS",
+      "minimum_tier": "EXECUTIVE",
+      "waiting_period_months": 0,
+      "waiting_period_waived_for_emergency": false,
+      "exclusions": [],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Benefit starts at the Executive tier"
+        },
+        "ENHANCED": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Benefit starts at the Executive tier"
+        },
+        "COMPREHENSIVE": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Benefit starts at the Executive tier"
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "AMBIGUOUS",
+      "escalation": {
+        "escalation_rule_id": "ESC-005",
+        "reason": "The schedule prices open and laparoscopic prostatectomy only; the robotic approach has no tariff line and no stated cover position."
+      }
+    },
+    {
+      "code": "SP-20140",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "Rhinoplasty, cosmetic",
+      "category": "surgical",
+      "specialty_required": "Plastic Surgery",
+      "typical_billed_amount_aed": 32000,
+      "pre_authorisation_rule": "NEVER",
+      "minimum_tier": "NONE",
+      "waiting_period_months": 0,
+      "waiting_period_waived_for_emergency": false,
+      "exclusions": [
+        "Cosmetic surgery is excluded on all tiers unless it reconstructs an accidental injury covered by the policy"
+      ],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Excluded on all tiers"
+        },
+        "ENHANCED": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Excluded on all tiers"
+        },
+        "COMPREHENSIVE": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Excluded on all tiers"
+        },
+        "EXECUTIVE": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Excluded on all tiers"
+        }
+      },
+      "decision_class": "EXCLUDED",
+      "escalation": null
+    },
+    {
+      "code": "SP-20150",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "Hair transplantation",
+      "category": "surgical",
+      "specialty_required": "Dermatology",
+      "typical_billed_amount_aed": 25000,
+      "pre_authorisation_rule": "NEVER",
+      "minimum_tier": "NONE",
+      "waiting_period_months": 0,
+      "waiting_period_waived_for_emergency": false,
+      "exclusions": [
+        "Cosmetic treatment excluded on all tiers"
+      ],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Excluded on all tiers"
+        },
+        "ENHANCED": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Excluded on all tiers"
+        },
+        "COMPREHENSIVE": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Excluded on all tiers"
+        },
+        "EXECUTIVE": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Excluded on all tiers"
+        }
+      },
+      "decision_class": "EXCLUDED",
+      "escalation": null
+    },
+    {
+      "code": "SP-30010",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "Antenatal care package",
+      "category": "maternity",
+      "specialty_required": "Obstetrics",
+      "typical_billed_amount_aed": 4500,
+      "pre_authorisation_rule": "ABOVE_TIER_THRESHOLD",
+      "minimum_tier": "BASIC",
+      "waiting_period_months": 12,
+      "waiting_period_waived_for_emergency": true,
+      "exclusions": [],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": 20,
+          "applicable_sub_limit_aed": 7000,
+          "reason_not_covered": null
+        },
+        "ENHANCED": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": 20,
+          "applicable_sub_limit_aed": 15000,
+          "reason_not_covered": null
+        },
+        "COMPREHENSIVE": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": 10,
+          "applicable_sub_limit_aed": 30000,
+          "reason_not_covered": null
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": 60000,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "CLEAR",
+      "escalation": null
+    },
+    {
+      "code": "SP-30020",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "Normal vaginal delivery",
+      "category": "maternity",
+      "specialty_required": "Obstetrics",
+      "typical_billed_amount_aed": 12000,
+      "pre_authorisation_rule": "ALWAYS",
+      "minimum_tier": "BASIC",
+      "waiting_period_months": 12,
+      "waiting_period_waived_for_emergency": true,
+      "exclusions": [],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": 20,
+          "applicable_sub_limit_aed": 7000,
+          "reason_not_covered": null
+        },
+        "ENHANCED": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": 20,
+          "applicable_sub_limit_aed": 15000,
+          "reason_not_covered": null
+        },
+        "COMPREHENSIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": 10,
+          "applicable_sub_limit_aed": 30000,
+          "reason_not_covered": null
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": 60000,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "CLEAR",
+      "escalation": null
+    },
+    {
+      "code": "SP-30030",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "Caesarean section, elective",
+      "category": "maternity",
+      "specialty_required": "Obstetrics",
+      "typical_billed_amount_aed": 22000,
+      "pre_authorisation_rule": "ALWAYS",
+      "minimum_tier": "BASIC",
+      "waiting_period_months": 12,
+      "waiting_period_waived_for_emergency": true,
+      "exclusions": [],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": 20,
+          "applicable_sub_limit_aed": 7000,
+          "reason_not_covered": null
+        },
+        "ENHANCED": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": 20,
+          "applicable_sub_limit_aed": 15000,
+          "reason_not_covered": null
+        },
+        "COMPREHENSIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": 10,
+          "applicable_sub_limit_aed": 30000,
+          "reason_not_covered": null
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": 60000,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "CLEAR",
+      "escalation": null
+    },
+    {
+      "code": "SP-30040",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "Caesarean section, emergency",
+      "category": "maternity",
+      "specialty_required": "Obstetrics",
+      "typical_billed_amount_aed": 26000,
+      "pre_authorisation_rule": "ALWAYS",
+      "minimum_tier": "BASIC",
+      "waiting_period_months": 12,
+      "waiting_period_waived_for_emergency": true,
+      "exclusions": [],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": 20,
+          "applicable_sub_limit_aed": 7000,
+          "reason_not_covered": null
+        },
+        "ENHANCED": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": 20,
+          "applicable_sub_limit_aed": 15000,
+          "reason_not_covered": null
+        },
+        "COMPREHENSIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": 10,
+          "applicable_sub_limit_aed": 30000,
+          "reason_not_covered": null
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": 60000,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "CLEAR",
+      "escalation": null
+    },
+    {
+      "code": "SP-30050",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "Neonatal intensive care, per day",
+      "category": "maternity",
+      "specialty_required": "Neonatology",
+      "typical_billed_amount_aed": 3500,
+      "pre_authorisation_rule": "ALWAYS",
+      "minimum_tier": "BASIC",
+      "waiting_period_months": 0,
+      "waiting_period_waived_for_emergency": true,
+      "exclusions": [],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": 20,
+          "applicable_sub_limit_aed": 7000,
+          "reason_not_covered": null
+        },
+        "ENHANCED": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": 20,
+          "applicable_sub_limit_aed": 15000,
+          "reason_not_covered": null
+        },
+        "COMPREHENSIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": 10,
+          "applicable_sub_limit_aed": 30000,
+          "reason_not_covered": null
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": 60000,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "CLEAR",
+      "escalation": null
+    },
+    {
+      "code": "SP-30060",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "IVF treatment cycle",
+      "category": "maternity",
+      "specialty_required": "Reproductive Medicine",
+      "typical_billed_amount_aed": 38000,
+      "pre_authorisation_rule": "ALWAYS",
+      "minimum_tier": "EXECUTIVE",
+      "waiting_period_months": 24,
+      "waiting_period_waived_for_emergency": true,
+      "exclusions": [],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Benefit starts at the Executive tier"
+        },
+        "ENHANCED": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Benefit starts at the Executive tier"
+        },
+        "COMPREHENSIVE": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Benefit starts at the Executive tier"
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": 60000,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "AMBIGUOUS",
+      "escalation": {
+        "escalation_rule_id": "ESC-002",
+        "reason": "Assisted reproduction appears as an Executive benefit and in the general exclusions list; cycle limits and age criteria are not stated."
+      }
+    },
+    {
+      "code": "SP-40010",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "Dental consultation and examination",
+      "category": "dental",
+      "specialty_required": "Dentistry",
+      "typical_billed_amount_aed": 200,
+      "pre_authorisation_rule": "NEVER",
+      "minimum_tier": "ENHANCED",
+      "waiting_period_months": 6,
+      "waiting_period_waived_for_emergency": false,
+      "exclusions": [],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Benefit starts at the Enhanced tier"
+        },
+        "ENHANCED": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": 20,
+          "applicable_sub_limit_aed": 2500,
+          "reason_not_covered": null
+        },
+        "COMPREHENSIVE": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": 10,
+          "applicable_sub_limit_aed": 6000,
+          "reason_not_covered": null
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": 15000,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "CLEAR",
+      "escalation": null
+    },
+    {
+      "code": "SP-40040",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "Root canal treatment, molar",
+      "category": "dental",
+      "specialty_required": "Dentistry",
+      "typical_billed_amount_aed": 1800,
+      "pre_authorisation_rule": "ABOVE_TIER_THRESHOLD",
+      "minimum_tier": "COMPREHENSIVE",
+      "waiting_period_months": 3,
+      "waiting_period_waived_for_emergency": false,
+      "exclusions": [],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Benefit starts at the Comprehensive tier"
+        },
+        "ENHANCED": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Benefit starts at the Comprehensive tier"
+        },
+        "COMPREHENSIVE": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": 10,
+          "applicable_sub_limit_aed": 6000,
+          "reason_not_covered": null
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": 15000,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "CLEAR",
+      "escalation": null
+    },
+    {
+      "code": "SP-40050",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "Dental crown, porcelain",
+      "category": "dental",
+      "specialty_required": "Dentistry",
+      "typical_billed_amount_aed": 3200,
+      "pre_authorisation_rule": "ALWAYS",
+      "minimum_tier": "COMPREHENSIVE",
+      "waiting_period_months": 3,
+      "waiting_period_waived_for_emergency": false,
+      "exclusions": [],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Benefit starts at the Comprehensive tier"
+        },
+        "ENHANCED": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Benefit starts at the Comprehensive tier"
+        },
+        "COMPREHENSIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": 10,
+          "applicable_sub_limit_aed": 6000,
+          "reason_not_covered": null
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": 15000,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "CLEAR",
+      "escalation": null
+    },
+    {
+      "code": "SP-40060",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "Dental implant, single tooth",
+      "category": "dental",
+      "specialty_required": "Dentistry",
+      "typical_billed_amount_aed": 9500,
+      "pre_authorisation_rule": "ALWAYS",
+      "minimum_tier": "EXECUTIVE",
+      "waiting_period_months": 0,
+      "waiting_period_waived_for_emergency": false,
+      "exclusions": [],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Benefit starts at the Executive tier"
+        },
+        "ENHANCED": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Benefit starts at the Executive tier"
+        },
+        "COMPREHENSIVE": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Benefit starts at the Executive tier"
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": 15000,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "AMBIGUOUS",
+      "escalation": {
+        "escalation_rule_id": "ESC-006",
+        "reason": "Implants are covered when they replace teeth lost in a covered accident and excluded when elective; the distinction depends on records the caller may not hold."
+      }
+    },
+    {
+      "code": "SP-50010",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "Optometry eye examination",
+      "category": "optical",
+      "specialty_required": "Optometry",
+      "typical_billed_amount_aed": 250,
+      "pre_authorisation_rule": "NEVER",
+      "minimum_tier": "ENHANCED",
+      "waiting_period_months": 6,
+      "waiting_period_waived_for_emergency": false,
+      "exclusions": [
+        "One examination per policy year"
+      ],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Benefit starts at the Enhanced tier"
+        },
+        "ENHANCED": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": 20,
+          "applicable_sub_limit_aed": 1200,
+          "reason_not_covered": null
+        },
+        "COMPREHENSIVE": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": 10,
+          "applicable_sub_limit_aed": 2000,
+          "reason_not_covered": null
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": 4000,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "CLEAR",
+      "escalation": null
+    },
+    {
+      "code": "SP-50020",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "Prescription spectacle lenses",
+      "category": "optical",
+      "specialty_required": "Optometry",
+      "typical_billed_amount_aed": 700,
+      "pre_authorisation_rule": "ABOVE_TIER_THRESHOLD",
+      "minimum_tier": "ENHANCED",
+      "waiting_period_months": 6,
+      "waiting_period_waived_for_emergency": false,
+      "exclusions": [
+        "One pair every 24 months; frames subject to the optical sub-limit"
+      ],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Benefit starts at the Enhanced tier"
+        },
+        "ENHANCED": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": 20,
+          "applicable_sub_limit_aed": 1200,
+          "reason_not_covered": null
+        },
+        "COMPREHENSIVE": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": 10,
+          "applicable_sub_limit_aed": 2000,
+          "reason_not_covered": null
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": 4000,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "CLEAR",
+      "escalation": null
+    },
+    {
+      "code": "SP-50030",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "LASIK refractive surgery",
+      "category": "optical",
+      "specialty_required": "Ophthalmology",
+      "typical_billed_amount_aed": 14000,
+      "pre_authorisation_rule": "NEVER",
+      "minimum_tier": "NONE",
+      "waiting_period_months": 0,
+      "waiting_period_waived_for_emergency": false,
+      "exclusions": [
+        "Refractive surgery for cosmetic or convenience reasons is excluded on all tiers"
+      ],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Excluded on all tiers"
+        },
+        "ENHANCED": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Excluded on all tiers"
+        },
+        "COMPREHENSIVE": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Excluded on all tiers"
+        },
+        "EXECUTIVE": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Excluded on all tiers"
+        }
+      },
+      "decision_class": "EXCLUDED",
+      "escalation": null
+    },
+    {
+      "code": "SP-60010",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "Diabetes management programme, annual",
+      "category": "chronic",
+      "specialty_required": "Endocrinology",
+      "typical_billed_amount_aed": 2400,
+      "pre_authorisation_rule": "ABOVE_TIER_THRESHOLD",
+      "minimum_tier": "BASIC",
+      "waiting_period_months": 6,
+      "waiting_period_waived_for_emergency": false,
+      "exclusions": [],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": 20,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "ENHANCED": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": 20,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "COMPREHENSIVE": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": 10,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "CLEAR",
+      "escalation": null
+    },
+    {
+      "code": "SP-60020",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "Insulin pump consumables, six months",
+      "category": "chronic",
+      "specialty_required": "Endocrinology",
+      "typical_billed_amount_aed": 8500,
+      "pre_authorisation_rule": "ALWAYS",
+      "minimum_tier": "COMPREHENSIVE",
+      "waiting_period_months": 3,
+      "waiting_period_waived_for_emergency": false,
+      "exclusions": [],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Benefit starts at the Comprehensive tier"
+        },
+        "ENHANCED": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Benefit starts at the Comprehensive tier"
+        },
+        "COMPREHENSIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": 10,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "CLEAR",
+      "escalation": null
+    },
+    {
+      "code": "SP-60030",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "Haemodialysis, per session",
+      "category": "chronic",
+      "specialty_required": "Nephrology",
+      "typical_billed_amount_aed": 900,
+      "pre_authorisation_rule": "ALWAYS",
+      "minimum_tier": "BASIC",
+      "waiting_period_months": 6,
+      "waiting_period_waived_for_emergency": false,
+      "exclusions": [],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": 20,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "ENHANCED": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": 20,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "COMPREHENSIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": 10,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "CLEAR",
+      "escalation": null
+    },
+    {
+      "code": "SP-60040",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "Chemotherapy cycle, standard regimen",
+      "category": "chronic",
+      "specialty_required": "Oncology",
+      "typical_billed_amount_aed": 14500,
+      "pre_authorisation_rule": "ALWAYS",
+      "minimum_tier": "BASIC",
+      "waiting_period_months": 6,
+      "waiting_period_waived_for_emergency": false,
+      "exclusions": [],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": 20,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "ENHANCED": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": 20,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "COMPREHENSIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": 10,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "CLEAR",
+      "escalation": null
+    },
+    {
+      "code": "SP-60050",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "Biologic therapy for rheumatoid arthritis, monthly",
+      "category": "chronic",
+      "specialty_required": "Rheumatology",
+      "typical_billed_amount_aed": 9800,
+      "pre_authorisation_rule": "ALWAYS",
+      "minimum_tier": "COMPREHENSIVE",
+      "waiting_period_months": 3,
+      "waiting_period_waived_for_emergency": false,
+      "exclusions": [],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Benefit starts at the Comprehensive tier"
+        },
+        "ENHANCED": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Benefit starts at the Comprehensive tier"
+        },
+        "COMPREHENSIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": 10,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "AMBIGUOUS",
+      "escalation": {
+        "escalation_rule_id": "ESC-001",
+        "reason": "Cover requires evidence that two conventional therapies failed; submissions usually omit the treatment history needed to confirm it."
+      }
+    },
+    {
+      "code": "SP-60060",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "Proton beam radiotherapy",
+      "category": "chronic",
+      "specialty_required": "Oncology",
+      "typical_billed_amount_aed": 210000,
+      "pre_authorisation_rule": "ALWAYS",
+      "minimum_tier": "EXECUTIVE",
+      "waiting_period_months": 0,
+      "waiting_period_waived_for_emergency": false,
+      "exclusions": [],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Benefit starts at the Executive tier"
+        },
+        "ENHANCED": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Benefit starts at the Executive tier"
+        },
+        "COMPREHENSIVE": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Benefit starts at the Executive tier"
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "AMBIGUOUS",
+      "escalation": {
+        "escalation_rule_id": "ESC-005",
+        "reason": "Not listed in the benefit schedule and treated as emerging technology; each request needs medical director review against published evidence."
+      }
+    },
+    {
+      "code": "SP-70010",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "Psychiatric consultation, outpatient",
+      "category": "mental_health",
+      "specialty_required": "Psychiatry",
+      "typical_billed_amount_aed": 600,
+      "pre_authorisation_rule": "ABOVE_TIER_THRESHOLD",
+      "minimum_tier": "ENHANCED",
+      "waiting_period_months": 0,
+      "waiting_period_waived_for_emergency": false,
+      "exclusions": [],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Benefit starts at the Enhanced tier"
+        },
+        "ENHANCED": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": 20,
+          "applicable_sub_limit_aed": 10000,
+          "reason_not_covered": null
+        },
+        "COMPREHENSIVE": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": 10,
+          "applicable_sub_limit_aed": 25000,
+          "reason_not_covered": null
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": 60000,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "CLEAR",
+      "escalation": null
+    },
+    {
+      "code": "SP-70020",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "Psychotherapy session, 45 minutes",
+      "category": "mental_health",
+      "specialty_required": "Psychology",
+      "typical_billed_amount_aed": 450,
+      "pre_authorisation_rule": "NEVER",
+      "minimum_tier": "ENHANCED",
+      "waiting_period_months": 0,
+      "waiting_period_waived_for_emergency": false,
+      "exclusions": [
+        "Limited to twelve sessions per policy year"
+      ],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Benefit starts at the Enhanced tier"
+        },
+        "ENHANCED": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": 20,
+          "applicable_sub_limit_aed": 10000,
+          "reason_not_covered": null
+        },
+        "COMPREHENSIVE": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": 10,
+          "applicable_sub_limit_aed": 25000,
+          "reason_not_covered": null
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": 60000,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "CLEAR",
+      "escalation": null
+    },
+    {
+      "code": "SP-70030",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "Inpatient psychiatric admission, per day",
+      "category": "mental_health",
+      "specialty_required": "Psychiatry",
+      "typical_billed_amount_aed": 2200,
+      "pre_authorisation_rule": "ALWAYS",
+      "minimum_tier": "COMPREHENSIVE",
+      "waiting_period_months": 0,
+      "waiting_period_waived_for_emergency": false,
+      "exclusions": [],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Benefit starts at the Comprehensive tier"
+        },
+        "ENHANCED": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Benefit starts at the Comprehensive tier"
+        },
+        "COMPREHENSIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": 10,
+          "applicable_sub_limit_aed": 25000,
+          "reason_not_covered": null
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": 60000,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "AMBIGUOUS",
+      "escalation": {
+        "escalation_rule_id": "ESC-002",
+        "reason": "The mental-health sub-limit and the inpatient benefit give different day limits for the same admission."
+      }
+    },
+    {
+      "code": "SP-80010",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "Annual health screening package",
+      "category": "preventive",
+      "specialty_required": "Preventive Medicine",
+      "typical_billed_amount_aed": 1800,
+      "pre_authorisation_rule": "ABOVE_TIER_THRESHOLD",
+      "minimum_tier": "COMPREHENSIVE",
+      "waiting_period_months": 0,
+      "waiting_period_waived_for_emergency": false,
+      "exclusions": [],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Benefit starts at the Comprehensive tier"
+        },
+        "ENHANCED": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Benefit starts at the Comprehensive tier"
+        },
+        "COMPREHENSIVE": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": 10,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "CLEAR",
+      "escalation": null
+    },
+    {
+      "code": "SP-80020",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "Influenza vaccination",
+      "category": "preventive",
+      "specialty_required": "Preventive Medicine",
+      "typical_billed_amount_aed": 120,
+      "pre_authorisation_rule": "NEVER",
+      "minimum_tier": "BASIC",
+      "waiting_period_months": 0,
+      "waiting_period_waived_for_emergency": false,
+      "exclusions": [],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": 20,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "ENHANCED": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": 20,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "COMPREHENSIVE": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": 10,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "CLEAR",
+      "escalation": null
+    },
+    {
+      "code": "SP-80030",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "Emergency department attendance",
+      "category": "emergency",
+      "specialty_required": "Emergency Medicine",
+      "typical_billed_amount_aed": 1500,
+      "pre_authorisation_rule": "NEVER",
+      "minimum_tier": "BASIC",
+      "waiting_period_months": 0,
+      "waiting_period_waived_for_emergency": true,
+      "exclusions": [
+        "Emergency care never requires pre-authorisation; notify the insurer within 24 hours of admission"
+      ],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "ENHANCED": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "COMPREHENSIVE": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": false,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "CLEAR",
+      "escalation": null
+    },
+    {
+      "code": "SP-80050",
+      "code_system": "SYN-CPT-STYLE",
+      "name": "Air ambulance evacuation",
+      "category": "emergency",
+      "specialty_required": "Emergency Medicine",
+      "typical_billed_amount_aed": 85000,
+      "pre_authorisation_rule": "ALWAYS",
+      "minimum_tier": "EXECUTIVE",
+      "waiting_period_months": 0,
+      "waiting_period_waived_for_emergency": true,
+      "exclusions": [
+        "Requires insurer coordination except where life-threatening and clinically unavoidable"
+      ],
+      "coverage_by_tier": {
+        "BASIC": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "BASIC_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Benefit starts at the Executive tier"
+        },
+        "ENHANCED": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "ENHANCED_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Benefit starts at the Executive tier"
+        },
+        "COMPREHENSIVE": {
+          "covered": false,
+          "pre_authorisation_required": false,
+          "network": "COMPREHENSIVE_NETWORK",
+          "member_co_payment_percent": null,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": "Benefit starts at the Executive tier"
+        },
+        "EXECUTIVE": {
+          "covered": true,
+          "pre_authorisation_required": true,
+          "network": "EXECUTIVE_NETWORK",
+          "member_co_payment_percent": 0,
+          "applicable_sub_limit_aed": null,
+          "reason_not_covered": null
+        }
+      },
+      "decision_class": "CLEAR",
+      "escalation": null
+    }
+  ]
+}
