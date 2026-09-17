@@ -14,6 +14,7 @@ from preauth.application.voice_channel_service import pending_conversation_ids
 from preauth.application.views import (
     AuditEventView,
     CallbackView,
+    CallLogView,
     CallRecordView,
     CaseStatusView,
     ReviewDecisionView,
@@ -220,11 +221,14 @@ class ReviewService:
             recommendations = [recommendation_view(r) for r in uow.evaluations.recommendations(case.id)]
             conversations = uow.voice.conversation_ids_for_case(case.id)
             return ReviewPacketView(
-                case=case_view(case),
+                case=case_view(
+                    case, uow.catalogue.procedure(case.procedure_code) if case.procedure_code else None
+                ),
                 current_recommendation=recommendations[-1] if recommendations else None,
                 recommendation_history=recommendations,
                 decisions=[ReviewDecisionView.model_validate(d) for d in uow.reviews.decisions(case.id)],
                 calls=[CallRecordView.model_validate(r) for r in uow.voice.call_records(conversations)],
+                call_logs=[CallLogView.model_validate(log) for log in uow.voice.call_logs_for_case(case.id)],
                 pending_call_conversation_ids=pending_conversation_ids(uow, case.id),
                 callbacks=[CallbackView.model_validate(c) for c in uow.voice.callbacks_for_case(case.id)],
                 audit_history=[AuditEventView.model_validate(e) for e in uow.audit_events.for_case(case.id)],
@@ -241,7 +245,8 @@ class ReviewService:
                     status=c.status,
                     review_queue=queue,
                     urgency=c.urgency,
-                    procedure_code=c.requested_service.procedure_code,
+                    procedure_code=c.procedure_code,
+                    estimated_cost_aed=c.estimated_cost_aed,
                     review_requested_at=c.review_requested_at,
                     assigned_reviewer_id=c.assigned_reviewer_id,
                 )

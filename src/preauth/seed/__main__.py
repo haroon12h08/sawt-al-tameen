@@ -1,22 +1,20 @@
-"""Load synthetic reference data and (optionally) demonstration scenarios.
+"""Load the UAE benefit catalogue and (optionally) demonstration scenarios.
 
 Usage (after ``alembic upgrade head``):
-    python -m preauth.seed                # reference data only
+    python -m preauth.seed                # catalogue only
     python -m preauth.seed --scenarios    # reference data + the five demonstration cases
 """
 
 import argparse
 import sys
 
-from sqlalchemy import func, select
-
 from preauth.application.services import build_services
 from preauth.infrastructure.clock import SystemClock
-from preauth.infrastructure.db.models import Provider
+from preauth.infrastructure.db.models import PolicyTier
 from preauth.infrastructure.db.session import build_engine, build_session_factory
 from preauth.infrastructure.observability import configure_logging
 from preauth.infrastructure.settings import Settings
-from preauth.seed.reference_data import load_reference_data
+from preauth.seed.catalogue import is_loaded, load_catalogue
 from preauth.seed.scenarios import run_scenarios
 
 
@@ -34,19 +32,23 @@ def main() -> int:
     clock = SystemClock()
 
     with session_factory() as session:
-        if session.scalar(select(func.count(Provider.id))):
+        if is_loaded(session):
             if args.if_empty:
-                print("Reference data already present; nothing to do.")
+                print("Catalogue already loaded; nothing to do.")
                 return 0
-            print("Reference data already present; refusing to load it twice.", file=sys.stderr)
+            print("Catalogue already loaded; refusing to load it twice.", file=sys.stderr)
             return 1
-        load_reference_data(session, clock.today())
+        counts = load_catalogue(session)
         session.commit()
-    print("Loaded synthetic reference data.")
+    print(
+        "Loaded the UAE catalogue from knowledge_base/: "
+        + ", ".join(f"{v} {k}" for k, v in counts.items())
+        + "."
+    )
 
     if args.scenarios:
         for result in run_scenarios(build_services(session_factory, clock=clock), clock.today()):
-            print(f"  {result.case_reference}  {result.case_id}  {result.name}")
+            print(f"  {result.case_reference}  {result.name}: {result.outcome} -> {result.status}")
     return 0
 
 

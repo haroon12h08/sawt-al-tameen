@@ -1,13 +1,14 @@
 from datetime import date, timedelta
 
 from preauth.application.commands import (
-    CaseInformationUpdate,
-    CreateCaseCommand,
+    CoverageCheckCommand,
     HumanDecisionCommand,
+    LogTranscriptCommand,
     RegisterDocumentCommand,
+    VerifyCallerCommand,
 )
 from preauth.domain.actors import Actor
-from preauth.domain.enums import ActorType, DocumentType, HumanDecisionType, ReviewerRole
+from preauth.domain.enums import ActorType, DocumentType, ReviewerRole
 
 AGENT = Actor(ActorType.VOICE_AGENT, "voice-agent-test")
 PORTAL = Actor(ActorType.PROVIDER_PORTAL, "portal-user-1")
@@ -18,23 +19,58 @@ DIRECTOR = Actor(
     ActorType.HUMAN_REVIEWER, "md-1", frozenset({ReviewerRole.CLINICAL_REVIEWER, ReviewerRole.MEDICAL_DIRECTOR})
 )
 
-SERVICE_DATE = date(2026, 9, 16) + timedelta(days=14)
+TREATMENT_DATE = (date.today() + timedelta(days=21)).isoformat()
+
+# Catalogue fixtures used across the integration tests.
+ORTHO_HOSPITAL = "PRV-30011"          # Al Hudaiba Crescent Hospital, Basic network, Orthopaedics
+BARIATRIC_HOSPITAL = "PRV-30023"      # Yas Horizon, Comprehensive network, Bariatric Surgery
+EXECUTIVE_ONLY_HOSPITAL = "PRV-30030"  # Gulf Meridian, Executive network only
+SUSPENDED_CLINIC = "PRV-30020"        # Mirdif Vision, suspended
+PLASTICS_CLINIC = "PRV-30012"         # Jumeirah Dunes, Enhanced network, Plastic Surgery
+
+EXECUTIVE_MEMBER = ("POL-SA-2026-100001", date(1986, 4, 17))     # Fatima Al Mansoori, long tenure
+ENHANCED_MEMBER = ("POL-SA-2026-100002", date(1979, 11, 3))      # Rajesh Nair, long tenure
+BASIC_MEMBER = ("POL-SA-2026-100003", date(1991, 7, 29))         # Maria Villanueva, standard tenure
+COMPREHENSIVE_MEMBER = ("POL-SA-2026-100011", date(1981, 5, 2))  # Omar Al Balushi, long tenure
+NEW_MEMBER = ("POL-SA-2026-100007", date(1993, 2, 19))           # Layla Haddad, joined three months ago
+LAPSED_MEMBER = ("POL-SA-2026-100008", date(1990, 12, 4))        # Mohammed Rahman, lapsed
 
 
-def complete_info(**overrides) -> CaseInformationUpdate:
-    info = dict(
-        provider_number="PRV-100234",
-        patient={"member_id": "MBR-5001-01", "date_of_birth": "1984-03-12"},
-        policy_number="POL-000101",
-        procedure_code="PROC-MRI-KNEE",
-        requested_service_date=SERVICE_DATE,
-        place_of_service="OUTPATIENT",
-        diagnosis_code="M23.221",
-        urgency="STANDARD",
-        conservative_treatment_weeks=8,
+def verify(
+    services,
+    *,
+    provider=ORTHO_HOSPITAL,
+    member=EXECUTIVE_MEMBER,
+    caller_role="PROVIDER_STAFF",
+    organisation="Al Hudaiba Crescent Hospital",
+    caller_name="Aisha Rahman",
+    actor=AGENT,
+):
+    policy, dob = member if member else (None, None)
+    return services.desk.verify_caller(
+        actor,
+        VerifyCallerCommand(
+            caller_role=caller_role,
+            organisation_name=organisation,
+            caller_reference=provider,
+            caller_name=caller_name,
+            member_policy_number=policy,
+            member_date_of_birth=dob,
+        ),
     )
-    info.update(overrides)
-    return CaseInformationUpdate(**{k: v for k, v in info.items() if v is not None})
+
+
+def check(services, verification, *, procedure_code="SP-20040", cost=21000, actor=AGENT, **kwargs):
+    return services.desk.check_coverage_rule(
+        actor,
+        CoverageCheckCommand(
+            verification_id=verification.verification_id,
+            procedure_code=procedure_code,
+            treatment_date=kwargs.pop("treatment_date", TREATMENT_DATE),
+            estimated_cost_aed=cost,
+            **kwargs,
+        ),
+    )
 
 
 def document(doc_type: DocumentType = DocumentType.CLINICAL_NOTES) -> RegisterDocumentCommand:
@@ -46,25 +82,36 @@ def document(doc_type: DocumentType = DocumentType.CLINICAL_NOTES) -> RegisterDo
     )
 
 
-def new_case(services, info: CaseInformationUpdate | None = None, docs=(DocumentType.CLINICAL_NOTES,)) -> str:
-    case = services.cases.create_case(AGENT, CreateCaseCommand(information=info or complete_info()))
-    for d in docs:
-        services.cases.register_document(case.id, AGENT, document(d))
-    return case.id
+def add_documents(services, case_id, types, actor=PORTAL):
+    for document_type in types:
+        services.cases.register_document(case_id, actor, document(document_type))
 
 
-def evaluated_case(services, info=None, docs=(DocumentType.CLINICAL_NOTES,)):
-    case_id = new_case(services, info, docs)
-    return case_id, services.evaluation.submit_for_evaluation(case_id, AGENT)
+def log(services, *, outcome, case_reference=None, verification=None, summary="Call handled by the desk.", **kwargs):
+    return services.desk.log_transcript(
+        AGENT,
+        LogTranscriptCommand(
+            summary=summary,
+            outcome_communicated=outcome,
+            case_reference=case_reference,
+            verification_id=verification.verification_id if verification else None,
+            **kwargs,
+        ),
+    )
 
 
-def case_in_review(services, info=None, docs=(DocumentType.CLINICAL_NOTES,)):
-    case_id, result = evaluated_case(services, info, docs)
-    services.review.request_human_review(case_id, AGENT)
-    return case_id, result.recommendation
+def approved_case(services, **kwargs):
+    """A case whose documents are complete, so the rules recommend approval."""
+    verification = verify(services, **kwargs)
+    first = check(services, verification, procedure_code="SP-20040", cost=21000)
+    add_documents(services, first.case_id, [DocumentType.CLINICAL_NOTES, DocumentType.OPERATIVE_PLAN,
+                                            DocumentType.PRIOR_TREATMENT_RECORD])
+    return verification, check(
+        services, verification, procedure_code="SP-20040", cost=21000, case_reference=first.case_reference
+    )
 
 
-def decide(services, case_id, reviewer, decision: HumanDecisionType, recommendation_id=None, assign=True):
+def decide(services, case_id, reviewer, decision, recommendation_id=None, assign=True):
     if assign:
         services.review.assign_reviewer(case_id, reviewer)
     rec_id = recommendation_id or services.queries.get_latest_recommendation(case_id, reviewer).id

@@ -12,6 +12,7 @@ ALLOWED_TYPES = {"string", "integer", "double", "boolean"}
 def test_every_tool_converts_to_a_valid_elevenlabs_schema():
     configs = all_webhook_tool_configs(base_url="https://preauth.example.org/", authorization_secret_id="sec_1")
     assert [c["name"] for c in configs] == [t.name for t in TOOLS]
+    assert len(configs) == 3
     for config in configs:
         api = config["api_schema"]
         assert config["type"] == "webhook" and config["description"]

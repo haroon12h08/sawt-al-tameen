@@ -15,13 +15,13 @@ from preauth.domain.enums import (
     CallbackReason,
     CallbackStatus,
     CallerRole,
+    CallOutcome,
     CaseStatus,
     CloseReason,
-    CredentialingStatus,
+    DecisionClass,
+    DirectoryStatus,
     DocumentType,
     HumanDecisionType,
-    NetworkStatus,
-    PlaceOfService,
     PolicyStatus,
     RecommendationOutcome,
     ReviewerRole,
@@ -31,40 +31,91 @@ from preauth.domain.enums import (
 )
 from preauth.domain.review import QUEUE_FOR_STATUS
 from preauth.infrastructure.db import models as m
-from preauth.rules.model import MissingInformation, SourceReference
+from preauth.rules.model import EscalationRuleFacts, MissingInformation, SourceReference
 
 
 class View(BaseModel):
     model_config = ConfigDict(frozen=True, from_attributes=True)
 
 
+# --------------------------------------------------------------------------- catalogue
+
+
+class TierView(View):
+    tier_id: str
+    name: str
+    tier_rank: int
+    annual_limit_aed: int
+    pre_authorisation_threshold_aed: int
+    network_name: str
+    out_of_network_covered: bool
+
+
 class ProviderView(View):
     provider_number: str
     name: str
-    network_status: NetworkStatus
-    credentialing_status: CredentialingStatus
+    emirate: str
+    facility_type: str
+    directory_status: DirectoryStatus
+    specialties: list[str]
 
 
-class PatientView(View):
+class DependentView(View):
+    given_name: str
+    family_name: str
+    relationship: str
+    date_of_birth: date
     member_id: str
+
+
+class MemberView(View):
+    member_id: str
+    policy_number: str
     given_name: str
     family_name: str
     date_of_birth: date
+    tier: TierView
+    policy_status: PolicyStatus
+    policy_start_date: date
+    policy_renewal_date: date | None
+    policy_lapse_date: date | None
+    dependents: list[DependentView]
 
 
-class PolicyView(View):
-    policy_number: str
-    plan_code: str
-    status: PolicyStatus
-    effective_from: date
-    effective_to: date | None
+class ProcedureView(View):
+    procedure_code: str
+    name: str
+    category: str
+    specialty_required: str
+    decision_class: DecisionClass
+    required_documents: list[str]
 
 
-class RequestedServiceView(View):
-    procedure_code: str | None
-    procedure_description: str | None
-    requested_service_date: date | None
-    place_of_service: PlaceOfService | None
+# --------------------------------------------------------------------------- verification
+
+
+class OnboardingStatusView(View):
+    application_id: str
+    provider_name: str
+    provider_status: str
+    outstanding_requirements: list[dict[str, Any]]
+
+
+class VerificationView(View):
+    verification_id: str
+    authorised: bool
+    caller_role: CallerRole
+    organisation_name: str
+    caller_reference: str
+    provider: ProviderView | None
+    member: MemberView | None
+    onboarding: OnboardingStatusView | None
+    failure_code: str | None
+    failure_reason: str | None
+    verified_at: datetime
+
+
+# --------------------------------------------------------------------------- cases
 
 
 class DocumentView(View):
@@ -83,17 +134,17 @@ class CaseView(View):
     id: str
     case_reference: str
     status: CaseStatus
-    urgency: Urgency | None
-    provider: ProviderView | None
-    patient: PatientView | None
-    policy: PolicyView | None
-    requested_service: RequestedServiceView
-    diagnosis_code: str | None
-    diagnosis_description: str | None
-    conservative_treatment_weeks: int | None
-    clinical_summary: str | None
     caller_name: str | None
     caller_role: CallerRole | None
+    caller_organisation: str | None
+    provider: ProviderView | None
+    member: MemberView | None
+    procedure: ProcedureView | None
+    treatment_date: date | None
+    estimated_cost_aed: int | None
+    urgency: Urgency | None
+    diagnosis_code: str | None
+    clinical_summary: str | None
     documents: list[DocumentView]
     review_queue: ReviewQueue | None
     assigned_reviewer_id: str | None
@@ -105,6 +156,9 @@ class CaseView(View):
     version: int
 
 
+# --------------------------------------------------------------------------- evaluation
+
+
 class RuleResultView(View):
     rule_id: str
     rule_version: str
@@ -113,6 +167,7 @@ class RuleResultView(View):
     evidence: dict[str, Any]
     missing_information: list[MissingInformation]
     sources: list[SourceReference]
+    escalation_rule_id: str | None
 
 
 class SourceAttributionView(View):
@@ -131,6 +186,7 @@ class RecommendationView(View):
     evidence: dict[str, Any]
     missing_information: list[MissingInformation]
     sources: list[SourceAttributionView]
+    escalation_citations: list[EscalationRuleFacts]
     engine_name: str
     engine_version: str
     ruleset_name: str
@@ -138,30 +194,6 @@ class RecommendationView(View):
     rule_results: list[RuleResultView]
     generated_at: datetime
     advisory_only: Literal[True] = True
-
-
-class ReviewDecisionView(View):
-    id: str
-    sequence: int
-    recommendation_id: str
-    decision: HumanDecisionType
-    rationale: str
-    reviewer_id: str
-    reviewer_role: ReviewerRole
-    is_override: bool
-    from_status: CaseStatus
-    to_status: CaseStatus
-    decided_at: datetime
-
-
-class CaseStatusView(View):
-    case_id: str
-    case_reference: str
-    status: CaseStatus
-    review_queue: ReviewQueue | None
-    possible_next_statuses: list[CaseStatus]
-    final_decision: ReviewDecisionView | None
-    updated_at: datetime
 
 
 class IntakeRequirementView(View):
@@ -188,6 +220,53 @@ class EvaluationResultView(View):
     recommendation: RecommendationView | None
 
 
+class CoverageCheckView(View):
+    """What the voice agent is told after a rule check. Never a decision."""
+
+    case_reference: str
+    case_id: str
+    status: CaseStatus
+    outcome: RecommendationOutcome
+    headline: str
+    rationale: str
+    pre_authorisation_required: bool | None
+    member_co_payment_percent: int | None
+    estimated_cost_aed: int | None
+    missing_information: list[MissingInformation]
+    escalation_citations: list[EscalationRuleFacts]
+    sources: list[SourceAttributionView]
+    review_queue: ReviewQueue | None
+    next_step: str
+    advisory_only: Literal[True] = True
+
+
+# --------------------------------------------------------------------------- review and audit
+
+
+class ReviewDecisionView(View):
+    id: str
+    sequence: int
+    recommendation_id: str
+    decision: HumanDecisionType
+    rationale: str
+    reviewer_id: str
+    reviewer_role: ReviewerRole
+    is_override: bool
+    from_status: CaseStatus
+    to_status: CaseStatus
+    decided_at: datetime
+
+
+class CaseStatusView(View):
+    case_id: str
+    case_reference: str
+    status: CaseStatus
+    review_queue: ReviewQueue | None
+    possible_next_statuses: list[CaseStatus]
+    final_decision: ReviewDecisionView | None
+    updated_at: datetime
+
+
 class AuditEventView(View):
     id: str
     sequence: int
@@ -206,6 +285,7 @@ class ReviewQueueItemView(View):
     review_queue: ReviewQueue
     urgency: Urgency | None
     procedure_code: str | None
+    estimated_cost_aed: int | None
     review_requested_at: datetime | None
     assigned_reviewer_id: str | None
 
@@ -243,12 +323,24 @@ class CallRecordView(View):
     received_at: datetime
 
 
+class CallLogView(View):
+    reference: str
+    conversation_id: str | None
+    case_id: str | None
+    callback_id: str | None
+    caller_role: CallerRole | None
+    outcome_communicated: CallOutcome
+    summary: str
+    logged_at: datetime
+
+
 class ReviewPacketView(View):
     case: CaseView
     current_recommendation: RecommendationView | None
     recommendation_history: list[RecommendationView]
     decisions: list[ReviewDecisionView]
     calls: list[CallRecordView]
+    call_logs: list[CallLogView]
     # Voice conversations that touched this case but whose transcript has not arrived yet. Sign-off is blocked
     # until this list is empty.
     pending_call_conversation_ids: list[str]
@@ -259,28 +351,39 @@ class ReviewPacketView(View):
 # --------------------------------------------------------------------------- mappers
 
 
-def case_view(case: m.PreAuthorizationCase) -> CaseView:
-    rs = case.requested_service
+def member_view(member: m.Member) -> MemberView:
+    return MemberView(
+        member_id=member.member_id,
+        policy_number=member.policy_number,
+        given_name=member.given_name,
+        family_name=member.family_name,
+        date_of_birth=member.date_of_birth,
+        tier=TierView.model_validate(member.tier),
+        policy_status=member.policy_status,
+        policy_start_date=member.policy_start_date,
+        policy_renewal_date=member.policy_renewal_date,
+        policy_lapse_date=member.policy_lapse_date,
+        dependents=[DependentView.model_validate(d) for d in member.dependents],
+    )
+
+
+def case_view(case: m.PreAuthorizationCase, procedure: m.Procedure | None = None) -> CaseView:
+    """``procedure`` is looked up from the catalogue; a case may quote a code the schedule does not list."""
     return CaseView(
         id=case.id,
         case_reference=case.case_reference,
         status=case.status,
-        urgency=case.urgency,
-        provider=ProviderView.model_validate(case.provider) if case.provider else None,
-        patient=PatientView.model_validate(case.patient) if case.patient else None,
-        policy=PolicyView.model_validate(case.policy) if case.policy else None,
-        requested_service=RequestedServiceView(
-            procedure_code=rs.procedure_code,
-            procedure_description=rs.procedure.description if rs.procedure else None,
-            requested_service_date=rs.requested_service_date,
-            place_of_service=rs.place_of_service,
-        ),
-        diagnosis_code=case.diagnosis_code,
-        diagnosis_description=case.diagnosis_description,
-        conservative_treatment_weeks=case.conservative_treatment_weeks,
-        clinical_summary=case.clinical_summary,
         caller_name=case.caller_name,
         caller_role=case.caller_role,
+        caller_organisation=case.caller_organisation,
+        provider=ProviderView.model_validate(case.provider) if case.provider else None,
+        member=member_view(case.member) if case.member else None,
+        procedure=ProcedureView.model_validate(procedure) if procedure else None,
+        treatment_date=case.treatment_date,
+        estimated_cost_aed=case.estimated_cost_aed,
+        urgency=case.urgency,
+        diagnosis_code=case.diagnosis_code,
+        clinical_summary=case.clinical_summary,
         documents=[DocumentView.model_validate(d) for d in case.documents],
         review_queue=QUEUE_FOR_STATUS.get(case.status),
         assigned_reviewer_id=case.assigned_reviewer_id,
@@ -305,6 +408,7 @@ def recommendation_view(rec: m.Recommendation) -> RecommendationView:
         evidence=rec.evidence,
         missing_information=rec.missing_information,
         sources=rec.sources,
+        escalation_citations=rec.escalation_citations,
         engine_name=rec.engine_name,
         engine_version=rec.engine_version,
         ruleset_name=evaluation.engine_name,

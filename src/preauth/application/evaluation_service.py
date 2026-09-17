@@ -135,6 +135,7 @@ class EvaluationService:
                     evidence=r.model_dump(mode="json")["evidence"],
                     missing_information=[mi.model_dump(mode="json") for mi in r.missing_information],
                     sources=[src.model_dump(mode="json") for src in r.sources],
+                    escalation_rule_id=r.escalation_rule_id,
                 )
                 for position, r in enumerate(outcome.results)
             ],
@@ -154,6 +155,7 @@ class EvaluationService:
                     for r in outcome.results
                 ],
                 "counts": {o.value: sum(1 for r in outcome.results if r.outcome is o) for o in RuleOutcome},
+                "escalation_rule_ids": sorted({r.escalation_rule_id for r in outcome.results if r.escalation_rule_id}),
             },
         )
 
@@ -168,6 +170,7 @@ class EvaluationService:
             evidence=draft.model_dump(mode="json")["evidence"],
             missing_information=[mi.model_dump(mode="json") for mi in draft.missing_information],
             sources=[src.model_dump(mode="json") for src in draft.sources],
+            escalation_citations=[c.model_dump(mode="json") for c in draft.escalation_citations],
             engine_name=draft.engine_name,
             engine_version=draft.engine_version,
             generated_at=self._clock.now(),
@@ -185,6 +188,7 @@ class EvaluationService:
                 "determining_rule_ids": list(draft.determining_rule_ids),
                 "engine_name": draft.engine_name,
                 "engine_version": draft.engine_version,
+                "escalation_rule_ids": [c.rule_id for c in draft.escalation_citations],
             },
         )
         logger.info(

@@ -15,6 +15,8 @@ provider onboarding requirements, sample members, and the rules that decide when
 | `supplier_onboarding_requirements.json` | Onboarding checklist and three in-flight applications | `requirement_id`, `provider_id` |
 | `sample_members.json` | 20 members with dependants, tiers and policy status | `tier`, `policy_number`, `member_id` |
 | `escalation_rules.md` | Plain-language description of what is *not* rule-based | `ESC-001` … `ESC-008` |
+| `escalation_rules.json` | The same rules, machine-readable; the rules engine cites this text verbatim | `rule_id` |
+| `schedule-<tier>.md` | Per-tier schedule of benefits; the document coverage decisions cite | `Section 4.n <code>` |
 
 ## How they fit together
 
@@ -82,10 +84,12 @@ sit within tier limits; and member tiers, policy numbers and dependant records a
 uv run python scripts/generate_uae_knowledge_base.py --check
 ```
 
-## Relationship to the rest of the repository
+## How the backend uses these files
 
-This is a **standalone demo catalogue**. The running backend evaluates its own seed data (`PLAN-GOLD-PPO`,
-`PLAN-SILVER-HMO`), and `voice/knowledge_base/` is generated from that seed data so the rule citations resolve.
-The two describe different fictional product families, so loading both into one agent will produce contradictory
-answers about plan names and limits. Pick one: use this catalogue for a UAE-flavoured demo, or the backend-derived
-documents for answers that match what the tools actually decide.
+`preauth.seed` loads this catalogue into the database, and the rules engine decides from those tables. The same
+files are the agent's knowledge base. That is why every citation the agent reads out resolves to a section that
+exists here: the per-tier schedules carry the `Section 4.n` headings the coverage rules cite, and
+`escalation_rules.md` carries the ESC-### text an escalation quotes.
+
+There is no second source of coverage data anywhere in the repository. Editing this catalogue (through the
+generator) changes what the agent decides.

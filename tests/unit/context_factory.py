@@ -1,77 +1,132 @@
 from datetime import date
 
-from preauth.domain.enums import (
-    CredentialingStatus,
-    DocumentType,
-    NetworkStatus,
-    PlaceOfService,
-    PolicyStatus,
-    Urgency,
-)
+from preauth.domain.enums import DecisionClass, DirectoryStatus, PolicyStatus, Urgency
 from preauth.rules.model import (
     CoverageFacts,
-    DocumentFacts,
-    PolicyFacts,
+    EscalationRuleFacts,
+    MemberFacts,
+    ProcedureFacts,
     ProviderFacts,
     RequestFacts,
     RuleContext,
+    TierFacts,
 )
+
+TODAY = date(2026, 9, 17)
+TREATMENT = date(2026, 10, 8)
+
+ESCALATION_RULES = {
+    rule_id: EscalationRuleFacts(
+        rule_id=rule_id, title=f"Rule {rule_id}", situation=f"Situation for {rule_id}", agent_action="Escalate."
+    )
+    for rule_id in ("ESC-001", "ESC-002", "ESC-003", "ESC-004", "ESC-005", "ESC-006", "ESC-007", "ESC-008")
+}
+
+TIERS = {
+    "BASIC": (1, 150_000, 1_000, False),
+    "ENHANCED": (2, 500_000, 2_500, False),
+    "COMPREHENSIVE": (3, 1_000_000, 5_000, False),
+    "EXECUTIVE": (4, 3_000_000, 10_000, True),
+}
 
 _UNSET = object()
 
 
 def make_context(
     *,
-    policy_status=PolicyStatus.ACTIVE,
-    effective_to=None,
-    credentialing=CredentialingStatus.ACTIVE,
-    network=NetworkStatus.IN_NETWORK,
-    oon_covered=False,
-    coverage=_UNSET,
-    covered=True,
-    preauth_required=True,
-    diagnosis="M23.221",
-    documents=(DocumentType.CLINICAL_NOTES, DocumentType.IMAGING_REPORT),
-    conservative_weeks=8,
-    min_weeks=6,
-    limit=2,
-    prior_approved=0,
-    service_date=date(2026, 10, 1),
+    tier_id: str = "COMPREHENSIVE",
+    policy_status: PolicyStatus = PolicyStatus.ACTIVE,
+    policy_start: date = date(2025, 1, 1),
+    policy_renewal: date | None = date(2026, 12, 31),
+    directory_status: DirectoryStatus = DirectoryStatus.ACTIVE,
+    provider_network_rank: int = 1,
+    provider_specialties: tuple[str, ...] = ("Orthopaedics", "General Surgery"),
+    procedure: object = _UNSET,
+    coverage: object = _UNSET,
+    covered: bool = True,
+    pre_auth_required: bool = True,
+    decision_class: DecisionClass = DecisionClass.CLEAR,
+    escalation_rule_id: str | None = None,
+    category: str = "surgical",
+    waiting_months: int = 0,
+    required_documents: tuple[str, ...] = ("CLINICAL_NOTES",),
+    documents: tuple[str, ...] = ("CLINICAL_NOTES",),
+    cost: int = 21_000,
+    sub_limit: int | None = None,
+    approved_this_year: int = 0,
+    urgency: Urgency = Urgency.STANDARD,
+    treatment_date: date = TREATMENT,
 ) -> RuleContext:
+    rank, annual_limit, threshold, oon = TIERS[tier_id]
+    if procedure is _UNSET:
+        procedure = ProcedureFacts(
+            procedure_code="SP-20040",
+            name="Knee arthroscopy with partial meniscectomy",
+            category=category,
+            specialty_required="Orthopaedics",
+            typical_billed_amount_aed=21_000,
+            minimum_tier="BASIC",
+            waiting_period_months=waiting_months,
+            waiting_period_waived_for_emergency=category in ("emergency", "maternity"),
+            decision_class=decision_class,
+            escalation_rule_id=escalation_rule_id,
+            escalation_reason="Criteria are not settled by the schedule" if escalation_rule_id else None,
+            exclusions=(),
+            required_documents=required_documents,
+        )
     if coverage is _UNSET:
         coverage = CoverageFacts(
-            plan_code="PLAN-GOLD-PPO",
-            procedure_code="PROC-KNEE-ARTHROSCOPY",
             covered=covered,
-            preauth_required=preauth_required,
-            required_document_types=(DocumentType.CLINICAL_NOTES, DocumentType.IMAGING_REPORT),
-            indicated_diagnosis_codes=("M23.221", "M23.222"),
-            min_conservative_treatment_weeks=min_weeks,
-            annual_case_limit=limit,
+            pre_authorisation_required=pre_auth_required,
+            member_co_payment_percent=10,
+            applicable_sub_limit_aed=sub_limit,
+            reason_not_covered=None if covered else "Benefit starts at the Executive tier",
+            source_document=f"Sawt Assurance {tier_id.title()} Schedule of Benefits 2026",
+            source_section="Section 4.16 SP-20040: Knee arthroscopy with partial meniscectomy",
         )
     return RuleContext(
         case_id="case-1",
-        as_of=date(2026, 9, 16),
+        as_of=TODAY,
         request=RequestFacts(
-            procedure_code="PROC-KNEE-ARTHROSCOPY",
-            requested_service_date=service_date,
-            place_of_service=PlaceOfService.OUTPATIENT,
-            diagnosis_code=diagnosis,
-            urgency=Urgency.STANDARD,
-            conservative_treatment_weeks=conservative_weeks,
+            procedure_code="SP-20040",
+            treatment_date=treatment_date,
+            estimated_cost_aed=cost,
+            urgency=urgency,
+            registered_document_types=documents,
+        ),
+        member=MemberFacts(
+            member_id="MBR-2026-0011",
+            policy_number="POL-SA-2026-100011",
+            tier_id=tier_id,
+            policy_status=policy_status,
+            policy_start_date=policy_start,
+            policy_renewal_date=policy_renewal,
+            policy_lapse_date=None if policy_status is PolicyStatus.ACTIVE else date(2026, 3, 31),
+        ),
+        tier=TierFacts(
+            tier_id=tier_id,
+            name=tier_id.title(),
+            tier_rank=rank,
+            annual_limit_aed=annual_limit,
+            pre_authorisation_threshold_aed=threshold,
+            sub_limits_aed={"inpatient": annual_limit, "dental": 6000},
+            co_payments_percent={"inpatient": 0, "diagnostics": 10, "outpatient_consultation": 10, "emergency": 0},
+            waiting_periods_months={"maternity": 12, "dental": 3, "chronic": 3},
+            network_id=f"{tier_id}_NETWORK",
+            network_name=f"{tier_id.title()} Network",
+            out_of_network_covered=oon,
+            source_document=f"Sawt Assurance {tier_id.title()} Schedule of Benefits 2026",
         ),
         provider=ProviderFacts(
-            provider_number="PRV-100234", credentialing_status=credentialing, network_status=network
+            provider_number="PRV-30011",
+            name="Al Hudaiba Crescent Hospital",
+            emirate="Dubai",
+            directory_status=directory_status,
+            minimum_network_rank=provider_network_rank,
+            specialties=provider_specialties,
         ),
-        policy=PolicyFacts(
-            policy_number="POL-1",
-            status=policy_status,
-            effective_from=date(2026, 1, 1),
-            effective_to=effective_to,
-            plan_code="PLAN-GOLD-PPO",
-            out_of_network_covered=oon_covered,
-        ),
+        procedure=procedure,
         coverage=coverage,
-        documents=tuple(DocumentFacts(document_id=f"doc-{i}", document_type=t) for i, t in enumerate(documents)),
-        prior_approved_case_count=prior_approved,
+        approved_amount_this_year_aed=approved_this_year,
+        escalation_rules=ESCALATION_RULES,
     )

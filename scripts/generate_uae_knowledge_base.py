@@ -14,6 +14,7 @@ the tier thresholds, so the JSON cannot drift out of consistency by hand-editing
 
 import json
 import sys
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -26,6 +27,8 @@ DISCLAIMER = (
 )
 
 TIER_ORDER = ["BASIC", "ENHANCED", "COMPREHENSIVE", "EXECUTIVE"]
+# Policy periods are derived from the year the catalogue is generated, so members never fall out of cover.
+GENERATED_FOR = date.today()
 
 # --------------------------------------------------------------------------- tiers
 
@@ -288,39 +291,41 @@ PROVIDERS = [
 ]
 
 # --------------------------------------------------------------------------- members
-# (member_id, policy_number, given, family, nationality, dob, tier, status, emirate, dependents)
+# (member_id, policy_number, given, family, nationality, dob, tier, status, emirate, dependents, tenure)
+# tenure drives the policy period: "long" (joined last year), "standard" (joined 1 January this year),
+# "new" (joined three months ago, so 12-month waiting periods are unserved), "lapsed" (lapsed 31 March this year).
 
 MEMBERS = [
     ("MBR-2026-0001", "POL-SA-2026-100001", "Fatima", "Al Mansoori", "Emirati", "1986-04-17", "EXECUTIVE", "active", "Abu Dhabi",
-     [("Saeed", "Al Mansoori", "spouse", "1983-02-09"), ("Hessa", "Al Mansoori", "child", "2016-08-22")]),
+     [("Saeed", "Al Mansoori", "spouse", "1983-02-09"), ("Hessa", "Al Mansoori", "child", "2016-08-22")], "long"),
     ("MBR-2026-0002", "POL-SA-2026-100002", "Rajesh", "Nair", "Indian", "1979-11-03", "ENHANCED", "active", "Dubai",
      [("Anjali", "Nair", "spouse", "1982-06-14"), ("Arjun", "Nair", "child", "2012-03-05"),
-      ("Meera", "Nair", "child", "2018-12-01")]),
-    ("MBR-2026-0003", "POL-SA-2026-100003", "Maria Teresa", "Villanueva", "Filipino", "1991-07-29", "BASIC", "active", "Dubai", []),
+      ("Meera", "Nair", "child", "2018-12-01")], "long"),
+    ("MBR-2026-0003", "POL-SA-2026-100003", "Maria Teresa", "Villanueva", "Filipino", "1991-07-29", "BASIC", "active", "Dubai", [], "standard"),
     ("MBR-2026-0004", "POL-SA-2026-100004", "Ahmed", "Fathi", "Egyptian", "1975-01-22", "COMPREHENSIVE", "active", "Sharjah",
-     [("Nadia", "Fathi", "spouse", "1980-09-30"), ("Youssef", "Fathi", "child", "2009-04-11")]),
-    ("MBR-2026-0005", "POL-SA-2026-100005", "Imran", "Qureshi", "Pakistani", "1988-03-12", "BASIC", "active", "Sharjah", []),
+     [("Nadia", "Fathi", "spouse", "1980-09-30"), ("Youssef", "Fathi", "child", "2009-04-11")], "long"),
+    ("MBR-2026-0005", "POL-SA-2026-100005", "Imran", "Qureshi", "Pakistani", "1988-03-12", "BASIC", "active", "Sharjah", [], "standard"),
     ("MBR-2026-0006", "POL-SA-2026-100006", "Sarah", "Whitfield", "British", "1984-10-08", "EXECUTIVE", "active", "Dubai",
-     [("Oliver", "Whitfield", "child", "2019-05-27")]),
-    ("MBR-2026-0007", "POL-SA-2026-100007", "Layla", "Haddad", "Lebanese", "1993-02-19", "ENHANCED", "active", "Dubai", []),
-    ("MBR-2026-0008", "POL-SA-2026-100008", "Mohammed", "Rahman", "Bangladeshi", "1990-12-04", "BASIC", "lapsed", "Sharjah", []),
-    ("MBR-2026-0009", "POL-SA-2026-100009", "Kumari", "Perera", "Sri Lankan", "1987-06-25", "BASIC", "active", "Abu Dhabi", []),
-    ("MBR-2026-0010", "POL-SA-2026-100010", "Bishal", "Thapa", "Nepali", "1994-09-16", "BASIC", "active", "Dubai", []),
+     [("Oliver", "Whitfield", "child", "2019-05-27")], "long"),
+    ("MBR-2026-0007", "POL-SA-2026-100007", "Layla", "Haddad", "Lebanese", "1993-02-19", "ENHANCED", "active", "Dubai", [], "new"),
+    ("MBR-2026-0008", "POL-SA-2026-100008", "Mohammed", "Rahman", "Bangladeshi", "1990-12-04", "BASIC", "lapsed", "Sharjah", [], "lapsed"),
+    ("MBR-2026-0009", "POL-SA-2026-100009", "Kumari", "Perera", "Sri Lankan", "1987-06-25", "BASIC", "active", "Abu Dhabi", [], "standard"),
+    ("MBR-2026-0010", "POL-SA-2026-100010", "Bishal", "Thapa", "Nepali", "1994-09-16", "BASIC", "active", "Dubai", [], "new"),
     ("MBR-2026-0011", "POL-SA-2026-100011", "Omar", "Al Balushi", "Emirati", "1981-05-02", "COMPREHENSIVE", "active", "Abu Dhabi",
-     [("Shaikha", "Al Balushi", "spouse", "1985-11-19")]),
-    ("MBR-2026-0012", "POL-SA-2026-100012", "Priya", "Raghavan", "Indian", "1996-01-30", "ENHANCED", "active", "Dubai", []),
+     [("Shaikha", "Al Balushi", "spouse", "1985-11-19")], "long"),
+    ("MBR-2026-0012", "POL-SA-2026-100012", "Priya", "Raghavan", "Indian", "1996-01-30", "ENHANCED", "active", "Dubai", [], "standard"),
     ("MBR-2026-0013", "POL-SA-2026-100013", "Hassan", "Al Sayed", "Syrian", "1972-08-21", "COMPREHENSIVE", "lapsed", "Dubai",
-     [("Rana", "Al Sayed", "spouse", "1978-03-07")]),
-    ("MBR-2026-0014", "POL-SA-2026-100014", "Grace", "Okonkwo", "Nigerian", "1989-04-05", "ENHANCED", "active", "Dubai", []),
+     [("Rana", "Al Sayed", "spouse", "1978-03-07")], "lapsed"),
+    ("MBR-2026-0014", "POL-SA-2026-100014", "Grace", "Okonkwo", "Nigerian", "1989-04-05", "ENHANCED", "active", "Dubai", [], "standard"),
     ("MBR-2026-0015", "POL-SA-2026-100015", "Yusuf", "Abdi", "Sudanese", "1983-07-13", "BASIC", "active", "Sharjah",
-     [("Amina", "Abdi", "spouse", "1986-10-26"), ("Bilal", "Abdi", "child", "2015-02-14")]),
-    ("MBR-2026-0016", "POL-SA-2026-100016", "Elena", "Petrova", "Russian", "1992-11-11", "EXECUTIVE", "active", "Dubai", []),
+     [("Amina", "Abdi", "spouse", "1986-10-26"), ("Bilal", "Abdi", "child", "2015-02-14")], "long"),
+    ("MBR-2026-0016", "POL-SA-2026-100016", "Elena", "Petrova", "Russian", "1992-11-11", "EXECUTIVE", "active", "Dubai", [], "long"),
     ("MBR-2026-0017", "POL-SA-2026-100017", "Khalid", "Al Otaibi", "Jordanian", "1977-09-09", "ENHANCED", "active", "Abu Dhabi",
-     [("Dana", "Al Otaibi", "child", "2011-06-18")]),
-    ("MBR-2026-0018", "POL-SA-2026-100018", "Chloe", "Dupont", "French", "1995-03-24", "COMPREHENSIVE", "active", "Dubai", []),
+     [("Dana", "Al Otaibi", "child", "2011-06-18")], "long"),
+    ("MBR-2026-0018", "POL-SA-2026-100018", "Chloe", "Dupont", "French", "1995-03-24", "COMPREHENSIVE", "active", "Dubai", [], "standard"),
     ("MBR-2026-0019", "POL-SA-2026-100019", "Ayesha", "Siddiqui", "Pakistani", "1990-05-15", "BASIC", "active", "Dubai",
-     [("Zara", "Siddiqui", "child", "2021-01-09")]),
-    ("MBR-2026-0020", "POL-SA-2026-100020", "Daniel", "Mwangi", "Kenyan", "1986-12-28", "ENHANCED", "lapsed", "Abu Dhabi", []),
+     [("Zara", "Siddiqui", "child", "2021-01-09")], "new"),
+    ("MBR-2026-0020", "POL-SA-2026-100020", "Daniel", "Mwangi", "Kenyan", "1986-12-28", "ENHANCED", "lapsed", "Abu Dhabi", [], "lapsed"),
 ]
 
 # --------------------------------------------------------------------------- onboarding
@@ -356,10 +361,74 @@ ONBOARDING_APPLICATIONS = [
       "ONB-005": "submitted", "ONB-006": "submitted", "ONB-007": "submitted", "ONB-008": "not_required"}),
 ]
 
-ESCALATION_RULE_IDS = ["ESC-001", "ESC-002", "ESC-003", "ESC-004", "ESC-005", "ESC-006", "ESC-007", "ESC-008"]
+ESCALATIONS = [
+    ("ESC-001", "Missing documentation",
+     "The benefit schedule requires evidence (treatment history, imaging report, clinical notes) that has not been "
+     "supplied.",
+     "Tell the caller exactly which documents are needed and how to submit them. Escalate if they are unavailable."),
+    ("ESC-002", "Conflicting policy clauses",
+     "Two clauses of the same policy point to different answers, for example a benefit listed on a tier and also "
+     "named in the general exclusions.",
+     "Escalate to the medical director's queue. Do not choose a clause."),
+    ("ESC-003", "Amount exceeds a limit",
+     "The requested amount exceeds the tier's annual limit, the relevant sub-limit, or the member's remaining "
+     "balance for the policy year.",
+     "Escalate with the amount and the limit; a human decides on partial cover."),
+    ("ESC-004", "Disputed diagnosis or procedure coding",
+     "The submitted code disagrees with the clinical description, or two codes with different tariffs describe the "
+     "same treatment.",
+     "Escalate for coding review. Do not re-code the request."),
+    ("ESC-005", "Procedure not in the coverage list, or new technology",
+     "The procedure has no entry in the benefit schedule, or is an emerging technique with no tariff line.",
+     "Escalate to the medical director. Never infer cover from a similar procedure."),
+    ("ESC-006", "Clinical versus cosmetic intent",
+     "Cover depends on whether the procedure is reconstructive or cosmetic, or on an accident that must be "
+     "evidenced.",
+     "Escalate for clinical review."),
+    ("ESC-007", "Member eligibility in doubt",
+     "The policy is lapsed or suspended, the treatment falls inside a waiting period, or a pre-existing condition "
+     "clause may apply.",
+     "Tell the caller the request cannot proceed on eligibility grounds and escalate."),
+    ("ESC-008", "Provider not active in the network",
+     "The requesting provider is suspended, still onboarding, or outside the member's network, or the call is a "
+     "supplier or onboarding enquiry.",
+     "Escalate to the network department. Onboarding questions are never answered by the pre-authorisation desk."),
+]
+ESCALATION_RULE_IDS = [e[0] for e in ESCALATIONS]
+
+# Documents the benefit schedule requires before a pre-authorisation decision, by procedure.
+REQUIRED_DOCUMENTS = {
+    "surgical": ["CLINICAL_NOTES", "OPERATIVE_PLAN"],
+    "diagnostic": ["CLINICAL_NOTES"],
+    "maternity": ["CLINICAL_NOTES"],
+    "chronic": ["CLINICAL_NOTES", "PRIOR_TREATMENT_RECORD"],
+    "dental": ["CLINICAL_NOTES", "IMAGING_REPORT"],
+    "optical": ["CLINICAL_NOTES"],
+    "mental_health": ["CLINICAL_NOTES", "REFERRAL_LETTER"],
+    "preventive": [],
+    "emergency": [],
+}
+EXTRA_DOCUMENTS = {
+    "SP-20040": ["PRIOR_TREATMENT_RECORD"],   # conservative treatment must be evidenced
+    "SP-20050": ["IMAGING_REPORT"],
+    "SP-20060": ["IMAGING_REPORT"],
+    "SP-20110": ["PRIOR_TREATMENT_RECORD"],
+    "SP-10110": ["REFERRAL_LETTER"],
+    "SP-60050": ["LAB_RESULTS"],
+}
 
 
 # --------------------------------------------------------------------------- builders
+
+
+def schedule_document_name(tier: dict[str, Any]) -> str:
+    return f"{tier['product_name']} Schedule of Benefits 2026"
+
+
+def procedure_section(code: str) -> str:
+    number = [p[0] for p in PROCEDURES].index(code) + 1
+    name = next(p[1] for p in PROCEDURES if p[0] == code)
+    return f"Section 4.{number} {code}: {name}"
 
 
 def tier_by_id(tier_id: str) -> dict[str, Any]:
@@ -420,6 +489,8 @@ def build_procedures() -> dict[str, Any]:
                     else tier["co_payments_percent"]["outpatient_consultation"]
                 ) if covered else None,
                 "applicable_sub_limit_aed": tier["sub_limits_aed"][sub_limit_key] if (covered and sub_limit_key) else None,
+                "source_document": schedule_document_name(tier),
+                "source_section": procedure_section(code),
                 "reason_not_covered": None if covered else (
                     "Excluded on all tiers" if min_tier == "NONE"
                     else f"Benefit starts at the {tier_by_id(min_tier)['name']} tier"
@@ -437,6 +508,10 @@ def build_procedures() -> dict[str, Any]:
             "waiting_period_months": waiting,
             "waiting_period_waived_for_emergency": category in ("emergency", "maternity"),
             "exclusions": exclusions,
+            "required_documents": (
+                sorted(set(REQUIRED_DOCUMENTS[category] + EXTRA_DOCUMENTS.get(code, [])))
+                if any(c["pre_authorisation_required"] for c in coverage.values()) else []
+            ),
             "coverage_by_tier": coverage,
             "decision_class": "AMBIGUOUS" if ambiguity else ("EXCLUDED" if min_tier == "NONE" else "CLEAR"),
             "escalation": ambiguity,
@@ -461,6 +536,81 @@ def build_procedures() -> dict[str, Any]:
         },
         "procedures": entries,
     }
+
+
+def build_schedule(tier: dict[str, Any], procedures: list[dict[str, Any]]) -> str:
+    lines = [
+        f"# {schedule_document_name(tier)}",
+        "",
+        f"> {DISCLAIMER}",
+        "",
+        f"Tier: {tier['name']} ({tier['tier_id']}). Network: {tier['network']['name']} "
+        f"({tier['network']['geography']}). All amounts in AED.",
+        "",
+        "## Section 1 General",
+        "",
+        f"1.1 Annual limit: AED {tier['annual_limit_aed']:,}. Pre-authorisation is required at or above "
+        f"AED {tier['pre_authorisation_threshold_aed']:,}, and for any procedure the schedule marks as requiring it.",
+        "",
+        "1.2 Pre-authorisation decisions are made by a qualified clinical reviewer or the medical director. Intake "
+        "staff and the automated intake line prepare recommendations; they do not approve or deny requests.",
+        "",
+        "1.3 Sub-limits: " + ", ".join(f"{k} AED {v:,}" for k, v in tier["sub_limits_aed"].items()) + ".",
+        "",
+        "1.4 Waiting periods (months): "
+        + ", ".join(f"{k} {v}" for k, v in tier["waiting_periods_months"].items()) + ".",
+        "",
+        "## Section 2 Eligibility",
+        "",
+        "2.1 The member's policy must be active on the treatment date.",
+        "",
+        "2.2 The requesting provider must be active in the provider directory and credentialed for the specialty.",
+        "",
+        f"2.3 {'Out-of-network treatment is covered, reimbursed per the tier notes.' if tier['network']['out_of_network_cover'] else 'Out-of-network providers are not covered on this tier.'}",
+        "",
+        "## Section 3 Co-payments and documents",
+        "",
+        "3.1 Member co-payments: "
+        + ", ".join(f"{k} {v}%" for k, v in tier["co_payments_percent"].items()) + ".",
+        "",
+        "3.2 Supporting documents are submitted through the provider portal or the regulator's claims channel "
+        "(eClaimLink in Dubai, Shafafiya in Abu Dhabi), quoting the case reference. Documents cannot be accepted "
+        "by telephone.",
+        "",
+        "## Section 4 Procedure schedule",
+        "",
+    ]
+    for entry in procedures:
+        cover = entry["coverage_by_tier"][tier["tier_id"]]
+        lines.append(f"### {entry['coverage_by_tier'][tier['tier_id']]['source_section']}")
+        lines.append("")
+        lines.append(f"Category: {entry['category']}. Specialty: {entry['specialty_required']}. "
+                     f"Typical billed amount: AED {entry['typical_billed_amount_aed']:,}.")
+        if not cover["covered"]:
+            lines.append(f"Not covered on this tier. {cover['reason_not_covered']}.")
+            if entry["exclusions"]:
+                lines.append("Exclusions: " + "; ".join(entry["exclusions"]) + ".")
+            lines.append("")
+            continue
+        lines.append(
+            f"Covered. Pre-authorisation required: {'yes' if cover['pre_authorisation_required'] else 'no'}. "
+            f"Member co-payment: {cover['member_co_payment_percent']}%."
+        )
+        if cover["applicable_sub_limit_aed"] is not None:
+            lines.append(f"Applicable sub-limit: AED {cover['applicable_sub_limit_aed']:,}.")
+        if entry["waiting_period_months"]:
+            lines.append(f"Waiting period: {entry['waiting_period_months']} months from policy inception.")
+        if entry["required_documents"]:
+            lines.append("Required supporting documents: " + ", ".join(entry["required_documents"]) + ".")
+        if entry["exclusions"]:
+            lines.append("Exclusions: " + "; ".join(entry["exclusions"]) + ".")
+        if entry["escalation"]:
+            lines.append(
+                f"Referred for human review ({entry['escalation']['escalation_rule_id']}): "
+                f"{entry['escalation']['reason']}"
+            )
+        lines.append("")
+    return "\n".join(lines)
 
 
 def build_providers() -> dict[str, Any]:
@@ -523,9 +673,27 @@ def build_onboarding() -> dict[str, Any]:
     }
 
 
+def policy_period(tenure: str, today: date) -> tuple[date, date | None, date | None]:
+    """Start, renewal and lapse dates for a tenure, anchored to the generation year."""
+    year = today.year
+    if tenure == "long":
+        return date(year - 1, 1, 1), date(year, 12, 31), None
+    if tenure == "standard":
+        return date(year, 1, 1), date(year, 12, 31), None
+    if tenure == "new":
+        month, start_year = (today.month - 3, year) if today.month > 3 else (today.month + 9, year - 1)
+        start = date(start_year, month, 1)
+        return start, date(start.year + 1, start.month, 28), None
+    if tenure == "lapsed":
+        return date(year - 1, 1, 1), None, date(year, 3, 31)
+    raise ValueError(f"Unknown tenure {tenure!r}")
+
+
 def build_members() -> dict[str, Any]:
+    today = GENERATED_FOR
     entries = []
-    for i, (member_id, policy, given, family, nationality, dob, tier, status, emirate, dependents) in enumerate(MEMBERS):
+    for i, (member_id, policy, given, family, nationality, dob, tier, status, emirate, dependents, tenure) in enumerate(MEMBERS):
+        start, renewal, lapse = policy_period(tenure, today)
         entries.append({
             "member_id": member_id,
             "policy_number": policy,
@@ -537,9 +705,10 @@ def build_members() -> dict[str, Any]:
             "mobile": f"+9715{(60000000 + i * 111111) % 100000000:08d}",
             "tier": tier,
             "policy_status": status,
-            "policy_start_date": "2025-09-01" if status == "active" else "2024-06-01",
-            "policy_renewal_date": "2026-08-31" if status == "active" else None,
-            "policy_lapse_date": None if status == "active" else "2026-05-31",
+            "policy_tenure": tenure,
+            "policy_start_date": start.isoformat(),
+            "policy_renewal_date": renewal.isoformat() if renewal else None,
+            "policy_lapse_date": lapse.isoformat() if lapse else None,
             "emirate_of_residence": emirate,
             "sponsor": "Fictional Employer LLC",
             "dependents": [
@@ -547,7 +716,9 @@ def build_members() -> dict[str, Any]:
                  "member_id": f"{member_id}-D{n + 1}"}
                 for n, (g, f, rel, d) in enumerate(dependents)
             ],
-            "maternity_waiting_period_satisfied": status == "active" and tier in ("COMPREHENSIVE", "EXECUTIVE"),
+            "maternity_waiting_period_satisfied": (
+                status == "active" and ((today.year - start.year) * 12 + today.month - start.month) >= 12
+            ),
         })
     return {
         "disclaimer": DISCLAIMER,
@@ -558,6 +729,10 @@ def build_members() -> dict[str, Any]:
         "members": entries,
     }
 
+
+ESCALATION_TABLE = "\n".join(
+    f"| **{rid}** | **{title}.** {situation} | {action} |" for rid, title, situation, action in ESCALATIONS
+)
 
 ESCALATION_MARKDOWN = f"""# Escalation rules
 
@@ -573,14 +748,7 @@ recommendation and hand the case to a human. It must never approve, deny, or pre
 
 | Rule | Situation | What the assistant does |
 |---|---|---|
-| **ESC-001** | **Missing documentation.** The schedule requires evidence (treatment history, imaging report, clinical notes) that has not been supplied. | Tell the caller exactly which documents are needed and how to upload them. Escalate if they are unavailable. |
-| **ESC-002** | **Conflicting policy clauses.** Two clauses of the same policy point to different answers, for example a benefit listed on a tier and also named in the general exclusions. | Escalate to the medical director's queue. Do not choose a clause. |
-| **ESC-003** | **Amount exceeds a limit.** The billed amount exceeds the tier's annual limit, the relevant sub-limit, or the member's remaining balance for the policy year. | Escalate with the amount and the limit; a human decides on partial cover. |
-| **ESC-004** | **Disputed diagnosis or procedure coding.** The submitted code disagrees with the clinical description, or two codes with different tariffs describe the same treatment. | Escalate for coding review. Do not re-code the request. |
-| **ESC-005** | **Procedure not in the coverage list, or new technology.** The procedure has no entry in `procedure_coverage.json`, or is an emerging technique with no tariff line. | Escalate to the medical director. Never infer cover from a similar procedure. |
-| **ESC-006** | **Clinical versus cosmetic intent.** Cover depends on whether the procedure is reconstructive or cosmetic, or on an accident that must be evidenced. | Escalate for clinical review. |
-| **ESC-007** | **Member eligibility in doubt.** The policy is lapsed or suspended, the treatment falls inside a waiting period, or a pre-existing condition clause may apply. | Tell the caller the request cannot proceed on eligibility grounds and escalate. |
-| **ESC-008** | **Provider not active in the network.** The requesting provider is suspended, still onboarding, or outside the member's network, or the call is a supplier or onboarding enquiry. | Escalate to the network department. Onboarding questions are never answered by the pre-authorisation desk. |
+{ESCALATION_TABLE}
 
 ## How this maps to the assistant's tools
 
@@ -633,6 +801,8 @@ provider onboarding requirements, sample members, and the rules that decide when
 | `supplier_onboarding_requirements.json` | Onboarding checklist and three in-flight applications | `requirement_id`, `provider_id` |
 | `sample_members.json` | {len(MEMBERS)} members with dependants, tiers and policy status | `tier`, `policy_number`, `member_id` |
 | `escalation_rules.md` | Plain-language description of what is *not* rule-based | `ESC-001` … `ESC-008` |
+| `escalation_rules.json` | The same rules, machine-readable; the rules engine cites this text verbatim | `rule_id` |
+| `schedule-<tier>.md` | Per-tier schedule of benefits; the document coverage decisions cite | `Section 4.n <code>` |
 
 ## How they fit together
 
@@ -697,13 +867,15 @@ sit within tier limits; and member tiers, policy numbers and dependant records a
 uv run python scripts/generate_uae_knowledge_base.py --check
 ```
 
-## Relationship to the rest of the repository
+## How the backend uses these files
 
-This is a **standalone demo catalogue**. The running backend evaluates its own seed data (`PLAN-GOLD-PPO`,
-`PLAN-SILVER-HMO`), and `voice/knowledge_base/` is generated from that seed data so the rule citations resolve.
-The two describe different fictional product families, so loading both into one agent will produce contradictory
-answers about plan names and limits. Pick one: use this catalogue for a UAE-flavoured demo, or the backend-derived
-documents for answers that match what the tools actually decide.
+`preauth.seed` loads this catalogue into the database, and the rules engine decides from those tables. The same
+files are the agent's knowledge base. That is why every citation the agent reads out resolves to a section that
+exists here: the per-tier schedules carry the `Section 4.n` headings the coverage rules cite, and
+`escalation_rules.md` carries the ESC-### text an escalation quotes.
+
+There is no second source of coverage data anywhere in the repository. Editing this catalogue (through the
+generator) changes what the agent decides.
 """
 
 
@@ -774,6 +946,11 @@ def validate(files: dict[str, Any]) -> list[str]:
         # A procedure that decides cleanly must be deliverable today; ambiguous and excluded ones only need to be
         # locatable (e.g. the fertility centre is still onboarding, which is itself an escalation case).
         required_pool = active_specialties if proc["decision_class"] == "CLEAR" else listed_specialties
+        needs_preauth = any(c["pre_authorisation_required"] for c in proc["coverage_by_tier"].values())
+        if needs_preauth and proc["category"] not in ("preventive", "emergency") and not proc["required_documents"]:
+            errors.append(f"{code}: requires pre-authorisation but lists no supporting documents")
+        if not needs_preauth and proc["required_documents"]:
+            errors.append(f"{code}: lists documents but never requires pre-authorisation")
         if proc["specialty_required"] not in required_pool:
             errors.append(
                 f"{code}: no {'active ' if proc['decision_class'] == 'CLEAR' else ''}provider offers "
@@ -807,6 +984,8 @@ def validate(files: dict[str, Any]) -> list[str]:
         seen_members.add(member["member_id"])
         if member["policy_status"] not in ("active", "lapsed"):
             errors.append(f"{member['member_id']}: invalid policy status")
+        if member["policy_status"] == "active" and member["policy_renewal_date"] is None:
+            errors.append(f"{member['member_id']}: active policy without a renewal date")
         if (member["policy_status"] == "active") != (member["policy_lapse_date"] is None):
             errors.append(f"{member['member_id']}: lapse date inconsistent with policy status")
         for dependent in member["dependents"]:
@@ -831,12 +1010,25 @@ def validate(files: dict[str, Any]) -> list[str]:
 
 
 def render() -> dict[str, Any]:
+    procedures = build_procedures()
+    schedules = {
+        f"schedule-{t['tier_id'].lower()}.md": build_schedule(t, procedures["procedures"]) for t in TIERS
+    }
     return {
         "policy_tiers.json": build_policy_tiers(),
-        "procedure_coverage.json": build_procedures(),
+        "procedure_coverage.json": procedures,
+        **schedules,
         "network_providers.json": build_providers(),
         "supplier_onboarding_requirements.json": build_onboarding(),
         "sample_members.json": build_members(),
+        "escalation_rules.json": {
+            "disclaimer": DISCLAIMER,
+            "note": "Machine-readable form of escalation_rules.md; the rules engine cites this text verbatim.",
+            "rules": [
+                {"rule_id": rid, "title": title, "situation": situation, "agent_action": action}
+                for rid, title, situation, action in ESCALATIONS
+            ],
+        },
         "escalation_rules.md": ESCALATION_MARKDOWN,
         "README.md": build_readme(),
     }

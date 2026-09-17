@@ -19,7 +19,6 @@ def test_migrations_match_orm_metadata(engine):
 
 
 def test_upgrade_downgrade_upgrade_round_trip(tmp_path):
-    """SQLite path: exercises the batch table rebuild in 0002. The PostgreSQL path is covered in CI."""
     url = f"sqlite:///{tmp_path / 'roundtrip.db'}"
     cfg = alembic_config(url)
     command.upgrade(cfg, "head")
@@ -105,7 +104,7 @@ def test_invalid_enum_value_rejected_by_database(engine):
         )
 
 
-def test_migration_0002_widened_audit_event_types(engine):
+def test_voice_channel_audit_event_types_are_accepted(engine):
     with engine.begin() as conn:
         _insert_case_and_event(conn)
         conn.execute(

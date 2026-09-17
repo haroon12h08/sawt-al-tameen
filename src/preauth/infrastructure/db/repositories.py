@@ -9,16 +9,20 @@ from preauth.domain.errors import IntegrityViolationError, NotFoundError
 from preauth.infrastructure.db.models import (
     AuditEvent,
     CallbackRequest,
+    CallerVerification,
+    CallLog,
     CallRecord,
     CaseDocument,
     CoverageTerm,
-    Patient,
-    Policy,
+    EscalationRule,
+    Member,
+    OnboardingApplication,
+    OnboardingRequirement,
+    PolicyTier,
     PreAuthorizationCase,
     Procedure,
     Provider,
     Recommendation,
-    RequestedService,
     ReviewDecision,
     RuleDefinition,
     RuleEvaluation,
@@ -26,30 +30,48 @@ from preauth.infrastructure.db.models import (
 )
 
 
-class ReferenceDataRepository:
+class CatalogueRepository:
+    """Reads the benefit catalogue loaded from knowledge_base/."""
+
     def __init__(self, session: Session):
         self._s = session
+
+    def tier(self, tier_id: str) -> PolicyTier | None:
+        return self._s.get(PolicyTier, tier_id)
 
     def provider_by_number(self, provider_number: str) -> Provider | None:
         return self._s.scalar(select(Provider).where(Provider.provider_number == provider_number))
 
-    def patient_by_member_id(self, member_id: str) -> Patient | None:
-        return self._s.scalar(select(Patient).where(Patient.member_id == member_id))
-
-    def policy_by_number(self, policy_number: str) -> Policy | None:
+    def member_by_policy_number(self, policy_number: str) -> Member | None:
         return self._s.scalar(
-            select(Policy).options(selectinload(Policy.plan)).where(Policy.policy_number == policy_number)
+            select(Member).options(selectinload(Member.tier)).where(Member.policy_number == policy_number)
+        )
+
+    def member_by_member_id(self, member_id: str) -> Member | None:
+        return self._s.scalar(
+            select(Member).options(selectinload(Member.tier)).where(Member.member_id == member_id)
         )
 
     def procedure(self, procedure_code: str) -> Procedure | None:
         return self._s.get(Procedure, procedure_code)
 
-    def coverage_term(self, plan_code: str, procedure_code: str) -> CoverageTerm | None:
+    def coverage(self, tier_id: str, procedure_code: str) -> CoverageTerm | None:
         return self._s.scalar(
-            select(CoverageTerm)
-            .options(selectinload(CoverageTerm.required_documents), selectinload(CoverageTerm.indicated_diagnoses))
-            .where(CoverageTerm.plan_code == plan_code, CoverageTerm.procedure_code == procedure_code)
+            select(CoverageTerm).where(
+                CoverageTerm.tier_id == tier_id, CoverageTerm.procedure_code == procedure_code
+            )
         )
+
+    def escalation_rules(self) -> list[EscalationRule]:
+        return list(self._s.scalars(select(EscalationRule).order_by(EscalationRule.rule_id)))
+
+    def onboarding_requirements(self) -> list[OnboardingRequirement]:
+        return list(
+            self._s.scalars(select(OnboardingRequirement).order_by(OnboardingRequirement.requirement_id))
+        )
+
+    def onboarding_application(self, application_id: str) -> OnboardingApplication | None:
+        return self._s.get(OnboardingApplication, application_id)
 
 
 class CaseRepository:
@@ -67,9 +89,7 @@ class CaseRepository:
             select(PreAuthorizationCase)
             .options(
                 selectinload(PreAuthorizationCase.provider),
-                selectinload(PreAuthorizationCase.patient),
-                selectinload(PreAuthorizationCase.policy).selectinload(Policy.plan),
-                selectinload(PreAuthorizationCase.requested_service).selectinload(RequestedService.procedure),
+                selectinload(PreAuthorizationCase.member).selectinload(Member.tier),
                 selectinload(PreAuthorizationCase.documents),
             )
             .where(PreAuthorizationCase.id == case_id)
@@ -90,32 +110,27 @@ class CaseRepository:
             )
         return case_id
 
-    def count_prior_approvals(
-        self, *, patient_id: str, procedure_code: str, year: int, exclude_case_id: str
-    ) -> int:
-        """Cases for the same member and procedure in the same service year that a human approved."""
+    def approved_amount_this_year_aed(self, *, member_id: str, year: int, exclude_case_id: str) -> int:
+        """Amount already approved by a human for this member in the treatment year."""
         approved = exists().where(
             ReviewDecision.case_id == PreAuthorizationCase.id,
             ReviewDecision.decision == HumanDecisionType.APPROVE,
         )
-        return self._s.scalar(
-            select(func.count(PreAuthorizationCase.id))
-            .join(RequestedService, RequestedService.case_id == PreAuthorizationCase.id)
-            .where(
-                PreAuthorizationCase.patient_id == patient_id,
+        total = self._s.scalar(
+            select(func.coalesce(func.sum(PreAuthorizationCase.estimated_cost_aed), 0)).where(
+                PreAuthorizationCase.member_id == member_id,
                 PreAuthorizationCase.id != exclude_case_id,
-                RequestedService.procedure_code == procedure_code,
-                RequestedService.requested_service_date >= date(year, 1, 1),
-                RequestedService.requested_service_date <= date(year, 12, 31),
+                PreAuthorizationCase.treatment_date >= date(year, 1, 1),
+                PreAuthorizationCase.treatment_date <= date(year, 12, 31),
                 approved,
             )
-        ) or 0
+        )
+        return int(total or 0)
 
     def in_statuses(self, statuses: Sequence[CaseStatus], limit: int) -> list[PreAuthorizationCase]:
         return list(
             self._s.scalars(
                 select(PreAuthorizationCase)
-                .options(selectinload(PreAuthorizationCase.requested_service))
                 .where(PreAuthorizationCase.status.in_(statuses))
                 .order_by(PreAuthorizationCase.review_requested_at, PreAuthorizationCase.id)
                 .limit(limit)
@@ -140,7 +155,9 @@ class EvaluationRepository:
             )
 
     def next_evaluation_sequence(self, case_id: str) -> int:
-        current = self._s.scalar(select(func.max(RuleEvaluation.sequence)).where(RuleEvaluation.case_id == case_id))
+        current = self._s.scalar(
+            select(func.max(RuleEvaluation.sequence)).where(RuleEvaluation.case_id == case_id)
+        )
         return (current or 0) + 1
 
     def add_evaluation(self, evaluation: RuleEvaluation) -> None:
@@ -176,7 +193,9 @@ class ReviewRepository:
         self._s = session
 
     def next_decision_sequence(self, case_id: str) -> int:
-        current = self._s.scalar(select(func.max(ReviewDecision.sequence)).where(ReviewDecision.case_id == case_id))
+        current = self._s.scalar(
+            select(func.max(ReviewDecision.sequence)).where(ReviewDecision.case_id == case_id)
+        )
         return (current or 0) + 1
 
     def add_decision(self, decision: ReviewDecision) -> None:
@@ -185,7 +204,9 @@ class ReviewRepository:
     def decisions(self, case_id: str) -> list[ReviewDecision]:
         return list(
             self._s.scalars(
-                select(ReviewDecision).where(ReviewDecision.case_id == case_id).order_by(ReviewDecision.sequence)
+                select(ReviewDecision)
+                .where(ReviewDecision.case_id == case_id)
+                .order_by(ReviewDecision.sequence)
             )
         )
 
@@ -202,13 +223,49 @@ class AuditRepository:
 
     def for_case(self, case_id: str) -> list[AuditEvent]:
         return list(
-            self._s.scalars(select(AuditEvent).where(AuditEvent.case_id == case_id).order_by(AuditEvent.sequence))
+            self._s.scalars(
+                select(AuditEvent).where(AuditEvent.case_id == case_id).order_by(AuditEvent.sequence)
+            )
         )
 
 
 class VoiceChannelRepository:
     def __init__(self, session: Session):
         self._s = session
+
+    # --- caller verification
+
+    def add_verification(self, verification: CallerVerification) -> None:
+        self._s.add(verification)
+
+    def verification(self, verification_id: str) -> CallerVerification:
+        record = self._s.scalar(
+            select(CallerVerification)
+            .options(
+                selectinload(CallerVerification.provider),
+                selectinload(CallerVerification.member).selectinload(Member.tier),
+            )
+            .where(CallerVerification.id == verification_id)
+        )
+        if record is None:
+            raise NotFoundError(
+                "Caller verification not found or expired",
+                code="VERIFICATION_NOT_FOUND",
+                details={"verification_id": verification_id},
+            )
+        return record
+
+    # --- call logs
+
+    def add_call_log(self, log: CallLog) -> None:
+        self._s.add(log)
+
+    def call_logs_for_case(self, case_id: str) -> list[CallLog]:
+        return list(
+            self._s.scalars(select(CallLog).where(CallLog.case_id == case_id).order_by(CallLog.logged_at))
+        )
+
+    # --- conversations and transcripts
 
     def add_invocation(self, invocation: VoiceToolInvocation) -> None:
         self._s.add(invocation)
@@ -227,7 +284,10 @@ class VoiceChannelRepository:
         return list(
             self._s.scalars(
                 select(VoiceToolInvocation.case_id)
-                .where(VoiceToolInvocation.conversation_id == conversation_id, VoiceToolInvocation.case_id.is_not(None))
+                .where(
+                    VoiceToolInvocation.conversation_id == conversation_id,
+                    VoiceToolInvocation.case_id.is_not(None),
+                )
                 .group_by(VoiceToolInvocation.case_id)
                 .order_by(func.min(VoiceToolInvocation.invoked_at))
             )
@@ -241,12 +301,16 @@ class VoiceChannelRepository:
             return []
         return list(
             self._s.scalars(
-                select(CallRecord).where(CallRecord.conversation_id.in_(conversation_ids)).order_by(CallRecord.received_at)
+                select(CallRecord)
+                .where(CallRecord.conversation_id.in_(conversation_ids))
+                .order_by(CallRecord.received_at)
             )
         )
 
     def add_call_record(self, record: CallRecord) -> None:
         self._s.add(record)
+
+    # --- callbacks
 
     def add_callback(self, callback: CallbackRequest) -> None:
         self._s.add(callback)
@@ -270,6 +334,8 @@ class VoiceChannelRepository:
     def callbacks_for_case(self, case_id: str) -> list[CallbackRequest]:
         return list(
             self._s.scalars(
-                select(CallbackRequest).where(CallbackRequest.case_id == case_id).order_by(CallbackRequest.created_at)
+                select(CallbackRequest)
+                .where(CallbackRequest.case_id == case_id)
+                .order_by(CallbackRequest.created_at)
             )
         )

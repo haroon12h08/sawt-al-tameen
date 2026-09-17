@@ -28,6 +28,7 @@
           "HUMAN_DECISION_RECORDED",
           "RECOMMENDATION_OVERRIDDEN",
           "CASE_CLOSED",
+          "CALL_SUMMARY_LOGGED",
           "HUMAN_CALLBACK_REQUESTED",
           "HUMAN_CALLBACK_RESOLVED",
           "CALL_RECORDED"
@@ -96,6 +97,94 @@
         ],
         "title": "AuditEventView",
         "type": "object"
+      },
+      "CallLogView": {
+        "properties": {
+          "callback_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Callback Id"
+          },
+          "caller_role": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CallerRole"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "case_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Case Id"
+          },
+          "conversation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conversation Id"
+          },
+          "logged_at": {
+            "format": "date-time",
+            "title": "Logged At",
+            "type": "string"
+          },
+          "outcome_communicated": {
+            "$ref": "#/components/schemas/CallOutcome"
+          },
+          "reference": {
+            "title": "Reference",
+            "type": "string"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reference",
+          "conversation_id",
+          "case_id",
+          "callback_id",
+          "caller_role",
+          "outcome_communicated",
+          "summary",
+          "logged_at"
+        ],
+        "title": "CallLogView",
+        "type": "object"
+      },
+      "CallOutcome": {
+        "description": "What the caller was told at the end of the call, as recorded by log_transcript.",
+        "enum": [
+          "RECOMMENDATION_PREPARED",
+          "MORE_INFORMATION_REQUESTED",
+          "ESCALATED",
+          "CALLER_NOT_VERIFIED",
+          "ONBOARDING_ENQUIRY",
+          "OUT_OF_SCOPE"
+        ],
+        "title": "CallOutcome",
+        "type": "string"
       },
       "CallRecordView": {
         "properties": {
@@ -355,166 +444,6 @@
         "title": "CallerRole",
         "type": "string"
       },
-      "CaseInformationUpdate": {
-        "additionalProperties": false,
-        "description": "Partial update of the information collected for a case. Only supplied fields are applied.",
-        "properties": {
-          "caller_name": {
-            "anyOf": [
-              {
-                "maxLength": 100,
-                "minLength": 1,
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Caller Name"
-          },
-          "caller_role": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/CallerRole"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "clinical_summary": {
-            "anyOf": [
-              {
-                "maxLength": 4000,
-                "minLength": 1,
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Clinical Summary"
-          },
-          "conservative_treatment_weeks": {
-            "anyOf": [
-              {
-                "maximum": 520.0,
-                "minimum": 0.0,
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Conservative Treatment Weeks"
-          },
-          "diagnosis_code": {
-            "anyOf": [
-              {
-                "pattern": "^[A-TV-Z][0-9][0-9AB](\\.[0-9A-TV-Z]{1,4})?$",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Diagnosis Code"
-          },
-          "diagnosis_description": {
-            "anyOf": [
-              {
-                "maxLength": 300,
-                "minLength": 1,
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Diagnosis Description"
-          },
-          "patient": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/PatientIdentification"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "place_of_service": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/PlaceOfService"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "policy_number": {
-            "anyOf": [
-              {
-                "pattern": "^[A-Z0-9][A-Z0-9-]{1,39}$",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Policy Number"
-          },
-          "procedure_code": {
-            "anyOf": [
-              {
-                "pattern": "^[A-Z0-9][A-Z0-9-]{1,39}$",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Procedure Code"
-          },
-          "provider_number": {
-            "anyOf": [
-              {
-                "pattern": "^[A-Z0-9][A-Z0-9-]{1,39}$",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Provider Number"
-          },
-          "requested_service_date": {
-            "anyOf": [
-              {
-                "format": "date",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Requested Service Date"
-          },
-          "urgency": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/Urgency"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        "title": "CaseInformationUpdate",
-        "type": "object"
-      },
       "CaseStatus": {
         "enum": [
           "RECEIVED",
@@ -614,6 +543,17 @@
             ],
             "title": "Caller Name"
           },
+          "caller_organisation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Caller Organisation"
+          },
           "caller_role": {
             "anyOf": [
               {
@@ -661,17 +601,6 @@
             ],
             "title": "Closed At"
           },
-          "conservative_treatment_weeks": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Conservative Treatment Weeks"
-          },
           "created_at": {
             "format": "date-time",
             "title": "Created At",
@@ -688,17 +617,6 @@
             ],
             "title": "Diagnosis Code"
           },
-          "diagnosis_description": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Diagnosis Description"
-          },
           "documents": {
             "items": {
               "$ref": "#/components/schemas/DocumentView"
@@ -706,24 +624,35 @@
             "title": "Documents",
             "type": "array"
           },
+          "estimated_cost_aed": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimated Cost Aed"
+          },
           "id": {
             "title": "Id",
             "type": "string"
           },
-          "patient": {
+          "member": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/PatientView"
+                "$ref": "#/components/schemas/MemberView"
               },
               {
                 "type": "null"
               }
             ]
           },
-          "policy": {
+          "procedure": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/PolicyView"
+                "$ref": "#/components/schemas/ProcedureView"
               },
               {
                 "type": "null"
@@ -739,9 +668,6 @@
                 "type": "null"
               }
             ]
-          },
-          "requested_service": {
-            "$ref": "#/components/schemas/RequestedServiceView"
           },
           "review_queue": {
             "anyOf": [
@@ -768,6 +694,18 @@
           "status": {
             "$ref": "#/components/schemas/CaseStatus"
           },
+          "treatment_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Treatment Date"
+          },
           "updated_at": {
             "format": "date-time",
             "title": "Updated At",
@@ -792,17 +730,17 @@
           "id",
           "case_reference",
           "status",
-          "urgency",
-          "provider",
-          "patient",
-          "policy",
-          "requested_service",
-          "diagnosis_code",
-          "diagnosis_description",
-          "conservative_treatment_weeks",
-          "clinical_summary",
           "caller_name",
           "caller_role",
+          "caller_organisation",
+          "provider",
+          "member",
+          "procedure",
+          "treatment_date",
+          "estimated_cost_aed",
+          "urgency",
+          "diagnosis_code",
+          "clinical_summary",
           "documents",
           "review_queue",
           "assigned_reviewer_id",
@@ -850,30 +788,57 @@
         "title": "CloseReason",
         "type": "string"
       },
-      "CreateCaseCommand": {
-        "additionalProperties": false,
+      "DecisionClass": {
+        "description": "Whether the benefit schedule can decide a procedure, or a human must.",
+        "enum": [
+          "CLEAR",
+          "EXCLUDED",
+          "AMBIGUOUS"
+        ],
+        "title": "DecisionClass",
+        "type": "string"
+      },
+      "DependentView": {
         "properties": {
-          "information": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/CaseInformationUpdate"
-              },
-              {
-                "type": "null"
-              }
-            ]
+          "date_of_birth": {
+            "format": "date",
+            "title": "Date Of Birth",
+            "type": "string"
+          },
+          "family_name": {
+            "title": "Family Name",
+            "type": "string"
+          },
+          "given_name": {
+            "title": "Given Name",
+            "type": "string"
+          },
+          "member_id": {
+            "title": "Member Id",
+            "type": "string"
+          },
+          "relationship": {
+            "title": "Relationship",
+            "type": "string"
           }
         },
-        "title": "CreateCaseCommand",
+        "required": [
+          "given_name",
+          "family_name",
+          "relationship",
+          "date_of_birth",
+          "member_id"
+        ],
+        "title": "DependentView",
         "type": "object"
       },
-      "CredentialingStatus": {
+      "DirectoryStatus": {
         "enum": [
           "ACTIVE",
           "SUSPENDED",
-          "TERMINATED"
+          "PENDING_ONBOARDING"
         ],
-        "title": "CredentialingStatus",
+        "title": "DirectoryStatus",
         "type": "string"
       },
       "DocumentType": {
@@ -1007,45 +972,33 @@
         "title": "ErrorResponse",
         "type": "object"
       },
-      "EvaluationResultView": {
+      "EscalationRuleFacts": {
+        "additionalProperties": false,
         "properties": {
-          "case_id": {
-            "title": "Case Id",
+          "agent_action": {
+            "title": "Agent Action",
             "type": "string"
           },
-          "missing_information": {
-            "items": {
-              "$ref": "#/components/schemas/MissingInformation"
-            },
-            "title": "Missing Information",
-            "type": "array"
+          "rule_id": {
+            "title": "Rule Id",
+            "type": "string"
           },
-          "recommendation": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/RecommendationView"
-              },
-              {
-                "type": "null"
-              }
-            ]
+          "situation": {
+            "title": "Situation",
+            "type": "string"
           },
-          "status": {
-            "$ref": "#/components/schemas/CaseStatus"
-          },
-          "validation_passed": {
-            "title": "Validation Passed",
-            "type": "boolean"
+          "title": {
+            "title": "Title",
+            "type": "string"
           }
         },
         "required": [
-          "case_id",
-          "status",
-          "validation_passed",
-          "missing_information",
-          "recommendation"
+          "rule_id",
+          "title",
+          "situation",
+          "agent_action"
         ],
-        "title": "EvaluationResultView",
+        "title": "EscalationRuleFacts",
         "type": "object"
       },
       "HTTPValidationError": {
@@ -1074,8 +1027,7 @@
             "type": "string"
           },
           "recommendation_id": {
-            "maxLength": 36,
-            "minLength": 36,
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
             "title": "Recommendation Id",
             "type": "string"
           }
@@ -1121,6 +1073,88 @@
         "title": "IntakeRequirementView",
         "type": "object"
       },
+      "MemberView": {
+        "properties": {
+          "date_of_birth": {
+            "format": "date",
+            "title": "Date Of Birth",
+            "type": "string"
+          },
+          "dependents": {
+            "items": {
+              "$ref": "#/components/schemas/DependentView"
+            },
+            "title": "Dependents",
+            "type": "array"
+          },
+          "family_name": {
+            "title": "Family Name",
+            "type": "string"
+          },
+          "given_name": {
+            "title": "Given Name",
+            "type": "string"
+          },
+          "member_id": {
+            "title": "Member Id",
+            "type": "string"
+          },
+          "policy_lapse_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Policy Lapse Date"
+          },
+          "policy_number": {
+            "title": "Policy Number",
+            "type": "string"
+          },
+          "policy_renewal_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Policy Renewal Date"
+          },
+          "policy_start_date": {
+            "format": "date",
+            "title": "Policy Start Date",
+            "type": "string"
+          },
+          "policy_status": {
+            "$ref": "#/components/schemas/PolicyStatus"
+          },
+          "tier": {
+            "$ref": "#/components/schemas/TierView"
+          }
+        },
+        "required": [
+          "member_id",
+          "policy_number",
+          "given_name",
+          "family_name",
+          "date_of_birth",
+          "tier",
+          "policy_status",
+          "policy_start_date",
+          "policy_renewal_date",
+          "policy_lapse_date",
+          "dependents"
+        ],
+        "title": "MemberView",
+        "type": "object"
+      },
       "MissingInformation": {
         "additionalProperties": false,
         "properties": {
@@ -1153,122 +1187,13 @@
         "title": "MissingInformationSource",
         "type": "string"
       },
-      "NetworkStatus": {
-        "enum": [
-          "IN_NETWORK",
-          "OUT_OF_NETWORK"
-        ],
-        "title": "NetworkStatus",
-        "type": "string"
-      },
-      "PatientIdentification": {
-        "additionalProperties": false,
-        "properties": {
-          "date_of_birth": {
-            "format": "date",
-            "title": "Date Of Birth",
-            "type": "string"
-          },
-          "member_id": {
-            "pattern": "^[A-Z0-9][A-Z0-9-]{1,39}$",
-            "title": "Member Id",
-            "type": "string"
-          }
-        },
-        "required": [
-          "member_id",
-          "date_of_birth"
-        ],
-        "title": "PatientIdentification",
-        "type": "object"
-      },
-      "PatientView": {
-        "properties": {
-          "date_of_birth": {
-            "format": "date",
-            "title": "Date Of Birth",
-            "type": "string"
-          },
-          "family_name": {
-            "title": "Family Name",
-            "type": "string"
-          },
-          "given_name": {
-            "title": "Given Name",
-            "type": "string"
-          },
-          "member_id": {
-            "title": "Member Id",
-            "type": "string"
-          }
-        },
-        "required": [
-          "member_id",
-          "given_name",
-          "family_name",
-          "date_of_birth"
-        ],
-        "title": "PatientView",
-        "type": "object"
-      },
-      "PlaceOfService": {
-        "enum": [
-          "INPATIENT",
-          "OUTPATIENT",
-          "OFFICE"
-        ],
-        "title": "PlaceOfService",
-        "type": "string"
-      },
       "PolicyStatus": {
         "enum": [
           "ACTIVE",
-          "LAPSED",
-          "CANCELLED"
+          "LAPSED"
         ],
         "title": "PolicyStatus",
         "type": "string"
-      },
-      "PolicyView": {
-        "properties": {
-          "effective_from": {
-            "format": "date",
-            "title": "Effective From",
-            "type": "string"
-          },
-          "effective_to": {
-            "anyOf": [
-              {
-                "format": "date",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Effective To"
-          },
-          "plan_code": {
-            "title": "Plan Code",
-            "type": "string"
-          },
-          "policy_number": {
-            "title": "Policy Number",
-            "type": "string"
-          },
-          "status": {
-            "$ref": "#/components/schemas/PolicyStatus"
-          }
-        },
-        "required": [
-          "policy_number",
-          "plan_code",
-          "status",
-          "effective_from",
-          "effective_to"
-        ],
-        "title": "PolicyView",
-        "type": "object"
       },
       "PostCallOutcome": {
         "properties": {
@@ -1307,28 +1232,82 @@
         "title": "PostCallOutcome",
         "type": "object"
       },
-      "ProviderView": {
+      "ProcedureView": {
         "properties": {
-          "credentialing_status": {
-            "$ref": "#/components/schemas/CredentialingStatus"
+          "category": {
+            "title": "Category",
+            "type": "string"
+          },
+          "decision_class": {
+            "$ref": "#/components/schemas/DecisionClass"
           },
           "name": {
             "title": "Name",
             "type": "string"
           },
-          "network_status": {
-            "$ref": "#/components/schemas/NetworkStatus"
+          "procedure_code": {
+            "title": "Procedure Code",
+            "type": "string"
+          },
+          "required_documents": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Required Documents",
+            "type": "array"
+          },
+          "specialty_required": {
+            "title": "Specialty Required",
+            "type": "string"
+          }
+        },
+        "required": [
+          "procedure_code",
+          "name",
+          "category",
+          "specialty_required",
+          "decision_class",
+          "required_documents"
+        ],
+        "title": "ProcedureView",
+        "type": "object"
+      },
+      "ProviderView": {
+        "properties": {
+          "directory_status": {
+            "$ref": "#/components/schemas/DirectoryStatus"
+          },
+          "emirate": {
+            "title": "Emirate",
+            "type": "string"
+          },
+          "facility_type": {
+            "title": "Facility Type",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
           },
           "provider_number": {
             "title": "Provider Number",
             "type": "string"
+          },
+          "specialties": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Specialties",
+            "type": "array"
           }
         },
         "required": [
           "provider_number",
           "name",
-          "network_status",
-          "credentialing_status"
+          "emirate",
+          "facility_type",
+          "directory_status",
+          "specialties"
         ],
         "title": "ProviderView",
         "type": "object"
@@ -1369,6 +1348,13 @@
           "engine_version": {
             "title": "Engine Version",
             "type": "string"
+          },
+          "escalation_citations": {
+            "items": {
+              "$ref": "#/components/schemas/EscalationRuleFacts"
+            },
+            "title": "Escalation Citations",
+            "type": "array"
           },
           "evaluation_id": {
             "title": "Evaluation Id",
@@ -1435,6 +1421,7 @@
           "evidence",
           "missing_information",
           "sources",
+          "escalation_citations",
           "engine_name",
           "engine_version",
           "ruleset_name",
@@ -1490,62 +1477,6 @@
           "media_type"
         ],
         "title": "RegisterDocumentCommand",
-        "type": "object"
-      },
-      "RequestedServiceView": {
-        "properties": {
-          "place_of_service": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/PlaceOfService"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "procedure_code": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Procedure Code"
-          },
-          "procedure_description": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Procedure Description"
-          },
-          "requested_service_date": {
-            "anyOf": [
-              {
-                "format": "date",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Requested Service Date"
-          }
-        },
-        "required": [
-          "procedure_code",
-          "procedure_description",
-          "requested_service_date",
-          "place_of_service"
-        ],
-        "title": "RequestedServiceView",
         "type": "object"
       },
       "RequiredInformationView": {
@@ -1695,6 +1626,13 @@
             "title": "Audit History",
             "type": "array"
           },
+          "call_logs": {
+            "items": {
+              "$ref": "#/components/schemas/CallLogView"
+            },
+            "title": "Call Logs",
+            "type": "array"
+          },
           "callbacks": {
             "items": {
               "$ref": "#/components/schemas/CallbackView"
@@ -1750,6 +1688,7 @@
           "recommendation_history",
           "decisions",
           "calls",
+          "call_logs",
           "pending_call_conversation_ids",
           "callbacks",
           "audit_history"
@@ -1785,6 +1724,17 @@
           "case_reference": {
             "title": "Case Reference",
             "type": "string"
+          },
+          "estimated_cost_aed": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimated Cost Aed"
           },
           "procedure_code": {
             "anyOf": [
@@ -1833,6 +1783,7 @@
           "review_queue",
           "urgency",
           "procedure_code",
+          "estimated_cost_aed",
           "review_requested_at",
           "assigned_reviewer_id"
         ],
@@ -1858,6 +1809,17 @@
       },
       "RuleResultView": {
         "properties": {
+          "escalation_rule_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Escalation Rule Id"
+          },
           "evidence": {
             "additionalProperties": true,
             "title": "Evidence",
@@ -1900,7 +1862,8 @@
           "explanation",
           "evidence",
           "missing_information",
-          "sources"
+          "sources",
+          "escalation_rule_id"
         ],
         "title": "RuleResultView",
         "type": "object"
@@ -1933,7 +1896,7 @@
       },
       "SourceReference": {
         "additionalProperties": false,
-        "description": "Where a fact used by a rule is written down (policy document section or system-of-record entry).",
+        "description": "Where a fact used by a rule is written down (policy document section or register entry).",
         "properties": {
           "document": {
             "title": "Document",
@@ -1949,6 +1912,49 @@
           "section"
         ],
         "title": "SourceReference",
+        "type": "object"
+      },
+      "TierView": {
+        "properties": {
+          "annual_limit_aed": {
+            "title": "Annual Limit Aed",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "network_name": {
+            "title": "Network Name",
+            "type": "string"
+          },
+          "out_of_network_covered": {
+            "title": "Out Of Network Covered",
+            "type": "boolean"
+          },
+          "pre_authorisation_threshold_aed": {
+            "title": "Pre Authorisation Threshold Aed",
+            "type": "integer"
+          },
+          "tier_id": {
+            "title": "Tier Id",
+            "type": "string"
+          },
+          "tier_rank": {
+            "title": "Tier Rank",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "tier_id",
+          "name",
+          "tier_rank",
+          "annual_limit_aed",
+          "pre_authorisation_threshold_aed",
+          "network_name",
+          "out_of_network_covered"
+        ],
+        "title": "TierView",
         "type": "object"
       },
       "Urgency": {
@@ -2363,152 +2369,6 @@
         "summary": "Invoke an agent tool",
         "tags": [
           "Voice agent tools"
-        ]
-      }
-    },
-    "/api/v1/cases": {
-      "post": {
-        "description": "Opens a new case, optionally with initial information. Returns the case with a short, speakable `case_reference` suitable for quoting to a caller.\n\n**Authorisation:** Actor type `PROVIDER_PORTAL` or `VOICE_AGENT`.\n\n**State transitions:** \u2192 `RECEIVED`; if information is supplied, `RECEIVED` \u2192 `INFORMATION_COLLECTION`.",
-        "operationId": "create_case_api_v1_cases_post",
-        "parameters": [
-          {
-            "description": "Shared gateway secret, required when the deployment configures one",
-            "in": "header",
-            "name": "x-gateway-secret",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Shared gateway secret, required when the deployment configures one",
-              "title": "X-Gateway-Secret"
-            }
-          },
-          {
-            "description": "Verified actor type set by the gateway",
-            "in": "header",
-            "name": "x-actor-type",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Verified actor type set by the gateway",
-              "title": "X-Actor-Type"
-            }
-          },
-          {
-            "description": "Verified actor identifier set by the gateway",
-            "in": "header",
-            "name": "x-actor-id",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Verified actor identifier set by the gateway",
-              "title": "X-Actor-Id"
-            }
-          },
-          {
-            "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
-            "in": "header",
-            "name": "x-actor-roles",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
-              "title": "X-Actor-Roles"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateCaseCommand"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CaseView"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "INTAKE_ACTOR_REQUIRED"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "REQUEST_VALIDATION_FAILED / UNKNOWN_PROVIDER / MEMBER_NOT_VERIFIED / UNKNOWN_POLICY / POLICY_MEMBER_MISMATCH / UNKNOWN_PROCEDURE / SERVICE_DATE_IN_PAST"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "INTERNAL_ERROR / INTEGRITY_VIOLATION"
-          }
-        },
-        "summary": "Create a pre-authorisation case",
-        "tags": [
-          "Provider interaction"
         ]
       }
     },
@@ -3319,520 +3179,6 @@
           }
         },
         "summary": "Register a supporting document",
-        "tags": [
-          "Provider interaction"
-        ]
-      }
-    },
-    "/api/v1/cases/{case_id}/evaluation": {
-      "post": {
-        "description": "Validates intake completeness, evaluates the ruleset, and generates an advisory recommendation, atomically. Incomplete intake is an expected outcome (HTTP 200, `validation_passed=false`), not an error.\n\n**Authorisation:** Actor type `PROVIDER_PORTAL` or `VOICE_AGENT`.\n\n**State transitions:** `INFORMATION_COLLECTION` \u2192 `VALIDATION` \u2192 either `PENDING_INFORMATION` (intake incomplete) or `RULE_EVALUATION` \u2192 `PENDING_INFORMATION` (recommendation `REQUEST_MORE_INFORMATION`) / `RECOMMENDATION_READY` (any other recommendation). Never reaches `APPROVED` or `DENIED`.",
-        "operationId": "submit_for_evaluation_api_v1_cases__case_id__evaluation_post",
-        "parameters": [
-          {
-            "description": "Case UUID",
-            "in": "path",
-            "name": "case_id",
-            "required": true,
-            "schema": {
-              "description": "Case UUID",
-              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
-              "title": "Case Id",
-              "type": "string"
-            }
-          },
-          {
-            "description": "Shared gateway secret, required when the deployment configures one",
-            "in": "header",
-            "name": "x-gateway-secret",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Shared gateway secret, required when the deployment configures one",
-              "title": "X-Gateway-Secret"
-            }
-          },
-          {
-            "description": "Verified actor type set by the gateway",
-            "in": "header",
-            "name": "x-actor-type",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Verified actor type set by the gateway",
-              "title": "X-Actor-Type"
-            }
-          },
-          {
-            "description": "Verified actor identifier set by the gateway",
-            "in": "header",
-            "name": "x-actor-id",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Verified actor identifier set by the gateway",
-              "title": "X-Actor-Id"
-            }
-          },
-          {
-            "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
-            "in": "header",
-            "name": "x-actor-roles",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
-              "title": "X-Actor-Roles"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/EvaluationResultView"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "INTAKE_ACTOR_REQUIRED"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "CASE_NOT_FOUND"
-          },
-          "409": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "INVALID_STATE_TRANSITION / CONCURRENT_MODIFICATION"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "REQUEST_VALIDATION_FAILED"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "INTERNAL_ERROR / INTEGRITY_VIOLATION"
-          }
-        },
-        "summary": "Submit the case for evaluation",
-        "tags": [
-          "Provider interaction"
-        ]
-      }
-    },
-    "/api/v1/cases/{case_id}/human-review-request": {
-      "post": {
-        "description": "Routes the current recommendation to a human review queue. `ESCALATE` recommendations go to the medical director queue; all others to clinical review.\n\n**Authorisation:** Actor type `PROVIDER_PORTAL`, `VOICE_AGENT`, or `SYSTEM`.\n\n**State transitions:** `RECOMMENDATION_READY` \u2192 `PENDING_HUMAN_REVIEW` or `ESCALATED`.",
-        "operationId": "request_human_review_api_v1_cases__case_id__human_review_request_post",
-        "parameters": [
-          {
-            "description": "Case UUID",
-            "in": "path",
-            "name": "case_id",
-            "required": true,
-            "schema": {
-              "description": "Case UUID",
-              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
-              "title": "Case Id",
-              "type": "string"
-            }
-          },
-          {
-            "description": "Shared gateway secret, required when the deployment configures one",
-            "in": "header",
-            "name": "x-gateway-secret",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Shared gateway secret, required when the deployment configures one",
-              "title": "X-Gateway-Secret"
-            }
-          },
-          {
-            "description": "Verified actor type set by the gateway",
-            "in": "header",
-            "name": "x-actor-type",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Verified actor type set by the gateway",
-              "title": "X-Actor-Type"
-            }
-          },
-          {
-            "description": "Verified actor identifier set by the gateway",
-            "in": "header",
-            "name": "x-actor-id",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Verified actor identifier set by the gateway",
-              "title": "X-Actor-Id"
-            }
-          },
-          {
-            "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
-            "in": "header",
-            "name": "x-actor-roles",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
-              "title": "X-Actor-Roles"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CaseStatusView"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "TRANSITION_NOT_AUTHORIZED"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "CASE_NOT_FOUND"
-          },
-          "409": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "RECOMMENDATION_NOT_READY / CONCURRENT_MODIFICATION"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "REQUEST_VALIDATION_FAILED"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "INTERNAL_ERROR / INTEGRITY_VIOLATION"
-          }
-        },
-        "summary": "Submit the case for human review",
-        "tags": [
-          "Provider interaction"
-        ]
-      }
-    },
-    "/api/v1/cases/{case_id}/information": {
-      "patch": {
-        "description": "Partial update: only fields present in the body are applied; explicit nulls are rejected. Identifiers are verified against reference data and any failure rejects the entire update. Records `INFORMATION_COLLECTED` and/or `INFORMATION_MODIFIED` audit events with previous values.\n\n**Authorisation:** Actor type `PROVIDER_PORTAL` or `VOICE_AGENT`.\n\n**State transitions:** `RECEIVED` / `PENDING_INFORMATION` / `RECOMMENDATION_READY` \u2192 `INFORMATION_COLLECTION` when anything changes (a changed case must be re-evaluated). Rejected in any other non-editable state.",
-        "operationId": "update_information_api_v1_cases__case_id__information_patch",
-        "parameters": [
-          {
-            "description": "Case UUID",
-            "in": "path",
-            "name": "case_id",
-            "required": true,
-            "schema": {
-              "description": "Case UUID",
-              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
-              "title": "Case Id",
-              "type": "string"
-            }
-          },
-          {
-            "description": "Shared gateway secret, required when the deployment configures one",
-            "in": "header",
-            "name": "x-gateway-secret",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Shared gateway secret, required when the deployment configures one",
-              "title": "X-Gateway-Secret"
-            }
-          },
-          {
-            "description": "Verified actor type set by the gateway",
-            "in": "header",
-            "name": "x-actor-type",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Verified actor type set by the gateway",
-              "title": "X-Actor-Type"
-            }
-          },
-          {
-            "description": "Verified actor identifier set by the gateway",
-            "in": "header",
-            "name": "x-actor-id",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Verified actor identifier set by the gateway",
-              "title": "X-Actor-Id"
-            }
-          },
-          {
-            "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
-            "in": "header",
-            "name": "x-actor-roles",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
-              "title": "X-Actor-Roles"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CaseInformationUpdate"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CaseView"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "INTAKE_ACTOR_REQUIRED"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "CASE_NOT_FOUND"
-          },
-          "409": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "CASE_NOT_EDITABLE / CONCURRENT_MODIFICATION"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "REQUEST_VALIDATION_FAILED / UNKNOWN_PROVIDER / MEMBER_NOT_VERIFIED / UNKNOWN_POLICY / POLICY_MEMBER_MISMATCH / UNKNOWN_PROCEDURE / SERVICE_DATE_IN_PAST"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "INTERNAL_ERROR / INTEGRITY_VIOLATION"
-          }
-        },
-        "summary": "Submit or update collected information",
         "tags": [
           "Provider interaction"
         ]

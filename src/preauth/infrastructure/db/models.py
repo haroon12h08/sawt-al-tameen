@@ -1,11 +1,12 @@
 """Relational schema.
 
-Reference data (plans, providers, patients, policies, procedures, coverage terms) stands in for systems that a
-production insurer would integrate with. Case, evaluation, recommendation, decision, and audit tables are the
-system of record for pre-authorisation.
+The catalogue tables (policy_tiers, procedures, coverage_terms, providers, members, escalation_rules,
+onboarding_*) are loaded from ``knowledge_base/`` by ``preauth.seed``. That catalogue is the single source of
+truth for every coverage decision: the rules engine reads these tables, and the same files are the agent's
+knowledge base, so a cited section always exists in a retrievable document.
 
-Append-only tables (enforced by database triggers in the migrations): rule_evaluations, rule_results,
-recommendations, review_decisions, audit_events, voice_tool_invocations, call_records.
+Append-only tables (enforced by database triggers in the migration): rule_evaluations, rule_results,
+recommendations, review_decisions, audit_events, voice_tool_invocations, call_records, caller_verifications.
 """
 
 from datetime import date, datetime
@@ -25,8 +26,8 @@ from sqlalchemy import (
     String,
     Text,
     UniqueConstraint,
+    text,
 )
-from sqlalchemy import text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 from preauth.domain.enums import (
@@ -37,13 +38,11 @@ from preauth.domain.enums import (
     CallerRole,
     CaseStatus,
     CloseReason,
-    CredentialingStatus,
+    DecisionClass,
+    DirectoryStatus,
     DocumentType,
     HumanDecisionType,
-    NetworkStatus,
-    PlaceOfService,
     PolicyStatus,
-    ProviderType,
     RecommendationOutcome,
     ReviewerRole,
     RuleCategory,
@@ -80,15 +79,84 @@ class Base(DeclarativeBase):
     metadata = MetaData(naming_convention=NAMING_CONVENTION)
 
 
-# --------------------------------------------------------------------------- reference data
+# --------------------------------------------------------------------------- catalogue
 
 
-class InsurancePlan(Base):
-    __tablename__ = "insurance_plans"
+class PolicyTier(Base):
+    """A policy tier (BASIC, ENHANCED, COMPREHENSIVE, EXECUTIVE) from knowledge_base/policy_tiers.json."""
 
-    plan_code: Mapped[str] = mapped_column(String(40), primary_key=True)
-    name: Mapped[str] = mapped_column(String(200))
+    __tablename__ = "policy_tiers"
+
+    tier_id: Mapped[str] = mapped_column(String(40), primary_key=True)
+    name: Mapped[str] = mapped_column(String(80))
+    product_name: Mapped[str] = mapped_column(String(200))
+    # 1 = Basic … 4 = Executive. Networks nest: a provider in a lower network is reachable by every higher tier.
+    tier_rank: Mapped[int] = mapped_column(Integer)
+    annual_limit_aed: Mapped[int] = mapped_column(Integer)
+    pre_authorisation_threshold_aed: Mapped[int] = mapped_column(Integer)
+    sub_limits_aed: Mapped[dict[str, Any]] = mapped_column(JsonType)
+    co_payments_percent: Mapped[dict[str, Any]] = mapped_column(JsonType)
+    co_payment_caps_aed: Mapped[dict[str, Any]] = mapped_column(JsonType)
+    waiting_periods_months: Mapped[dict[str, Any]] = mapped_column(JsonType)
+    network_id: Mapped[str] = mapped_column(String(60))
+    network_name: Mapped[str] = mapped_column(String(80))
     out_of_network_covered: Mapped[bool] = mapped_column(Boolean)
+    source_document: Mapped[str] = mapped_column(String(200))
+    notes: Mapped[str | None] = mapped_column(Text)
+
+
+class EscalationRule(Base):
+    """ESC-### rules from knowledge_base/escalation_rules.json, cited verbatim when a case is escalated."""
+
+    __tablename__ = "escalation_rules"
+
+    rule_id: Mapped[str] = mapped_column(String(20), primary_key=True)
+    title: Mapped[str] = mapped_column(String(120))
+    situation: Mapped[str] = mapped_column(Text)
+    agent_action: Mapped[str] = mapped_column(Text)
+
+
+class Procedure(Base):
+    __tablename__ = "procedures"
+
+    procedure_code: Mapped[str] = mapped_column(String(40), primary_key=True)
+    code_system: Mapped[str] = mapped_column(String(40))
+    name: Mapped[str] = mapped_column(String(300))
+    category: Mapped[str] = mapped_column(String(40))
+    specialty_required: Mapped[str] = mapped_column(String(80))
+    typical_billed_amount_aed: Mapped[int] = mapped_column(Integer)
+    pre_authorisation_rule: Mapped[str] = mapped_column(String(40))
+    minimum_tier: Mapped[str] = mapped_column(String(40))
+    waiting_period_months: Mapped[int] = mapped_column(Integer)
+    waiting_period_waived_for_emergency: Mapped[bool] = mapped_column(Boolean)
+    decision_class: Mapped[DecisionClass] = mapped_column(enum_column(DecisionClass))
+    escalation_rule_id: Mapped[str | None] = mapped_column(ForeignKey("escalation_rules.rule_id"))
+    escalation_reason: Mapped[str | None] = mapped_column(Text)
+    exclusions: Mapped[list[str]] = mapped_column(JsonType)
+    required_documents: Mapped[list[str]] = mapped_column(JsonType)
+
+    escalation_rule: Mapped[EscalationRule | None] = relationship()
+
+
+class CoverageTerm(Base):
+    """How one tier covers one procedure. This is what the coverage rules read."""
+
+    __tablename__ = "coverage_terms"
+    __table_args__ = (UniqueConstraint("tier_id", "procedure_code"),)
+
+    id: Mapped[str] = mapped_column(ID, primary_key=True)
+    tier_id: Mapped[str] = mapped_column(ForeignKey("policy_tiers.tier_id"), index=True)
+    procedure_code: Mapped[str] = mapped_column(ForeignKey("procedures.procedure_code"), index=True)
+    covered: Mapped[bool] = mapped_column(Boolean)
+    pre_authorisation_required: Mapped[bool] = mapped_column(Boolean)
+    member_co_payment_percent: Mapped[int | None] = mapped_column(Integer)
+    applicable_sub_limit_aed: Mapped[int | None] = mapped_column(Integer)
+    reason_not_covered: Mapped[str | None] = mapped_column(Text)
+    source_document: Mapped[str] = mapped_column(String(200))
+    source_section: Mapped[str] = mapped_column(String(200))
+
+    procedure: Mapped[Procedure] = relationship()
+    tier: Mapped[PolicyTier] = relationship()
 
 
 class Provider(Base):
@@ -97,96 +165,90 @@ class Provider(Base):
     id: Mapped[str] = mapped_column(ID, primary_key=True)
     provider_number: Mapped[str] = mapped_column(String(40), unique=True)
     name: Mapped[str] = mapped_column(String(200))
-    provider_type: Mapped[ProviderType] = mapped_column(enum_column(ProviderType))
-    specialty: Mapped[str] = mapped_column(String(100))
-    network_status: Mapped[NetworkStatus] = mapped_column(enum_column(NetworkStatus))
-    credentialing_status: Mapped[CredentialingStatus] = mapped_column(enum_column(CredentialingStatus))
+    emirate: Mapped[str] = mapped_column(String(60))
+    area: Mapped[str] = mapped_column(String(80))
+    facility_type: Mapped[str] = mapped_column(String(40))
+    regulator: Mapped[str] = mapped_column(String(20))
+    facility_licence_number: Mapped[str] = mapped_column(String(60))
+    # Lowest network the facility belongs to; members on that tier and above can use it.
+    minimum_network_rank: Mapped[int] = mapped_column(Integer)
+    specialties: Mapped[list[str]] = mapped_column(JsonType)
+    directory_status: Mapped[DirectoryStatus] = mapped_column(enum_column(DirectoryStatus))
+    notes: Mapped[str | None] = mapped_column(Text)
 
 
-class Patient(Base):
-    __tablename__ = "patients"
+class Member(Base):
+    """A policyholder from knowledge_base/sample_members.json. Dependants are held as structured JSON."""
+
+    __tablename__ = "members"
 
     id: Mapped[str] = mapped_column(ID, primary_key=True)
     member_id: Mapped[str] = mapped_column(String(40), unique=True)
+    policy_number: Mapped[str] = mapped_column(String(40), unique=True)
     given_name: Mapped[str] = mapped_column(String(100))
     family_name: Mapped[str] = mapped_column(String(100))
+    nationality: Mapped[str] = mapped_column(String(60))
     date_of_birth: Mapped[date] = mapped_column(Date)
+    emirates_id: Mapped[str] = mapped_column(String(30), unique=True)
+    mobile: Mapped[str | None] = mapped_column(String(20))
+    tier_id: Mapped[str] = mapped_column(ForeignKey("policy_tiers.tier_id"), index=True)
+    policy_status: Mapped[PolicyStatus] = mapped_column(enum_column(PolicyStatus))
+    policy_start_date: Mapped[date] = mapped_column(Date)
+    policy_renewal_date: Mapped[date | None] = mapped_column(Date)
+    policy_lapse_date: Mapped[date | None] = mapped_column(Date)
+    emirate_of_residence: Mapped[str] = mapped_column(String(60))
+    sponsor: Mapped[str | None] = mapped_column(String(200))
+    dependents: Mapped[list[dict[str, Any]]] = mapped_column(JsonType)
+
+    tier: Mapped[PolicyTier] = relationship()
 
 
-class Policy(Base):
-    __tablename__ = "policies"
+class OnboardingRequirement(Base):
+    __tablename__ = "onboarding_requirements"
+
+    requirement_id: Mapped[str] = mapped_column(String(20), primary_key=True)
+    name: Mapped[str] = mapped_column(String(200))
+    issuing_authority: Mapped[str] = mapped_column(String(200))
+    mandatory: Mapped[bool] = mapped_column(Boolean)
+    validity_months: Mapped[int] = mapped_column(Integer)
+    notes: Mapped[str | None] = mapped_column(Text)
+
+
+class OnboardingApplication(Base):
+    __tablename__ = "onboarding_applications"
+
+    application_id: Mapped[str] = mapped_column(String(40), primary_key=True)
+    provider_id: Mapped[str] = mapped_column(ForeignKey("providers.id"), index=True)
+    provider_name: Mapped[str] = mapped_column(String(200))
+    provider_status: Mapped[str] = mapped_column(String(40))
+    documents: Mapped[list[dict[str, Any]]] = mapped_column(JsonType)
+    outstanding: Mapped[list[str]] = mapped_column(JsonType)
+
+    provider: Mapped[Provider] = relationship()
+
+
+# --------------------------------------------------------------------------- caller verification
+
+
+class CallerVerification(Base):
+    """Result of verify_caller. check_coverage_rule requires one: the agent cannot check cover before verifying."""
+
+    __tablename__ = "caller_verifications"
 
     id: Mapped[str] = mapped_column(ID, primary_key=True)
-    policy_number: Mapped[str] = mapped_column(String(40), unique=True)
-    patient_id: Mapped[str] = mapped_column(ForeignKey("patients.id"), index=True)
-    plan_code: Mapped[str] = mapped_column(ForeignKey("insurance_plans.plan_code"))
-    status: Mapped[PolicyStatus] = mapped_column(enum_column(PolicyStatus))
-    effective_from: Mapped[date] = mapped_column(Date)
-    effective_to: Mapped[date | None] = mapped_column(Date)
+    conversation_id: Mapped[str | None] = mapped_column(String(100), index=True)
+    caller_role: Mapped[CallerRole] = mapped_column(enum_column(CallerRole))
+    organisation_name: Mapped[str] = mapped_column(String(200))
+    caller_reference: Mapped[str] = mapped_column(String(60))
+    caller_name: Mapped[str | None] = mapped_column(String(100))
+    provider_id: Mapped[str | None] = mapped_column(ForeignKey("providers.id"))
+    member_id: Mapped[str | None] = mapped_column(ForeignKey("members.id"))
+    authorised: Mapped[bool] = mapped_column(Boolean)
+    failure_code: Mapped[str | None] = mapped_column(String(60))
+    verified_at: Mapped[datetime] = mapped_column(UTCDateTime)
 
-    plan: Mapped[InsurancePlan] = relationship()
-    patient: Mapped[Patient] = relationship()
-
-
-class Procedure(Base):
-    __tablename__ = "procedures"
-
-    procedure_code: Mapped[str] = mapped_column(String(40), primary_key=True)
-    description: Mapped[str] = mapped_column(String(300))
-    category: Mapped[str] = mapped_column(String(60))
-
-
-class CoverageTerm(Base):
-    """Plan-specific coverage terms for a procedure. This is the knowledge the rules consult."""
-
-    __tablename__ = "coverage_terms"
-    __table_args__ = (
-        UniqueConstraint("plan_code", "procedure_code"),
-        CheckConstraint("min_conservative_treatment_weeks >= 0", name="min_weeks_non_negative"),
-        CheckConstraint("annual_case_limit >= 1", name="annual_limit_positive"),
-    )
-
-    id: Mapped[str] = mapped_column(ID, primary_key=True)
-    plan_code: Mapped[str] = mapped_column(ForeignKey("insurance_plans.plan_code"))
-    procedure_code: Mapped[str] = mapped_column(ForeignKey("procedures.procedure_code"))
-    covered: Mapped[bool] = mapped_column(Boolean)
-    preauth_required: Mapped[bool] = mapped_column(Boolean)
-    min_conservative_treatment_weeks: Mapped[int | None] = mapped_column(Integer)
-    annual_case_limit: Mapped[int | None] = mapped_column(Integer)
-    # Where these terms are written down; cited in rule evidence and recommendations.
-    source_document: Mapped[str | None] = mapped_column(String(200))
-    source_section: Mapped[str | None] = mapped_column(String(100))
-
-    required_documents: Mapped[list["CoverageRequiredDocument"]] = relationship(
-        order_by="CoverageRequiredDocument.document_type"
-    )
-    indicated_diagnoses: Mapped[list["CoverageIndicatedDiagnosis"]] = relationship(
-        order_by="CoverageIndicatedDiagnosis.diagnosis_code"
-    )
-
-
-class CoverageRequiredDocument(Base):
-    __tablename__ = "coverage_required_documents"
-
-    coverage_term_id: Mapped[str] = mapped_column(ForeignKey("coverage_terms.id"), primary_key=True)
-    document_type: Mapped[DocumentType] = mapped_column(enum_column(DocumentType), primary_key=True)
-
-
-class CoverageIndicatedDiagnosis(Base):
-    __tablename__ = "coverage_indicated_diagnoses"
-
-    coverage_term_id: Mapped[str] = mapped_column(ForeignKey("coverage_terms.id"), primary_key=True)
-    diagnosis_code: Mapped[str] = mapped_column(String(10), primary_key=True)
-
-
-class RuleDefinition(Base):
-    __tablename__ = "rule_definitions"
-
-    rule_id: Mapped[str] = mapped_column(String(80), primary_key=True)
-    version: Mapped[str] = mapped_column(String(20), primary_key=True)
-    description: Mapped[str] = mapped_column(Text)
-    category: Mapped[RuleCategory] = mapped_column(enum_column(RuleCategory))
-    first_registered_at: Mapped[datetime] = mapped_column(UTCDateTime)
+    provider: Mapped[Provider | None] = relationship()
+    member: Mapped[Member | None] = relationship()
 
 
 # --------------------------------------------------------------------------- cases
@@ -194,9 +256,7 @@ class RuleDefinition(Base):
 
 class PreAuthorizationCase(Base):
     __tablename__ = "pre_authorization_cases"
-    __table_args__ = (
-        CheckConstraint("conservative_treatment_weeks >= 0", name="conservative_weeks_non_negative"),
-    )
+    __table_args__ = (CheckConstraint("estimated_cost_aed >= 0", name="estimated_cost_non_negative"),)
 
     id: Mapped[str] = mapped_column(ID, primary_key=True)
     case_reference: Mapped[str] = mapped_column(String(20), unique=True)
@@ -204,20 +264,21 @@ class PreAuthorizationCase(Base):
     created_by_actor_type: Mapped[ActorType] = mapped_column(enum_column(ActorType))
     created_by_actor_id: Mapped[str] = mapped_column(String(100))
 
+    verification_id: Mapped[str | None] = mapped_column(ForeignKey("caller_verifications.id"))
+    caller_name: Mapped[str | None] = mapped_column(String(100))
+    caller_role: Mapped[CallerRole | None] = mapped_column(enum_column(CallerRole))
+    caller_organisation: Mapped[str | None] = mapped_column(String(200))
+
     provider_id: Mapped[str | None] = mapped_column(ForeignKey("providers.id"), index=True)
-    patient_id: Mapped[str | None] = mapped_column(ForeignKey("patients.id"), index=True)
-    policy_id: Mapped[str | None] = mapped_column(ForeignKey("policies.id"))
+    member_id: Mapped[str | None] = mapped_column(ForeignKey("members.id"), index=True)
+    # Plain column, not a foreign key: a caller may quote a code that is not in the schedule, which is itself a
+    # finding (ESC-005) and must still produce a case the medical director can review.
+    procedure_code: Mapped[str | None] = mapped_column(String(40))
+    treatment_date: Mapped[date | None] = mapped_column(Date)
+    estimated_cost_aed: Mapped[int | None] = mapped_column(Integer)
     urgency: Mapped[Urgency | None] = mapped_column(enum_column(Urgency))
     diagnosis_code: Mapped[str | None] = mapped_column(String(10))
-    diagnosis_description: Mapped[str | None] = mapped_column(String(300))
-    conservative_treatment_weeks: Mapped[int | None] = mapped_column(Integer)
     clinical_summary: Mapped[str | None] = mapped_column(Text)
-    caller_name: Mapped[str | None] = mapped_column(String(100))
-    # Plain VARCHAR (no CHECK): added after the initial schema; validated by the application commands.
-    caller_role: Mapped[CallerRole | None] = mapped_column(
-        Enum(CallerRole, native_enum=False, create_constraint=False, length=40,
-             values_callable=lambda e: [m.value for m in e])
-    )
 
     review_requested_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
     assigned_reviewer_id: Mapped[str | None] = mapped_column(String(100))
@@ -232,25 +293,8 @@ class PreAuthorizationCase(Base):
     __mapper_args__ = {"version_id_col": version}
 
     provider: Mapped[Provider | None] = relationship()
-    patient: Mapped[Patient | None] = relationship()
-    policy: Mapped[Policy | None] = relationship()
-    requested_service: Mapped["RequestedService"] = relationship(back_populates="case")
+    member: Mapped[Member | None] = relationship()
     documents: Mapped[list["CaseDocument"]] = relationship(order_by="CaseDocument.registered_at")
-
-
-class RequestedService(Base):
-    """The service requested on a case. Phase 1 supports exactly one service per case (unique case_id)."""
-
-    __tablename__ = "requested_services"
-
-    id: Mapped[str] = mapped_column(ID, primary_key=True)
-    case_id: Mapped[str] = mapped_column(ForeignKey("pre_authorization_cases.id"), unique=True)
-    procedure_code: Mapped[str | None] = mapped_column(ForeignKey("procedures.procedure_code"))
-    requested_service_date: Mapped[date | None] = mapped_column(Date)
-    place_of_service: Mapped[PlaceOfService | None] = mapped_column(enum_column(PlaceOfService))
-
-    case: Mapped[PreAuthorizationCase] = relationship(back_populates="requested_service")
-    procedure: Mapped[Procedure | None] = relationship()
 
 
 class CaseDocument(Base):
@@ -271,6 +315,16 @@ class CaseDocument(Base):
 
 
 # --------------------------------------------------------------------------- evaluation & recommendation
+
+
+class RuleDefinition(Base):
+    __tablename__ = "rule_definitions"
+
+    rule_id: Mapped[str] = mapped_column(String(80), primary_key=True)
+    version: Mapped[str] = mapped_column(String(20), primary_key=True)
+    description: Mapped[str] = mapped_column(Text)
+    category: Mapped[RuleCategory] = mapped_column(enum_column(RuleCategory))
+    first_registered_at: Mapped[datetime] = mapped_column(UTCDateTime)
 
 
 class RuleEvaluation(Base):
@@ -308,7 +362,8 @@ class RuleResultRecord(Base):
     explanation: Mapped[str] = mapped_column(Text)
     evidence: Mapped[dict[str, Any]] = mapped_column(JsonType)
     missing_information: Mapped[list[dict[str, Any]]] = mapped_column(JsonType)
-    sources: Mapped[list[dict[str, Any]]] = mapped_column(JsonType, server_default=text("'[]'"))
+    sources: Mapped[list[dict[str, Any]]] = mapped_column(JsonType)
+    escalation_rule_id: Mapped[str | None] = mapped_column(String(20))
 
 
 class Recommendation(Base):
@@ -322,10 +377,11 @@ class Recommendation(Base):
     determining_rule_ids: Mapped[list[str]] = mapped_column(JsonType)
     evidence: Mapped[dict[str, Any]] = mapped_column(JsonType)
     missing_information: Mapped[list[dict[str, Any]]] = mapped_column(JsonType)
+    sources: Mapped[list[dict[str, Any]]] = mapped_column(JsonType)
+    escalation_citations: Mapped[list[dict[str, Any]]] = mapped_column(JsonType)
     engine_name: Mapped[str] = mapped_column(String(80))
     engine_version: Mapped[str] = mapped_column(String(40))
     generated_at: Mapped[datetime] = mapped_column(UTCDateTime)
-    sources: Mapped[list[dict[str, Any]]] = mapped_column(JsonType, server_default=text("'[]'"))
 
     evaluation: Mapped[RuleEvaluation] = relationship()
 
@@ -338,7 +394,6 @@ class ReviewDecision(Base):
 
     __tablename__ = "review_decisions"
     __table_args__ = (
-        # A decision's resulting status is fixed by its type; the database refuses inconsistent rows.
         CheckConstraint(
             "(decision = 'APPROVE' AND to_status = 'APPROVED')"
             " OR (decision = 'DENY' AND to_status = 'DENIED')"
@@ -389,7 +444,7 @@ class AuditEvent(Base):
 
 
 class CallbackRequest(Base):
-    """A request for a human to call the caller back: ambiguous, non-rule-based, or out-of-scope enquiries."""
+    """A request for a human to call back: ambiguous, non-rule-based, or out-of-scope enquiries."""
 
     __tablename__ = "callback_requests"
 
@@ -448,6 +503,22 @@ class CallRecord(Base):
     received_at: Mapped[datetime] = mapped_column(UTCDateTime)
 
 
+class CallLog(Base):
+    """In-call summary written by the log_transcript tool, before any sign-off language is spoken."""
+
+    __tablename__ = "call_logs"
+
+    id: Mapped[str] = mapped_column(ID, primary_key=True)
+    reference: Mapped[str] = mapped_column(String(20), unique=True)
+    conversation_id: Mapped[str | None] = mapped_column(String(100), index=True)
+    case_id: Mapped[str | None] = mapped_column(ForeignKey("pre_authorization_cases.id"), index=True)
+    callback_id: Mapped[str | None] = mapped_column(ForeignKey("callback_requests.id"))
+    caller_role: Mapped[CallerRole | None] = mapped_column(enum_column(CallerRole))
+    outcome_communicated: Mapped[str] = mapped_column(String(60))
+    summary: Mapped[str] = mapped_column(Text)
+    logged_at: Mapped[datetime] = mapped_column(UTCDateTime)
+
+
 APPEND_ONLY_TABLES = (
     "rule_evaluations",
     "rule_results",
@@ -456,4 +527,6 @@ APPEND_ONLY_TABLES = (
     "audit_events",
     "voice_tool_invocations",
     "call_records",
+    "caller_verifications",
+    "call_logs",
 )

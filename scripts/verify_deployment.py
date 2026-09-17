@@ -1,15 +1,15 @@
 """End-to-end check of a running deployment, exercising exactly what the voice agent will do.
 
 Run this against your public URL before pointing ElevenLabs at it. It walks a synthetic pre-authorisation call
-from first tool call to human sign-off, and verifies the guardrails along the way.
+from verification to human sign-off, and verifies the guardrails along the way.
 
     export PREAUTH_VOICE_AGENT_TOKEN=...            # required
     export PREAUTH_GATEWAY_SECRET=...               # if the deployment sets one
     export PREAUTH_ELEVENLABS_WEBHOOK_SECRET=...    # to test the post-call webhook
     uv run python scripts/verify_deployment.py --base-url https://your-backend.example
 
-The deployment must have the synthetic reference data loaded (`python -m preauth.seed`). The case this creates is
-closed at the end, and everything it touches is synthetic.
+The deployment must have the catalogue loaded (`python -m preauth.seed`). The case this creates is closed at the
+end, and everything it touches is synthetic.
 """
 
 import argparse
@@ -26,7 +26,12 @@ from typing import Any
 from preauth.infrastructure.elevenlabs_signature import sign
 
 CONVERSATION_ID = f"verify_{uuid.uuid4().hex[:12]}"
-MEMBER = {"patient_member_id": "MBR-5001-01", "patient_date_of_birth": "1984-03-12"}
+PROVIDER = "PRV-30011"                          # Al Hudaiba Crescent Hospital, active, Orthopaedics
+MEMBER = ("POL-SA-2026-100001", "1986-04-17")   # Fatima Al Mansoori, Executive tier
+LAPSED_MEMBER = ("POL-SA-2026-100008", "1990-12-04")
+PROCEDURE = "SP-20040"                          # Knee arthroscopy: covered, needs three documents
+AMBIGUOUS_PROCEDURE = "SP-20110"                # Sleeve gastrectomy: ambiguous, escalates under ESC-003
+REVIEWER = {"X-Actor-Type": "HUMAN_REVIEWER", "X-Actor-Id": "verify-reviewer", "X-Actor-Roles": "CLINICAL_REVIEWER"}
 
 passed: list[str] = []
 failed: list[str] = []
@@ -47,7 +52,8 @@ class Client:
         self.gateway = {"X-Gateway-Secret": gateway_secret} if gateway_secret else {}
 
     def request(
-        self, method: str, path: str, body: Any = None, headers: dict[str, str] | None = None, raw: bytes | None = None
+        self, method: str, path: str, body: Any = None, headers: dict[str, str] | None = None,
+        raw: bytes | None = None,
     ) -> tuple[int, Any]:
         data = raw if raw is not None else (json.dumps(body).encode() if body is not None else None)
         req = urllib.request.Request(
@@ -67,18 +73,15 @@ class Client:
         except urllib.error.URLError as e:
             return 0, str(e)
 
-    def tool(self, name: str, arguments: dict[str, Any]) -> Any:
+    def tool(self, name: str, arguments: dict[str, Any]) -> dict[str, Any]:
         status, body = self.request("POST", f"/api/v1/voice/tools/{name}", arguments, self.voice_headers)
         if status != 200:
             return {"ok": False, "error": {"code": f"HTTP_{status}", "message": str(body)}}
         return body
 
-    def staff(self, method: str, path: str, body: Any = None, actor: dict[str, str] | None = None) -> tuple[int, Any]:
+    def staff(self, method: str, path: str, body: Any = None, actor: dict[str, str] | None = None):
         headers = {**self.gateway, **(actor or {"X-Actor-Type": "PROVIDER_PORTAL", "X-Actor-Id": "verify-script"})}
         return self.request(method, path, body, headers)
-
-
-REVIEWER = {"X-Actor-Type": "HUMAN_REVIEWER", "X-Actor-Id": "verify-reviewer", "X-Actor-Roles": "CLINICAL_REVIEWER"}
 
 
 def main() -> int:
@@ -93,6 +96,7 @@ def main() -> int:
     gateway_secret = os.environ.get("PREAUTH_GATEWAY_SECRET", "").strip() or None
     webhook_secret = os.environ.get("PREAUTH_ELEVENLABS_WEBHOOK_SECRET", "").strip() or None
     client = Client(args.base_url, token, gateway_secret)
+    treatment_date = (date.today() + timedelta(days=21)).isoformat()
     print(f"Verifying {client.base}  (conversation {CONVERSATION_ID})\n")
 
     print("Reachability and authentication")
@@ -100,7 +104,7 @@ def main() -> int:
     if not check("health endpoint responds", status == 200 and body == {"status": "ok"}, str(body)[:80]):
         print("\nBackend not reachable; nothing else can be checked.")
         return 1
-    status, _ = client.request("POST", "/api/v1/voice/tools/get_case_status", {}, {"Authorization": "Bearer wrong"})
+    status, _ = client.request("POST", "/api/v1/voice/tools/verify_caller", {}, {"Authorization": "Bearer wrong"})
     check("voice tools reject a wrong token", status == 401, f"got HTTP {status}")
     if gateway_secret:
         status, _ = client.request("GET", "/api/v1/review/queues/CLINICAL_REVIEW", headers=REVIEWER)
@@ -108,88 +112,163 @@ def main() -> int:
     status, _ = client.staff("GET", "/api/v1/review/queues/CLINICAL_REVIEW", actor=REVIEWER)
     check("reviewer API reachable with credentials", status == 200, f"got HTTP {status}")
 
-    print("\nIntake (as the voice agent)")
-    created = client.tool(
-        "create_pre_authorization_case",
-        {"caller_name": "Verification Script", "caller_role": "PROVIDER_STAFF", "provider_number": "PRV-100234"},
-    )
-    if not created.get("ok"):
-        code = created["error"]["code"]
-        check("case created", False, code)
-        if code == "UNKNOWN_PROVIDER":
-            print("\nThe deployment has no reference data. Run: python -m preauth.seed")
-        return 1
-    case = created["result"]
-    case_id, reference = case["id"], case["case_reference"]
-    check("case created", True, reference)
-
-    wrong_dob = client.tool("submit_information", {"case_id": case_id, **{**MEMBER, "patient_date_of_birth": "1990-01-01"}})
-    check(
-        "wrong date of birth is refused with guidance",
-        not wrong_dob.get("ok") and wrong_dob["error"]["code"] == "MEMBER_NOT_VERIFIED" and bool(wrong_dob.get("guidance")),
-        str((wrong_dob.get("error") or {}).get("code")),
-    )
-
-    service_date = (date.today() + timedelta(days=14)).isoformat()
-    intake = client.tool(
-        "submit_information",
+    print("\nCaller verification")
+    verification = client.tool(
+        "verify_caller",
         {
-            "case_id": case_id, **MEMBER, "policy_number": "POL-000101", "procedure_code": "PROC-MRI-KNEE",
-            "requested_service_date": service_date, "place_of_service": "OUTPATIENT", "diagnosis_code": "M23.221",
-            "urgency": "STANDARD", "conservative_treatment_weeks": 8,
+            "caller_role": "PROVIDER_STAFF", "organisation_name": "Al Hudaiba Crescent Hospital",
+            "caller_reference": PROVIDER, "caller_name": "Verification Script",
+            "member_policy_number": MEMBER[0], "member_date_of_birth": MEMBER[1],
         },
     )
-    check("intake accepted", intake.get("ok") is True, str((intake.get("error") or {}).get("code")))
-
-    needed = client.tool("get_required_information", {"case_id": case_id})
-    missing_codes = [m["code"] for m in needed.get("result", {}).get("missing_information", [])]
-    check("required information lists the missing document", missing_codes == ["document.CLINICAL_NOTES"], str(missing_codes))
-
-    print("\nRules, documents and recommendation")
-    evaluated = client.tool("evaluate_case", {"case_id": case_id})
+    if not verification.get("ok"):
+        check("caller verified", False, str((verification.get("error") or {}).get("code")))
+        print("\nThe deployment has no catalogue loaded. Run: python -m preauth.seed")
+        return 1
+    result = verification["result"]
     check(
-        "evaluation asks for the missing document",
-        evaluated.get("result", {}).get("status") == "PENDING_INFORMATION",
-        str(evaluated.get("result", {}).get("status")),
+        "active member verified with tier and dependants",
+        result["authorised"] and result["member"]["tier"]["tier_id"] == "EXECUTIVE"
+        and len(result["member"]["dependents"]) == 2,
+        f"tier {result['member']['tier']['tier_id']}",
     )
-    status, _ = client.staff(
-        "POST", f"/api/v1/cases/{case_id}/documents",
-        {"document_type": "CLINICAL_NOTES", "title": "Verification note",
-         "storage_uri": "docstore://verify/notes.pdf", "media_type": "application/pdf"},
-    )
-    check("document registered through the provider API", status == 201, f"got HTTP {status}")
+    verification_id = result["verification_id"]
 
-    evaluated = client.tool("evaluate_case", {"case_id": case_id})
-    result = evaluated.get("result", {})
-    recommendation = result.get("recommendation") or {}
-    check("case is ready for review", result.get("status") == "RECOMMENDATION_READY", str(result.get("status")))
-    check(
-        "recommendation is advisory and cites sources",
-        recommendation.get("advisory_only") is True and bool(recommendation.get("sources")),
-        f"{len(recommendation.get('sources', []))} sources",
+    lapsed = client.tool(
+        "verify_caller",
+        {
+            "caller_role": "PROVIDER_STAFF", "organisation_name": "Al Hudaiba Crescent Hospital",
+            "caller_reference": PROVIDER, "member_policy_number": LAPSED_MEMBER[0],
+            "member_date_of_birth": LAPSED_MEMBER[1],
+        },
     )
-    routed = client.tool("request_human_review", {"case_id": case_id})
     check(
-        "case routed to a human reviewer",
-        routed.get("result", {}).get("status") == "PENDING_HUMAN_REVIEW",
-        str(routed.get("result", {}).get("status")),
+        "lapsed member is rejected",
+        lapsed["result"]["authorised"] is False and lapsed["result"]["failure_code"] == "POLICY_NOT_ACTIVE",
+        str(lapsed["result"]["failure_code"]),
+    )
+    wrong_dob = client.tool(
+        "verify_caller",
+        {
+            "caller_role": "PROVIDER_STAFF", "organisation_name": "Al Hudaiba Crescent Hospital",
+            "caller_reference": PROVIDER, "member_policy_number": MEMBER[0],
+            "member_date_of_birth": "1990-01-01",
+        },
+    )
+    check(
+        "wrong date of birth is rejected",
+        wrong_dob["result"]["failure_code"] == "MEMBER_NOT_VERIFIED",
+        str(wrong_dob["result"]["failure_code"]),
+    )
+    supplier = client.tool(
+        "verify_caller",
+        {"caller_role": "SUPPLIER", "organisation_name": "Gulf Medical Supplies",
+         "caller_reference": "ONB-APP-2026-0007"},
+    )
+    check(
+        "supplier onboarding status returned",
+        bool(supplier["result"]["onboarding"]["outstanding_requirements"]),
+        f"{len(supplier['result']['onboarding']['outstanding_requirements'])} outstanding",
+    )
+
+    print("\nCoverage checks")
+    unverified = client.tool(
+        "check_coverage_rule",
+        {"verification_id": supplier["result"]["verification_id"], "procedure_code": PROCEDURE,
+         "treatment_date": treatment_date, "estimated_cost_aed": 21000},
+    )
+    check(
+        "a supplier cannot request a coverage check",
+        unverified["ok"] is False, str((unverified.get("error") or {}).get("code")),
+    )
+
+    first = client.tool(
+        "check_coverage_rule",
+        {"verification_id": verification_id, "procedure_code": PROCEDURE,
+         "treatment_date": treatment_date, "estimated_cost_aed": 21000},
+    )
+    first_result = first.get("result") or {}
+    check(
+        "missing documents are itemised",
+        first_result.get("outcome") == "REQUEST_MORE_INFORMATION"
+        and len(first_result.get("missing_information", [])) == 3,
+        str(first_result.get("outcome")),
+    )
+    case_reference, case_id = first_result["case_reference"], first_result["case_id"]
+
+    status = 0
+    for document_type in ("CLINICAL_NOTES", "OPERATIVE_PLAN", "PRIOR_TREATMENT_RECORD"):
+        status, _ = client.staff(
+            "POST", f"/api/v1/cases/{case_id}/documents",
+            {"document_type": document_type, "title": f"Verification {document_type}",
+             "storage_uri": f"docstore://verify/{document_type.lower()}.pdf", "media_type": "application/pdf"},
+        )
+        if status != 201:
+            break
+    check("documents registered through the provider API", status == 201, f"got HTTP {status}")
+
+    second = client.tool(
+        "check_coverage_rule",
+        {"verification_id": verification_id, "procedure_code": PROCEDURE, "treatment_date": treatment_date,
+         "estimated_cost_aed": 21000, "case_reference": case_reference},
+    )
+    coverage = second.get("result") or {}
+    check("complete request prepares a recommendation",
+          coverage.get("outcome") == "RECOMMEND_APPROVAL", str(coverage.get("outcome")))
+    check("recommendation is advisory only", coverage.get("advisory_only") is True)
+    check(
+        "sources cite the benefit schedule in knowledge_base/",
+        any("Schedule of Benefits" in s["document"] for s in coverage.get("sources", [])),
+        str([s["document"] for s in coverage.get("sources", [])][:1])[:60],
+    )
+    check("case routed to a human queue",
+          coverage.get("status") == "PENDING_HUMAN_REVIEW", str(coverage.get("status")))
+
+    ambiguous = client.tool(
+        "check_coverage_rule",
+        {"verification_id": verification_id, "procedure_code": AMBIGUOUS_PROCEDURE,
+         "treatment_date": treatment_date, "estimated_cost_aed": 48000},
+    )
+    ambiguous_result = ambiguous.get("result") or {}
+    citations = ambiguous_result.get("escalation_citations", [])
+    check(
+        "ambiguous procedure escalates with a cited rule",
+        ambiguous_result.get("outcome") == "ESCALATE" and bool(citations),
+        str([c["rule_id"] for c in citations]),
+    )
+    check(
+        "escalation citation carries the rule text, not a generic message",
+        bool(citations and citations[0].get("situation") and citations[0].get("agent_action")),
     )
 
     print("\nGuardrails")
-    for name in ("approve_case", "record_decision"):
-        response = client.tool(name, {"case_id": case_id})
-        check(f"no {name} tool exists", response["error"]["code"] == "TOOL_NOT_FOUND", str(response["error"]["code"]))
+    for name in ("record_decision", "approve_case", "finalise_authorisation"):
+        response = client.tool(name, {})
+        check(f"no {name} tool exists",
+              (response.get("error") or {}).get("code") == "TOOL_NOT_FOUND",
+              str((response.get("error") or {}).get("code")))
+
+    logged = client.tool(
+        "log_transcript",
+        {"summary": "Deployment verification: arthroscopy request, recommendation prepared for sign-off.",
+         "outcome_communicated": "RECOMMENDATION_PREPARED", "verification_id": verification_id,
+         "case_reference": case_reference},
+    )
+    check("log_transcript returns a reference",
+          bool(logged.get("ok")) and logged["result"]["reference"].startswith("CL-"),
+          str((logged.get("result") or {}).get("reference")))
 
     status, _ = client.staff("POST", f"/api/v1/review/cases/{case_id}/assignment", actor=REVIEWER)
     check("reviewer can self-assign", status == 200, f"got HTTP {status}")
-    decision = {
-        "recommendation_id": recommendation.get("id", ""),
-        "decision": "APPROVE",
-        "rationale": "Deployment verification: criteria met and documentation present.",
-    }
+
+    status, body = client.staff("GET", f"/api/v1/cases/{case_id}/recommendation", actor=REVIEWER)
+    recommendation_id = (body or {}).get("id", "")
+    decision = {"recommendation_id": recommendation_id, "decision": "APPROVE",
+                "rationale": "Deployment verification: criteria met and documentation complete."}
     status, body = client.staff("POST", f"/api/v1/review/cases/{case_id}/decision", decision, actor=REVIEWER)
     blocked = status == 409 and (body.get("error") or {}).get("code") == "CALL_RECORD_PENDING"
-    check("sign-off blocked until the call transcript is logged", blocked, str((body.get("error") or {}).get("code")))
+    check("sign-off blocked until the call transcript is logged", blocked,
+          str((body.get("error") or {}).get("code")))
 
     print("\nPost-call webhook")
     if webhook_secret:
@@ -213,12 +292,12 @@ def main() -> int:
             "POST", "/api/v1/voice/elevenlabs/post-call", raw=raw,
             headers={"elevenlabs-signature": sign(raw, webhook_secret, int(time.time()))},
         )
-        accepted = status == 200 and body.get("accepted") is True
-        check("webhook stores the transcript", accepted, str(body)[:80])
-        check("transcript is linked to the case", case_id in (body.get("linked_case_ids") or []), str(body.get("linked_case_ids")))
+        check("webhook stores the transcript", status == 200 and body.get("accepted") is True, str(body)[:60])
+        check("transcript is linked to the case", case_id in (body.get("linked_case_ids") or []))
 
         status, body = client.staff("POST", f"/api/v1/review/cases/{case_id}/decision", decision, actor=REVIEWER)
-        check("sign-off succeeds once logged", status == 201 and body.get("to_status") == "APPROVED", f"HTTP {status}")
+        check("sign-off succeeds once logged",
+              status == 201 and body.get("to_status") == "APPROVED", f"HTTP {status}")
         status, _ = client.staff(
             "POST", f"/api/v1/cases/{case_id}/closure", {"reason": "DECISION_COMMUNICATED"},
             actor={"X-Actor-Type": "SYSTEM", "X-Actor-Id": "verify-script"},
@@ -232,7 +311,7 @@ def main() -> int:
     if failed:
         print("Failed: " + ", ".join(failed))
         return 1
-    print(f"Deployment looks good. Case {reference} was created and cleaned up.")
+    print(f"Deployment looks good. Case {case_reference} was created and closed.")
     return 0
 
 

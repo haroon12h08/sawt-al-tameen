@@ -10,7 +10,7 @@ pinned: false
 
 # Sawt Al Tameen — pre-authorisation backend
 
-Backend for a provider pre-authorisation voice agent. See the
+Backend for the Sawt Assurance provider pre-authorisation voice line (synthetic UAE catalogue). See the
 [source repository](https://github.com/haroon12h08/sawt-al-tameen) for documentation.
 
 **Copy this file to the root of your Hugging Face Space repository as `README.md`.** Hugging Face requires the
@@ -24,6 +24,9 @@ Set these as Space secrets (Settings → Variables and secrets):
 | `PREAUTH_VOICE_AGENT_TOKEN` | Bearer token for the ElevenLabs tool calls |
 | `PREAUTH_GATEWAY_SECRET` | Required on staff and reviewer APIs |
 | `PREAUTH_ELEVENLABS_WEBHOOK_SECRET` | Post-call webhook signing secret |
-| `PREAUTH_SEED_SCENARIOS` | Optional: set to `1` to create the demo cases on first start |
+| `PREAUTH_SEED_SCENARIOS` | Optional: set to `1` to create the five demo cases on first start |
 
 The Space must be **public** so ElevenLabs can reach the webhook and tool endpoints.
+
+On first start the container runs the migration and loads the benefit catalogue from `knowledge_base/`, which is
+the same data the agent's knowledge base is built from.

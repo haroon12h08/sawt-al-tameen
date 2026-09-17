@@ -45,9 +45,24 @@ jobs:
           enable-cache: true
       - run: uv sync --frozen
       - run: uv run python scripts/export_api_docs.py --check
-      - run: uv run python scripts/generate_knowledge_base.py --check
       - run: uv run python scripts/generate_uae_knowledge_base.py --check
       - run: uv run python scripts/elevenlabs_setup.py --dry-run > /dev/null
+
+  simulations:
+    name: scripted call simulations
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --frozen
+      - name: Run the five call scenarios against a fresh database
+        env:
+          PREAUTH_DATABASE_URL: sqlite:///./simulation.db
+        run: |
+          uv run alembic upgrade head
+          uv run python scripts/simulate_conversations.py --quiet
 
   docker:
     name: docker image starts

@@ -1,31 +1,31 @@
 from preauth.domain.enums import CaseStatus, RecommendationOutcome
 from preauth.seed.scenarios import CLINICAL_REVIEWER, run_scenarios
-from tests.integration.conftest import TODAY
 
 
-def test_all_demonstration_scenarios_reach_expected_outcomes(services):
-    results = {r.name: r.case_id for r in run_scenarios(services, TODAY)}
-    q, reviewer = services.queries, CLINICAL_REVIEWER
+def test_demonstration_scenarios_reach_the_expected_outcomes(services):
+    results = {r.name: r for r in run_scenarios(services)}
+    assert results["complete_request_approved"].outcome == RecommendationOutcome.RECOMMEND_APPROVAL
+    assert results["complete_request_approved"].status == CaseStatus.APPROVED
 
-    def status(name):
-        return q.get_status(results[name], reviewer).status
+    assert results["missing_documentation"].outcome == RecommendationOutcome.REQUEST_MORE_INFORMATION
+    assert results["missing_documentation"].status == CaseStatus.PENDING_INFORMATION
 
-    def recommendation(name):
-        return q.get_latest_recommendation(results[name], reviewer).outcome
+    assert results["tier_boundary_denial_recommended"].outcome == RecommendationOutcome.RECOMMEND_DENIAL
+    assert results["tier_boundary_denial_recommended"].status == CaseStatus.PENDING_HUMAN_REVIEW
 
-    assert status("complete_request_approved") is CaseStatus.APPROVED
-    assert recommendation("complete_request_approved") is RecommendationOutcome.RECOMMEND_APPROVAL
+    assert results["ambiguous_escalated"].outcome == RecommendationOutcome.ESCALATE
+    assert results["ambiguous_escalated"].status == CaseStatus.ESCALATED
 
-    assert status("missing_documentation") is CaseStatus.PENDING_INFORMATION
-    assert recommendation("missing_documentation") is RecommendationOutcome.REQUEST_MORE_INFORMATION
+    override = results["human_override_approved"]
+    assert override.outcome == RecommendationOutcome.RECOMMEND_DENIAL
+    assert override.status == CaseStatus.APPROVED
 
-    assert status("rule_failure_denial_recommended") is CaseStatus.PENDING_HUMAN_REVIEW
-    assert recommendation("rule_failure_denial_recommended") is RecommendationOutcome.RECOMMEND_DENIAL
 
-    assert status("insufficient_knowledge_escalated") is CaseStatus.ESCALATED
-    assert recommendation("insufficient_knowledge_escalated") is RecommendationOutcome.ESCALATE
-
-    override = q.get_status(results["human_override_approved"], reviewer)
-    assert override.status is CaseStatus.APPROVED
-    assert override.final_decision.is_override is True
-    assert recommendation("human_override_approved") is RecommendationOutcome.RECOMMEND_DENIAL
+def test_override_scenario_keeps_both_records(services):
+    results = {r.name: r for r in run_scenarios(services)}
+    case_id = services.queries.find_case_id_by_reference(
+        results["human_override_approved"].case_reference, CLINICAL_REVIEWER
+    )
+    packet = services.review.review_packet(case_id, CLINICAL_REVIEWER)
+    assert packet.current_recommendation.outcome is RecommendationOutcome.RECOMMEND_DENIAL
+    assert packet.decisions[-1].is_override is True

@@ -3,9 +3,9 @@ from datetime import UTC, date, datetime, timedelta
 import pytest
 
 from preauth.application.services import build_services
-from preauth.seed.reference_data import load_reference_data
+from preauth.seed.catalogue import load_catalogue
 
-TODAY = date(2026, 9, 16)
+TODAY = date.today()
 
 
 class FixedClock:
@@ -24,13 +24,15 @@ class FixedClock:
 
 @pytest.fixture
 def clock():
-    return FixedClock(datetime(2026, 9, 16, 9, 0, tzinfo=UTC))
+    """Deterministic time, but today's date: the catalogue's policy periods track the current year."""
+    return FixedClock(datetime.combine(TODAY, datetime.min.time(), tzinfo=UTC) + timedelta(hours=9))
 
 
 @pytest.fixture
 def seeded_session_factory(session_factory):
+    """The catalogue from knowledge_base/, loaded exactly as a deployment loads it."""
     with session_factory() as session:
-        load_reference_data(session, TODAY)
+        load_catalogue(session)
         session.commit()
     return session_factory
 

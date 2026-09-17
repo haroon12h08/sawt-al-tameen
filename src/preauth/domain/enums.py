@@ -22,10 +22,18 @@ class Urgency(StrEnum):
     EXPEDITED = "EXPEDITED"
 
 
-class PlaceOfService(StrEnum):
-    INPATIENT = "INPATIENT"
-    OUTPATIENT = "OUTPATIENT"
-    OFFICE = "OFFICE"
+class DecisionClass(StrEnum):
+    """Whether the benefit schedule can decide a procedure, or a human must."""
+
+    CLEAR = "CLEAR"
+    EXCLUDED = "EXCLUDED"
+    AMBIGUOUS = "AMBIGUOUS"
+
+
+class DirectoryStatus(StrEnum):
+    ACTIVE = "ACTIVE"
+    SUSPENDED = "SUSPENDED"
+    PENDING_ONBOARDING = "PENDING_ONBOARDING"
 
 
 class DocumentType(StrEnum):
@@ -62,8 +70,8 @@ class RuleOutcome(StrEnum):
 
 class RuleCategory(StrEnum):
     ELIGIBILITY = "ELIGIBILITY"
+    NETWORK = "NETWORK"
     COVERAGE = "COVERAGE"
-    MEDICAL_NECESSITY = "MEDICAL_NECESSITY"
     DOCUMENTATION = "DOCUMENTATION"
     LIMITS = "LIMITS"
 
@@ -94,26 +102,9 @@ class CloseReason(StrEnum):
     DECISION_COMMUNICATED = "DECISION_COMMUNICATED"
 
 
-class ProviderType(StrEnum):
-    HOSPITAL = "HOSPITAL"
-    CLINIC = "CLINIC"
-
-
-class NetworkStatus(StrEnum):
-    IN_NETWORK = "IN_NETWORK"
-    OUT_OF_NETWORK = "OUT_OF_NETWORK"
-
-
-class CredentialingStatus(StrEnum):
-    ACTIVE = "ACTIVE"
-    SUSPENDED = "SUSPENDED"
-    TERMINATED = "TERMINATED"
-
-
 class PolicyStatus(StrEnum):
     ACTIVE = "ACTIVE"
     LAPSED = "LAPSED"
-    CANCELLED = "CANCELLED"
 
 
 class AuditEventType(StrEnum):
@@ -132,6 +123,7 @@ class AuditEventType(StrEnum):
     HUMAN_DECISION_RECORDED = "HUMAN_DECISION_RECORDED"
     RECOMMENDATION_OVERRIDDEN = "RECOMMENDATION_OVERRIDDEN"
     CASE_CLOSED = "CASE_CLOSED"
+    CALL_SUMMARY_LOGGED = "CALL_SUMMARY_LOGGED"
     HUMAN_CALLBACK_REQUESTED = "HUMAN_CALLBACK_REQUESTED"
     HUMAN_CALLBACK_RESOLVED = "HUMAN_CALLBACK_RESOLVED"
     CALL_RECORDED = "CALL_RECORDED"
@@ -157,6 +149,17 @@ class CallbackReason(StrEnum):
     COMPLAINT = "COMPLAINT"
     UNSUPPORTED_LANGUAGE = "UNSUPPORTED_LANGUAGE"
     OTHER = "OTHER"
+
+
+class CallOutcome(StrEnum):
+    """What the caller was told at the end of the call, as recorded by log_transcript."""
+
+    RECOMMENDATION_PREPARED = "RECOMMENDATION_PREPARED"
+    MORE_INFORMATION_REQUESTED = "MORE_INFORMATION_REQUESTED"
+    ESCALATED = "ESCALATED"
+    CALLER_NOT_VERIFIED = "CALLER_NOT_VERIFIED"
+    ONBOARDING_ENQUIRY = "ONBOARDING_ENQUIRY"
+    OUT_OF_SCOPE = "OUT_OF_SCOPE"
 
 
 class CallbackStatus(StrEnum):

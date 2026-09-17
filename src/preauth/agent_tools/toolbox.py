@@ -1,13 +1,15 @@
 """Voice-agent tool boundary.
 
-The future conversational agent operates the system only through these tools. Each tool is a thin, typed adapter
-over an application service: no business rules live here and none may be added here.
+The agent operates the system through exactly three tools:
 
-Tool inputs are deliberately flat (strings, integers, enums) with a description on every field: voice platforms
-such as ElevenLabs accept only simple parameter schemas, and the model needs guidance for each value it fills in.
+    verify_caller        identify the calling organisation and, where relevant, the member
+    check_coverage_rule  check a complete request against the benefit schedule
+    log_transcript       record what the caller was told, and raise a callback where a human must follow up
 
-Deliberately absent: any tool that assigns reviewers, records human decisions, closes decided cases, or reads the
-internal audit trail. The agent can route a case to humans; it can never decide one.
+**There is no tool that approves, denies, or finalises anything.** That is an architectural fact, not a prompt
+instruction: recording a decision is a reviewer-only API that the voice actor has no credentials for. Tool inputs
+are flat (strings, integers, enums) with a description on every field, because voice platforms accept only simple
+parameter schemas and the model needs guidance for each value it fills in.
 """
 
 from collections.abc import Callable
@@ -15,55 +17,24 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Annotated, Any
 
-from pydantic import (
-    BaseModel,
-    BeforeValidator,
-    ConfigDict,
-    Field,
-    StringConstraints,
-    TypeAdapter,
-    ValidationError,
-    model_validator,
-)
+from pydantic import BaseModel, Field, StringConstraints, TypeAdapter, ValidationError
 
 from preauth.application.commands import (
-    CaseInformationUpdate,
-    CreateCaseCommand,
-    RequestCallbackCommand,
+    CoverageCheckCommand,
+    LogTranscriptCommand,
     StrictModel,
+    VerifyCallerCommand,
 )
 from preauth.application.services import ApplicationServices
-from preauth.application.views import (
-    CallbackView,
-    CaseStatusView,
-    CaseView,
-    EvaluationResultView,
-    RecommendationView,
-    RequiredInformationView,
-)
+from preauth.application.views import CallLogView, CoverageCheckView, VerificationView
 from preauth.domain.actors import Actor
-from preauth.domain.enums import ActorType, CallbackReason, CallerRole, PlaceOfService, Urgency
+from preauth.domain.enums import ActorType, CallbackReason, CallerRole, CallOutcome, Urgency
 from preauth.domain.errors import AuthorizationError, DomainError, NotFoundError
 
-CaseId = Annotated[
-    str, StringConstraints(pattern=r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
-]
-
-
-def _upper(value: Any) -> Any:
-    return value.strip().upper() if isinstance(value, str) else value
-
-
-# Speech-to-text and models may produce lower case; normalise before matching.
-CaseReference = Annotated[str, StringConstraints(pattern=r"^PA-[0-9A-Z]{8}$"), BeforeValidator(_upper)]
-Code = Annotated[str, BeforeValidator(_upper)]
-
-RECOMMENDATION_NOTICE = (
-    "Internal advisory recommendation only. It is NOT an authorisation decision and must not be communicated to "
-    "the caller as an approval or denial. Only an authorised human reviewer can approve or deny a request."
+CASE_REFERENCE_DESCRIPTION = (
+    "Case reference in the form PA- followed by 8 characters, as given to the caller earlier in this call."
 )
-
-CASE_ID_DESCRIPTION = "The case_id (UUID) returned by create_pre_authorization_case or get_case."
+VERIFICATION_DESCRIPTION = "The verification_id returned by verify_caller earlier in this call."
 
 
 class ToolArgumentsInvalidError(DomainError):
@@ -73,119 +44,76 @@ class ToolArgumentsInvalidError(DomainError):
 # --------------------------------------------------------------------------- tool inputs
 
 
-class CaseRef(StrictModel):
-    case_id: CaseId = Field(description=CASE_ID_DESCRIPTION)
+class VerifyCallerInput(StrictModel):
+    """Identify the caller, and the member if the call concerns one."""
 
-
-class GetCaseInput(StrictModel):
-    case_id: CaseId | None = Field(default=None, description=CASE_ID_DESCRIPTION + " Omit if using case_reference.")
-    case_reference: CaseReference | None = Field(
+    caller_role: CallerRole = Field(
+        description="PROVIDER_STAFF for a clinic or hospital, BROKER for a broker acting for a provider, "
+        "SUPPLIER for an onboarding enquiry, OTHER for anything else."
+    )
+    organisation_name: str = Field(description="Name of the clinic, hospital, brokerage or company calling.")
+    caller_reference: str = Field(
+        description="Provider number in the form PRV- followed by 5 digits for a clinic, hospital or broker acting "
+        "for one; for a supplier, the onboarding application reference such as ONB-APP-2026-0007."
+    )
+    caller_name: str | None = Field(default=None, description="Name of the person on the call.")
+    member_policy_number: str | None = Field(
         default=None,
-        description="The case reference the caller quotes, format PA- followed by 8 letters/digits, e.g. PA-7K3M9Q2B. "
-        "Omit if using case_id.",
+        description="Member's policy number, format POL-SA-YYYY-NNNNNN. Send together with "
+        "member_date_of_birth. Omit for supplier or onboarding calls.",
     )
-
-    @model_validator(mode="after")
-    def _exactly_one(self) -> "GetCaseInput":
-        if (self.case_id is None) == (self.case_reference is None):
-            raise ValueError("Provide exactly one of case_id or case_reference")
-        return self
-
-
-class CaseInformationFields(StrictModel):
-    """Information collected from the caller. Every field is optional; include only what the caller said."""
-
-    caller_name: str | None = Field(default=None, description="Name of the person calling.")
-    caller_role: CallerRole | None = Field(
+    member_date_of_birth: date | None = Field(
         default=None,
-        description="PROVIDER_STAFF if calling from a clinic or hospital; BROKER if a broker acting for a provider.",
+        description="Member's date of birth as YYYY-MM-DD, used to verify the policy. Send together with "
+        "member_policy_number.",
     )
-    provider_number: Code | None = Field(
-        default=None, description="Requesting provider's number, format PRV- followed by 6 digits, e.g. PRV-100234."
+
+
+class CheckCoverageRuleInput(StrictModel):
+    """A complete pre-authorisation request. Do not call this with partial details."""
+
+    verification_id: str = Field(description=VERIFICATION_DESCRIPTION)
+    procedure_code: str = Field(description="Procedure code in the form SP- followed by 5 digits, e.g. SP-20050.")
+    treatment_date: date = Field(description="Planned date of treatment as YYYY-MM-DD.")
+    estimated_cost_aed: int = Field(
+        description="Estimated cost of the treatment in AED, as a whole number without separators."
     )
-    patient_member_id: Code | None = Field(
-        default=None,
-        description="Patient's member ID, format MBR-dddd-dd, e.g. MBR-5001-01. Always send together with "
-        "patient_date_of_birth.",
-    )
-    patient_date_of_birth: date | None = Field(
-        default=None, description="Patient's date of birth, format YYYY-MM-DD. Send together with patient_member_id."
-    )
-    policy_number: Code | None = Field(
-        default=None, description="Patient's policy number, format POL- followed by 6 digits, e.g. POL-000101."
-    )
-    procedure_code: Code | None = Field(
-        default=None, description="Requested procedure code, format PROC-NAME, e.g. PROC-MRI-KNEE."
-    )
-    requested_service_date: date | None = Field(
-        default=None, description="Planned date of the procedure, format YYYY-MM-DD. Must be today or later."
-    )
-    place_of_service: PlaceOfService | None = Field(
-        default=None, description="Where the procedure will happen: INPATIENT, OUTPATIENT or OFFICE."
-    )
-    diagnosis_code: Code | None = Field(
-        default=None, description="Primary diagnosis as an ICD-10 code with the dot, e.g. M23.221."
-    )
-    diagnosis_description: str | None = Field(default=None, description="Diagnosis in plain words, if given.")
     urgency: Urgency | None = Field(
         default=None, description="STANDARD, or EXPEDITED if the caller says the request is clinically urgent."
     )
-    conservative_treatment_weeks: int | None = Field(
-        default=None, description="Number of weeks of conservative treatment (e.g. physiotherapy) already completed."
-    )
+    diagnosis_code: str | None = Field(default=None, description="Primary diagnosis as an ICD-10 code, if given.")
     clinical_summary: str | None = Field(
-        default=None, description="Short clinical justification in the caller's words."
+        default=None, description="Short clinical justification in the caller's words, if given."
+    )
+    case_reference: str | None = Field(
+        default=None,
+        description="Only when re-checking a case opened earlier, for example after documents were submitted. "
+        + CASE_REFERENCE_DESCRIPTION,
     )
 
-    @model_validator(mode="after")
-    def _patient_pair(self) -> "CaseInformationFields":
-        if (self.patient_member_id is None) != (self.patient_date_of_birth is None):
-            raise ValueError("patient_member_id and patient_date_of_birth must be provided together")
-        return self
 
-    def to_update(self) -> CaseInformationUpdate | None:
-        values = {k: v for k, v in self.model_dump(exclude_none=True).items() if k != "case_id"}
-        member_id = values.pop("patient_member_id", None)
-        dob = values.pop("patient_date_of_birth", None)
-        if member_id is not None:
-            values["patient"] = {"member_id": member_id, "date_of_birth": dob}
-        if not values:
-            return None
-        return CaseInformationUpdate(**values)
+class LogTranscriptInput(StrictModel):
+    """Record the outcome of the call. Call this before telling the caller what happens next."""
 
-
-class SubmitInformationInput(CaseInformationFields):
-    case_id: CaseId = Field(description=CASE_ID_DESCRIPTION)
-
-
-class RequestCallbackInput(StrictModel):
-    case_id: CaseId | None = Field(
-        default=None, description=CASE_ID_DESCRIPTION + " Omit if no case has been opened."
+    summary: str = Field(description="Two or three sentences: what was requested and what the caller was told.")
+    outcome_communicated: CallOutcome = Field(
+        description="RECOMMENDATION_PREPARED, MORE_INFORMATION_REQUESTED, ESCALATED, CALLER_NOT_VERIFIED, "
+        "ONBOARDING_ENQUIRY or OUT_OF_SCOPE."
     )
-    caller_name: str = Field(description="Name of the person calling.")
-    caller_organisation: str | None = Field(default=None, description="Clinic, hospital, brokerage or company name.")
-    caller_role: CallerRole = Field(
-        description="PROVIDER_STAFF, BROKER, SUPPLIER (e.g. a supplier asking about onboarding), or OTHER."
+    verification_id: str | None = Field(default=None, description=VERIFICATION_DESCRIPTION)
+    case_reference: str | None = Field(default=None, description=CASE_REFERENCE_DESCRIPTION)
+    caller_name: str | None = Field(default=None, description="Name of the person on the call.")
+    callback_phone: str | None = Field(
+        default=None,
+        description="Number to call back, international format with no spaces, e.g. +971501234567. Required when "
+        "a human needs to follow up.",
     )
-    callback_phone: str = Field(
-        description="Number to call back in international format with no spaces, e.g. +971501234567."
+    preferred_language: str | None = Field(
+        default=None, description="Two-letter language code for the follow-up call, e.g. en or ar."
     )
-    preferred_language: str = Field(description="Two-letter language code for the callback, e.g. en, ar, hi, ur.")
-    reason: CallbackReason = Field(
-        description="NON_STANDARD_REQUEST (not covered by the standard process), CALLER_REQUESTED_HUMAN, "
-        "SUPPLIER_ENQUIRY, URGENT_CLINICAL, COMPLAINT, UNSUPPORTED_LANGUAGE, or OTHER."
+    callback_reason: CallbackReason | None = Field(
+        default=None, description="Why a human must follow up, when that is not obvious from the outcome."
     )
-    summary: str = Field(description="What the caller needs, in one or two sentences, for the staff member.")
-
-    def to_command(self) -> RequestCallbackCommand:
-        return RequestCallbackCommand(**self.model_dump(exclude_none=True))
-
-
-class AgentRecommendation(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
-    notice: str
-    recommendation: RecommendationView
 
 
 # --------------------------------------------------------------------------- registry
@@ -211,100 +139,52 @@ def _convert(build: Callable[[], Any]) -> Any:
         ) from e
 
 
-def _create_case(s: ApplicationServices, a: Actor, i: CaseInformationFields) -> CaseView:
-    return s.cases.create_case(a, CreateCaseCommand(information=_convert(i.to_update)))
+def _verify_caller(s: ApplicationServices, a: Actor, i: VerifyCallerInput) -> VerificationView:
+    command = _convert(lambda: VerifyCallerCommand(**i.model_dump(exclude_none=True)))
+    return s.desk.verify_caller(a, command)
 
 
-def _submit_information(s: ApplicationServices, a: Actor, i: SubmitInformationInput) -> CaseView:
-    update = _convert(i.to_update)
-    if update is None:
-        raise ToolArgumentsInvalidError("Provide at least one information field", details={"tool": "submit_information"})
-    return s.cases.update_information(i.case_id, a, update)
+def _check_coverage_rule(s: ApplicationServices, a: Actor, i: CheckCoverageRuleInput) -> CoverageCheckView:
+    command = _convert(lambda: CoverageCheckCommand(**i.model_dump(exclude_none=True)))
+    return s.desk.check_coverage_rule(a, command)
 
 
-def _get_case(s: ApplicationServices, a: Actor, i: GetCaseInput) -> CaseView:
-    case_id = i.case_id or s.queries.find_case_id_by_reference(i.case_reference, a)
-    return s.queries.get_case(case_id, a)
-
-
-def _get_recommendation(s: ApplicationServices, a: Actor, i: CaseRef) -> AgentRecommendation:
-    return AgentRecommendation(
-        notice=RECOMMENDATION_NOTICE, recommendation=s.queries.get_latest_recommendation(i.case_id, a)
-    )
+def _log_transcript(s: ApplicationServices, a: Actor, i: LogTranscriptInput) -> CallLogView:
+    command = _convert(lambda: LogTranscriptCommand(**i.model_dump(exclude_none=True)))
+    return s.desk.log_transcript(a, command)
 
 
 TOOLS: tuple[Tool, ...] = (
     Tool(
-        "create_pre_authorization_case",
-        "Open a new pre-authorisation case, optionally with information already collected from the caller. "
-        "Returns the case with its case_id (use in later tool calls) and case_reference (read it back to the caller).",
-        CaseInformationFields,
-        CaseView,
-        _create_case,
+        "verify_caller",
+        "Verify the calling organisation, and the member if the call concerns one, before discussing anything "
+        "policy-specific or patient-specific. Returns a verification_id needed by check_coverage_rule, the "
+        "member's tier and dependants when verified, and a failure reason when not.",
+        VerifyCallerInput,
+        VerificationView,
+        _verify_caller,
     ),
     Tool(
-        "get_case",
-        "Retrieve a case by case_id, or by the case_reference the caller quotes.",
-        GetCaseInput,
-        CaseView,
-        _get_case,
+        "check_coverage_rule",
+        "Check a complete pre-authorisation request against the benefit schedule. Returns a prepared "
+        "recommendation for human sign-off, a list of missing documents, or an escalation citing the rule that "
+        "applies. Never state a coverage answer without calling this first, and never call it with partial details.",
+        CheckCoverageRuleInput,
+        CoverageCheckView,
+        _check_coverage_rule,
     ),
     Tool(
-        "get_required_information",
-        "List what information is still required for the case. Items with source PROVIDER must be asked from the "
-        "caller; items with source INSURER cannot be supplied by the caller.",
-        CaseRef,
-        RequiredInformationView,
-        lambda s, a, i: s.queries.get_required_information(i.case_id, a),
-    ),
-    Tool(
-        "submit_information",
-        "Record information collected from the caller on an existing case. Include only fields the caller actually "
-        "provided. Identifiers are verified against records; on a verification error ask the caller to confirm.",
-        SubmitInformationInput,
-        CaseView,
-        _submit_information,
-    ),
-    Tool(
-        "get_case_status",
-        "Get the current status of a case.",
-        CaseRef,
-        CaseStatusView,
-        lambda s, a, i: s.queries.get_status(i.case_id, a),
-    ),
-    Tool(
-        "evaluate_case",
-        "Check the case against the insurance rules once information has been collected. If information is missing "
-        "the result lists it; otherwise an internal advisory recommendation is prepared.",
-        CaseRef,
-        EvaluationResultView,
-        lambda s, a, i: s.evaluation.submit_for_evaluation(i.case_id, a),
-    ),
-    Tool(
-        "get_recommendation",
-        "Retrieve the latest internal advisory recommendation with the policy sources it relied on. Never present "
-        "it to the caller as an approval or denial.",
-        CaseRef,
-        AgentRecommendation,
-        _get_recommendation,
-    ),
-    Tool(
-        "request_human_review",
-        "Send an evaluated case to a qualified human reviewer, who makes the authorisation decision.",
-        CaseRef,
-        CaseStatusView,
-        lambda s, a, i: s.review.request_human_review(i.case_id, a),
-    ),
-    Tool(
-        "request_human_callback",
-        "Hand the caller to a human: use for requests outside the standard pre-authorisation process, ambiguous "
-        "situations, supplier or onboarding enquiries, complaints, urgent clinical concerns, unsupported languages, "
-        "or when the caller asks for a person. Returns a callback reference to read back.",
-        RequestCallbackInput,
-        CallbackView,
-        lambda s, a, i: s.callbacks.request_callback(a, _convert(i.to_command)),
+        "log_transcript",
+        "Record what the caller was told and return the reference to read back. Raises a human callback when the "
+        "outcome needs follow-up. Call this before speaking any sign-off or next-step language.",
+        LogTranscriptInput,
+        CallLogView,
+        _log_transcript,
     ),
 )
+
+# Nothing in this list may ever decide a case. Guarded by tests, not by convention.
+FORBIDDEN_TOOL_CONCEPTS = ("approve", "deny", "decision", "decide", "authorise", "authorize", "finalise", "sign_off")
 
 
 class AgentToolbox:

@@ -37,7 +37,8 @@ class CaseQueryService:
     def get_case(self, case_id: str, actor: Actor) -> CaseView:
         bind_case_id(case_id)
         with self._uow() as uow:
-            return case_view(uow.cases.get(case_id))
+            case = uow.cases.get(case_id)
+            return case_view(case, uow.catalogue.procedure(case.procedure_code) if case.procedure_code else None)
 
     def find_case_id_by_reference(self, case_reference: str, actor: Actor) -> str:
         with self._uow() as uow:

@@ -2,13 +2,16 @@
 
 > Multilingual AI voice agent built specifically for health-insurance provider pre-authorisation in the UAE, enabling clinics, brokers, and healthcare providers to submit requests by voice, capture required information, check applicable insurance rules, and prepare recommendations for qualified human approval.
 
-Backend foundation for handling provider pre-authorisation requests at a health insurer. It covers case intake,
-validation, rule evaluation, advisory recommendations, human review, and an immutable audit trail. It also exposes
-a typed tool boundary for a future voice agent.
+The pre-authorisation line for **Sawt Assurance**, a fictional UAE health insurer: a voice agent takes calls from
+clinics, brokers and suppliers, checks requests against the benefit catalogue, and prepares recommendations for a
+qualified human to sign off. Covers caller verification, rule evaluation with cited sources, escalation with the
+specific rule that applies, human review, and an immutable audit trail.
 
 **The system never issues final authorisations or denials.** Only an authorised human reviewer can.
 
-- [Voice agent (ElevenLabs)](docs/VOICE_AGENT.md): tools, setup script, workflow, evaluation, tests.
+- [Voice agent (ElevenLabs)](docs/VOICE_AGENT.md): the three tools, setup script, workflow, evaluation, tests.
+- [Benefit catalogue](knowledge_base/README.md): tiers, procedures, providers, members, escalation rules — the
+  single source of truth for every decision.
 - [Deployment and phone numbers](docs/DEPLOYMENT.md): free hosting options, and what is and isn't free for phone
   numbers (including UAE numbers).
 - [Architecture](docs/ARCHITECTURE.md): layers, state machine, how decision authority is enforced, rules, audit,
@@ -16,7 +19,19 @@ a typed tool boundary for a future voice agent.
 - [API reference](docs/API.md), generated from [`docs/openapi.json`](docs/openapi.json).
 - [Implementation plan](docs/IMPLEMENTATION_PLAN.md)
 
-All data in this repository is synthetic.
+All data in this repository is synthetic. `knowledge_base/` is both what the rules decide from and what the agent
+retrieves, so a citation the agent reads out always resolves to a real document section.
+
+## What the agent can and cannot do
+
+| Tool | Purpose |
+|---|---|
+| `verify_caller` | Identify the organisation and the member; lapsed policies are rejected here |
+| `check_coverage_rule` | Check a complete request; prepare a recommendation or escalate with a cited rule |
+| `log_transcript` | Record what the caller was told; raise a callback when a human must follow up |
+
+There is no tool that approves, denies or finalises a request. Only an assigned human reviewer with the right role
+can move a case to `APPROVED` or `DENIED`, and only after the call transcript is on record.
 
 ## Voice agent in three steps
 
@@ -60,7 +75,7 @@ With SQLite (the default URL is `sqlite:///./preauth.db`):
 
 ```bash
 uv run alembic upgrade head
-uv run python -m preauth.seed --scenarios
+uv run python -m preauth.seed --scenarios   # loads knowledge_base/ and five demo cases
 uv run uvicorn preauth.main:app --reload
 ```
 
@@ -81,11 +96,11 @@ audit trail:
 
 | Scenario | Outcome |
 |---|---|
-| Complete MRI request | `RECOMMEND_APPROVAL` → reviewer approves |
-| Arthroscopy without an imaging report | `REQUEST_MORE_INFORMATION` → `PENDING_INFORMATION` |
-| Excluded cosmetic procedure | `RECOMMEND_DENIAL` → clinical review queue |
-| Procedure with no coverage terms | `ESCALATE` → medical director queue |
-| MRI with too little conservative treatment | `RECOMMEND_DENIAL` → reviewer overrides to approve |
+| MRI brain with documents complete | `RECOMMEND_APPROVAL` → reviewer approves |
+| Cholecystectomy without documents | `REQUEST_MORE_INFORMATION` → `PENDING_INFORMATION` |
+| Knee replacement on the Basic tier | `RECOMMEND_DENIAL` → clinical review queue |
+| Sleeve gastrectomy (ambiguous, ESC-003) | `ESCALATE` → medical director queue |
+| Cosmetic rhinoplasty | `RECOMMEND_DENIAL` → reviewer overrides to approve |
 
 ## Calling the API
 
@@ -93,12 +108,21 @@ The service expects a gateway to authenticate callers and forward their identity
 [API reference](docs/API.md)):
 
 ```bash
-curl -X POST localhost:8000/api/v1/cases \
+# what the voice agent does, step one
+curl -X POST localhost:8000/api/v1/agent/tools/verify_caller \
   -H 'X-Actor-Type: VOICE_AGENT' -H 'X-Actor-Id: voice-1' -H 'content-type: application/json' \
-  -d '{"information": {"provider_number": "PRV-100234"}}'
+  -d '{"caller_role": "PROVIDER_STAFF", "organisation_name": "Al Hudaiba Crescent Hospital",
+       "caller_reference": "PRV-30011", "member_policy_number": "POL-SA-2026-100001",
+       "member_date_of_birth": "1986-04-17"}'
 
 curl localhost:8000/api/v1/review/queues/CLINICAL_REVIEW \
   -H 'X-Actor-Type: HUMAN_REVIEWER' -H 'X-Actor-Id: rev-1' -H 'X-Actor-Roles: CLINICAL_REVIEWER'
+```
+
+Walk five complete calls against a running backend, with transcripts:
+
+```bash
+uv run python scripts/simulate_conversations.py
 ```
 
 ## Configuration
@@ -118,7 +142,8 @@ After changing routes or schemas, or the seed coverage data, run:
 
 ```bash
 uv run python scripts/export_api_docs.py
-uv run python scripts/generate_knowledge_base.py
+uv run python scripts/generate_uae_knowledge_base.py
 ```
 
-Tests fail if the generated API docs or knowledge base are out of date.
+Tests fail if the generated API docs or the catalogue are out of date. The catalogue generator also validates
+cross-file consistency (thresholds, network nesting, limits, escalation references).

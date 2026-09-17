@@ -4,20 +4,20 @@ import pytest
 from pydantic import ValidationError
 
 from preauth.domain.enums import (
-    CredentialingStatus,
-    DocumentType,
+    DecisionClass,
+    DirectoryStatus,
     MissingInformationSource,
-    NetworkStatus,
     PolicyStatus,
     RuleOutcome,
+    Urgency,
 )
 from preauth.domain.errors import IntegrityViolationError
 from preauth.rules.engine import RuleSetEngine
-from preauth.rules.mock_ruleset import build_mock_rules_engine
 from preauth.rules.model import MissingInformation, RuleContext, RuleResult
+from preauth.rules.uae_ruleset import build_uae_rules_engine
 from tests.unit.context_factory import make_context
 
-ENGINE = build_mock_rules_engine()
+ENGINE = build_uae_rules_engine()
 
 
 def outcomes(ctx) -> dict[str, RuleOutcome]:
@@ -34,64 +34,162 @@ def test_complete_request_passes_every_rule():
 
 def test_engine_reports_every_rule_with_version():
     evaluation = ENGINE.evaluate(make_context())
-    assert evaluation.engine_name == "mock-preauth-ruleset"
-    assert len(evaluation.results) == len(ENGINE.rules) == 8
+    assert evaluation.engine_name == "uae-preauth-ruleset"
+    assert len(evaluation.results) == len(ENGINE.rules) == 11
     assert all(r.rule_version for r in evaluation.results)
 
 
+# --------------------------------------------------------------------------- eligibility
+
+
+def test_lapsed_policy_fails():
+    result = result_for(make_context(policy_status=PolicyStatus.LAPSED), "ELIG-001-POLICY-ACTIVE")
+    assert result.outcome is RuleOutcome.FAIL
+    assert "lapsed" in result.explanation
+
+
+def test_treatment_after_renewal_fails():
+    ctx = make_context(policy_renewal=date(2026, 9, 30), treatment_date=date(2026, 10, 8))
+    assert outcomes(ctx)["ELIG-001-POLICY-ACTIVE"] is RuleOutcome.FAIL
+
+
+def test_waiting_period_escalates_with_esc_007():
+    ctx = make_context(category="maternity", waiting_months=12, policy_start=date(2026, 6, 1))
+    result = result_for(ctx, "ELIG-002-WAITING-PERIOD")
+    assert result.outcome is RuleOutcome.UNKNOWN
+    assert result.escalation_rule_id == "ESC-007"
+    assert result.missing_information[0].source is MissingInformationSource.INSURER
+
+
+def test_emergency_waives_the_waiting_period():
+    ctx = make_context(
+        category="emergency", waiting_months=12, policy_start=date(2026, 6, 1), urgency=Urgency.EXPEDITED
+    )
+    assert outcomes(ctx)["ELIG-002-WAITING-PERIOD"] is RuleOutcome.PASS
+
+
+# --------------------------------------------------------------------------- network
+
+
+@pytest.mark.parametrize("status", [DirectoryStatus.SUSPENDED, DirectoryStatus.PENDING_ONBOARDING])
+def test_inactive_provider_escalates_with_esc_008(status):
+    result = result_for(make_context(directory_status=status), "NET-001-PROVIDER-DIRECTORY")
+    assert result.outcome is RuleOutcome.UNKNOWN and result.escalation_rule_id == "ESC-008"
+
+
 @pytest.mark.parametrize(
-    ("kwargs", "rule_id"),
+    ("tier_id", "provider_rank", "expected"),
     [
-        ({"policy_status": PolicyStatus.LAPSED}, "ELIG-001-POLICY-ACTIVE"),
-        ({"effective_to": date(2026, 6, 30)}, "ELIG-001-POLICY-ACTIVE"),
-        ({"credentialing": CredentialingStatus.SUSPENDED}, "ELIG-002-PROVIDER-CREDENTIALED"),
-        ({"network": NetworkStatus.OUT_OF_NETWORK}, "ELIG-003-PROVIDER-NETWORK"),
-        ({"covered": False}, "COV-001-PROCEDURE-COVERED"),
-        ({"diagnosis": "J34.2"}, "MED-001-DIAGNOSIS-INDICATED"),
-        ({"conservative_weeks": 4}, "MED-002-CONSERVATIVE-TREATMENT"),
-        ({"prior_approved": 2}, "LIM-001-ANNUAL-CASE-LIMIT"),
+        ("BASIC", 1, RuleOutcome.PASS),          # basic provider, basic member
+        ("EXECUTIVE", 1, RuleOutcome.PASS),      # networks nest upwards
+        ("COMPREHENSIVE", 2, RuleOutcome.PASS),
+        ("BASIC", 3, RuleOutcome.FAIL),          # comprehensive-only provider, basic member
+        ("ENHANCED", 4, RuleOutcome.FAIL),
+        ("EXECUTIVE", 4, RuleOutcome.PASS),
     ],
 )
-def test_rule_failures(kwargs, rule_id):
-    result = outcomes(make_context(**kwargs))
-    assert result[rule_id] is RuleOutcome.FAIL
-    assert all(o is RuleOutcome.PASS for rid, o in result.items() if rid != rule_id)
+def test_network_nesting(tier_id, provider_rank, expected):
+    ctx = make_context(tier_id=tier_id, provider_network_rank=provider_rank)
+    assert outcomes(ctx)["NET-002-NETWORK-ACCESS"] is expected
 
 
-def test_out_of_network_passes_when_plan_covers_it():
-    ctx = make_context(network=NetworkStatus.OUT_OF_NETWORK, oon_covered=True)
-    assert outcomes(ctx)["ELIG-003-PROVIDER-NETWORK"] is RuleOutcome.PASS
+def test_executive_tier_covers_out_of_network():
+    ctx = make_context(tier_id="EXECUTIVE", provider_network_rank=4)
+    assert outcomes(ctx)["NET-002-NETWORK-ACCESS"] is RuleOutcome.PASS
 
 
-def test_missing_document_is_unknown_not_fail():
-    result = result_for(make_context(documents=(DocumentType.CLINICAL_NOTES,)), "DOC-001-REQUIRED-DOCUMENTS")
+def test_specialty_gap_escalates_rather_than_denying():
+    """A credentialing gap is a network matter; denying the benefit would be wrong."""
+    result = result_for(make_context(provider_specialties=("Dentistry",)), "NET-003-PROVIDER-SPECIALTY")
+    assert result.outcome is RuleOutcome.UNKNOWN and result.escalation_rule_id == "ESC-008"
+
+
+# --------------------------------------------------------------------------- coverage
+
+
+def test_procedure_missing_from_schedule_escalates_with_esc_005():
+    result = result_for(make_context(procedure=None, coverage=None), "COV-001-PROCEDURE-IN-SCHEDULE")
+    assert result.outcome is RuleOutcome.UNKNOWN and result.escalation_rule_id == "ESC-005"
+
+
+def test_tier_does_not_cover_procedure_fails():
+    result = result_for(make_context(covered=False), "COV-002-TIER-COVERS-PROCEDURE")
+    assert result.outcome is RuleOutcome.FAIL
+    assert "Executive" in result.explanation
+
+
+def test_ambiguous_procedure_escalates_with_its_own_rule():
+    ctx = make_context(decision_class=DecisionClass.AMBIGUOUS, escalation_rule_id="ESC-003")
+    result = result_for(ctx, "COV-003-SCHEDULE-DECIDABLE")
+    assert result.outcome is RuleOutcome.UNKNOWN and result.escalation_rule_id == "ESC-003"
+    assert result.evidence["escalation_rule"]["situation"].startswith("Situation for ESC-003")
+
+
+# --------------------------------------------------------------------------- documents, limits, threshold
+
+
+def test_missing_documents_are_unknown_not_fail():
+    result = result_for(make_context(documents=()), "DOC-001-REQUIRED-DOCUMENTS")
     assert result.outcome is RuleOutcome.UNKNOWN
-    assert [m.code for m in result.missing_information] == ["document.IMAGING_REPORT"]
+    assert [m.code for m in result.missing_information] == ["document.CLINICAL_NOTES"]
     assert result.missing_information[0].source is MissingInformationSource.PROVIDER
+    assert result.escalation_rule_id == "ESC-001"
 
 
-def test_missing_conservative_treatment_is_unknown_not_fail():
-    result = result_for(make_context(conservative_weeks=None), "MED-002-CONSERVATIVE-TREATMENT")
-    assert result.outcome is RuleOutcome.UNKNOWN
-    assert result.missing_information[0].code == "clinical.conservative_treatment_weeks"
+def test_documents_not_required_when_pre_authorisation_is_not():
+    ctx = make_context(pre_auth_required=False, documents=())
+    assert outcomes(ctx)["DOC-001-REQUIRED-DOCUMENTS"] is RuleOutcome.PASS
 
 
-def test_missing_coverage_terms_is_unknown_and_insurer_sourced():
-    results = ENGINE.evaluate(make_context(coverage=None)).results
-    coverage_dependent = [r for r in results if not r.rule_id.startswith("ELIG")]
-    assert coverage_dependent
-    for r in coverage_dependent:
-        assert r.outcome is RuleOutcome.UNKNOWN
-        assert r.missing_information[0].source is MissingInformationSource.INSURER
+@pytest.mark.parametrize(
+    ("cost", "approved", "sub_limit", "expected"),
+    [
+        (21_000, 0, None, RuleOutcome.PASS),
+        (1_200_000, 0, None, RuleOutcome.UNKNOWN),       # above the annual limit
+        (900_000, 500_000, None, RuleOutcome.UNKNOWN),   # above what is left this year
+        (8_000, 0, 6_000, RuleOutcome.UNKNOWN),          # above the benefit sub-limit
+        (5_000, 0, 6_000, RuleOutcome.PASS),
+    ],
+)
+def test_tier_limits(cost, approved, sub_limit, expected):
+    ctx = make_context(cost=cost, approved_this_year=approved, sub_limit=sub_limit)
+    result = result_for(ctx, "LIM-001-TIER-LIMITS")
+    assert result.outcome is expected
+    if expected is RuleOutcome.UNKNOWN:
+        assert result.escalation_rule_id == "ESC-003"
+        assert "AED" in result.explanation
+
+
+@pytest.mark.parametrize(
+    ("tier_id", "cost", "pre_auth_required", "expected"),
+    [
+        ("BASIC", 500, False, False),         # below the AED 1,000 threshold
+        ("BASIC", 1_500, False, True),        # at or above it
+        ("EXECUTIVE", 5_000, False, False),   # below the AED 10,000 threshold
+        ("EXECUTIVE", 5_000, True, True),     # schedule requires it regardless of amount
+    ],
+)
+def test_pre_authorisation_threshold(tier_id, cost, pre_auth_required, expected):
+    ctx = make_context(tier_id=tier_id, cost=cost, pre_auth_required=pre_auth_required)
+    result = result_for(ctx, "AUTH-001-PRE-AUTHORISATION-REQUIRED")
+    assert result.outcome is RuleOutcome.PASS
+    assert result.evidence["pre_authorisation_required"] is expected
+
+
+# --------------------------------------------------------------------------- invariants
+
+
+def test_every_result_cites_a_source_or_explains_why_not():
+    for result in ENGINE.evaluate(make_context()).results:
+        assert result.sources, result.rule_id
 
 
 def test_no_missing_information_ever_yields_fail():
-    """Across all incomplete-information variants, nothing that is missing is reported as FAIL."""
     for ctx in [
         make_context(documents=()),
-        make_context(conservative_weeks=None),
-        make_context(coverage=None),
-        make_context(documents=(), conservative_weeks=None),
+        make_context(procedure=None, coverage=None),
+        make_context(cost=5_000_000),
+        make_context(directory_status=DirectoryStatus.SUSPENDED),
     ]:
         for r in ENGINE.evaluate(ctx).results:
             if r.missing_information:
@@ -107,32 +205,24 @@ def test_rule_result_invariants():
             rule_id="R", rule_version="1", outcome=RuleOutcome.PASS, explanation="", evidence={},
             missing_information=(missing,),
         )
-    with pytest.raises(ValidationError):
+    with pytest.raises(ValidationError, match="escalation"):
         RuleResult(
             rule_id="R", rule_version="1", outcome=RuleOutcome.FAIL, explanation="", evidence={},
-            missing_information=(missing,),
+            escalation_rule_id="ESC-001",
         )
 
 
-def test_failed_result_outcome_is_immutable():
-    result = result_for(make_context(policy_status=PolicyStatus.LAPSED), "ELIG-001-POLICY-ACTIVE")
+def test_failed_result_is_immutable_and_survives_round_trip():
+    result = result_for(make_context(covered=False), "COV-002-TIER-COVERS-PROCEDURE")
     with pytest.raises(ValidationError):
         result.outcome = RuleOutcome.PASS  # type: ignore[misc]
-    assert result.outcome is RuleOutcome.FAIL
-
-
-def test_failed_rule_survives_serialisation_round_trip():
-    result = result_for(make_context(policy_status=PolicyStatus.LAPSED), "ELIG-001-POLICY-ACTIVE")
-    restored = RuleResult.model_validate(result.model_dump(mode="json"))
-    assert restored.outcome is RuleOutcome.FAIL
-    assert restored == result
+    assert RuleResult.model_validate(result.model_dump(mode="json")) == result
 
 
 def test_evaluation_is_reproducible_from_stored_snapshot():
-    ctx = make_context(documents=(DocumentType.CLINICAL_NOTES,), conservative_weeks=3)
+    ctx = make_context(documents=(), cost=2_000_000)
     stored = ctx.model_dump(mode="json")
-    replayed = ENGINE.evaluate(RuleContext.model_validate(stored))
-    assert replayed == ENGINE.evaluate(ctx)
+    assert ENGINE.evaluate(RuleContext.model_validate(stored)) == ENGINE.evaluate(ctx)
 
 
 def test_rule_exceptions_propagate():
@@ -155,9 +245,3 @@ def test_misattributed_result_is_rejected():
 
     with pytest.raises(IntegrityViolationError):
         RuleSetEngine("t", "1", [Liar()]).evaluate(make_context())
-
-
-def test_duplicate_rule_ids_rejected():
-    rule = build_mock_rules_engine().rules[0]
-    with pytest.raises(ValueError):
-        RuleSetEngine("t", "1", [rule, rule])

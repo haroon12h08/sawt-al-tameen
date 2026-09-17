@@ -1,22 +1,14 @@
+"""The tool boundary: exactly three tools, none of which can decide anything."""
+
 import pytest
 from fastapi.testclient import TestClient
 
-from preauth.agent_tools.toolbox import RECOMMENDATION_NOTICE, AgentToolbox, ToolArgumentsInvalidError
+from preauth.agent_tools.toolbox import FORBIDDEN_TOOL_CONCEPTS, AgentToolbox, ToolArgumentsInvalidError
 from preauth.api.app import create_app
-from preauth.domain.errors import AuthorizationError, NotFoundError, ValidationFailedError
-from tests.integration.helpers import AGENT, PORTAL, REVIEWER, SERVICE_DATE, document
+from preauth.domain.errors import AuthorizationError, NotFoundError
+from tests.integration.helpers import AGENT, REVIEWER, TREATMENT_DATE
 
-EXPECTED_TOOLS = {
-    "create_pre_authorization_case",
-    "get_case",
-    "get_required_information",
-    "submit_information",
-    "get_case_status",
-    "evaluate_case",
-    "get_recommendation",
-    "request_human_review",
-    "request_human_callback",
-}
+EXPECTED_TOOLS = {"verify_caller", "check_coverage_rule", "log_transcript"}
 
 
 @pytest.fixture
@@ -24,97 +16,92 @@ def toolbox(services):
     return AgentToolbox(services)
 
 
-def test_toolbox_exposes_exactly_the_agreed_tools(toolbox):
+def test_exactly_three_tools_exist(toolbox):
     assert set(toolbox.tool_names) == EXPECTED_TOOLS
 
 
-def test_no_tool_can_decide_assign_or_read_audit(toolbox):
-    forbidden = ("decision", "decide", "approve", "deny", "assign", "audit", "close", "override")
+def test_no_tool_can_approve_deny_or_finalise(toolbox):
+    """The absence of a decision tool is architectural: there is nothing to call."""
     for definition in toolbox.describe():
-        assert not any(word in definition["name"] for word in forbidden)
-        props = definition["input_schema"].get("properties", {})
-        assert "decision" not in props and "rationale" not in props
+        assert not any(word in definition["name"] for word in FORBIDDEN_TOOL_CONCEPTS)
+        properties = definition["input_schema"].get("properties", {})
+        assert "decision" not in properties and "rationale" not in properties
+    for name in ("record_decision", "approve_case", "deny_case", "assign_reviewer", "finalise_authorisation"):
+        with pytest.raises(NotFoundError) as exc:
+            toolbox.invoke(name, AGENT, {})
+        assert exc.value.code == "TOOL_NOT_FOUND"
 
 
-def test_tool_definitions_have_schemas(toolbox):
+def test_tool_definitions_document_every_field(toolbox):
     for definition in toolbox.describe():
         assert definition["description"]
-        assert definition["input_schema"]["type"] == "object"
-        assert definition["output_schema"]
+        for name, prop in definition["input_schema"]["properties"].items():
+            assert prop.get("description"), (definition["name"], name)
 
 
-def test_voice_conversation_flow_through_tools(toolbox, services):
-    case = toolbox.invoke("create_pre_authorization_case", AGENT, {})
-    cid = case["id"]
-    assert toolbox.invoke("get_case", AGENT, {"case_reference": case["case_reference"].lower()})["id"] == cid
+def test_tools_require_a_voice_agent_actor(toolbox):
+    with pytest.raises(AuthorizationError) as exc:
+        toolbox.invoke("verify_caller", REVIEWER, {})
+    assert exc.value.code == "VOICE_AGENT_REQUIRED"
 
-    needed = toolbox.invoke("get_required_information", AGENT, {"case_id": cid})
-    assert needed["intake_complete"] is False
 
-    toolbox.invoke(
-        "submit_information",
+def test_call_flow_through_the_toolbox(toolbox, services):
+    verification = toolbox.invoke(
+        "verify_caller",
         AGENT,
         {
-            "case_id": cid,
-            "caller_name": "Aisha",
             "caller_role": "PROVIDER_STAFF",
-            "provider_number": "prv-100234",
-            "patient_member_id": "MBR-5001-01",
-            "patient_date_of_birth": "1984-03-12",
-            "policy_number": "POL-000101",
-            "procedure_code": "PROC-MRI-KNEE",
-            "requested_service_date": SERVICE_DATE.isoformat(),
-            "place_of_service": "OUTPATIENT",
-            "diagnosis_code": "m23.221",
-            "urgency": "STANDARD",
+            "organisation_name": "Al Hudaiba Crescent Hospital",
+            "caller_reference": "prv-30011",
+            "caller_name": "Aisha Rahman",
+            "member_policy_number": "pol-sa-2026-100001",
+            "member_date_of_birth": "1986-04-17",
         },
     )
-    needed = toolbox.invoke("get_required_information", AGENT, {"case_id": cid})
-    assert {m["code"] for m in needed["missing_information"]} == {
-        "document.CLINICAL_NOTES",
-        "clinical.conservative_treatment_weeks",
-    }
-    assert all(m["source"] == "PROVIDER" for m in needed["missing_information"])
+    assert verification["authorised"] is True
+    assert verification["member"]["tier"]["tier_id"] == "EXECUTIVE"
 
-    # Documents arrive via the provider portal, not the voice channel.
-    services.cases.register_document(cid, PORTAL, document())
-    toolbox.invoke("submit_information", AGENT, {"case_id": cid, "conservative_treatment_weeks": 7})
+    coverage = toolbox.invoke(
+        "check_coverage_rule",
+        AGENT,
+        {
+            "verification_id": verification["verification_id"],
+            "procedure_code": "sp-20040",
+            "treatment_date": TREATMENT_DATE,
+            "estimated_cost_aed": 21000,
+        },
+    )
+    assert coverage["advisory_only"] is True
+    assert coverage["outcome"] == "REQUEST_MORE_INFORMATION"
+    assert coverage["case_reference"].startswith("PA-")
 
-    result = toolbox.invoke("evaluate_case", AGENT, {"case_id": cid})
-    assert result["status"] == "RECOMMENDATION_READY"
+    logged = toolbox.invoke(
+        "log_transcript",
+        AGENT,
+        {
+            "summary": "Arthroscopy requested; documents outstanding, caller informed.",
+            "outcome_communicated": "MORE_INFORMATION_REQUESTED",
+            "case_reference": coverage["case_reference"],
+            "verification_id": verification["verification_id"],
+        },
+    )
+    assert logged["reference"].startswith("CL-")
 
-    rec = toolbox.invoke("get_recommendation", AGENT, {"case_id": cid})
-    assert rec["notice"] == RECOMMENDATION_NOTICE
-    assert rec["recommendation"]["advisory_only"] is True
-    assert {"document", "section", "rule_ids"} <= set(rec["recommendation"]["sources"][0])
 
-    routed = toolbox.invoke("request_human_review", AGENT, {"case_id": cid})
-    assert routed["status"] == "PENDING_HUMAN_REVIEW"
-    status = toolbox.invoke("get_case_status", AGENT, {"case_id": cid})
-    assert status["final_decision"] is None
-
-
-def test_tools_require_voice_agent_actor(toolbox):
-    with pytest.raises(AuthorizationError) as exc:
-        toolbox.invoke("create_pre_authorization_case", REVIEWER, {})
-    assert exc.value.code == "VOICE_AGENT_REQUIRED"
+def test_coverage_check_cannot_run_before_verification(toolbox):
+    with pytest.raises(ToolArgumentsInvalidError):
+        toolbox.invoke(
+            "check_coverage_rule",
+            AGENT,
+            {"procedure_code": "SP-20040", "treatment_date": TREATMENT_DATE, "estimated_cost_aed": 100},
+        )
 
 
 def test_tool_argument_validation(toolbox):
     with pytest.raises(ToolArgumentsInvalidError):
-        toolbox.invoke("get_case", AGENT, {})
+        toolbox.invoke("verify_caller", AGENT, {"caller_role": "PROVIDER_STAFF"})
     with pytest.raises(ToolArgumentsInvalidError):
-        toolbox.invoke("get_case_status", AGENT, {"case_id": "abc", "extra": True})
-    with pytest.raises(NotFoundError) as exc:
-        toolbox.invoke("approve_case", AGENT, {})
-    assert exc.value.code == "TOOL_NOT_FOUND"
-
-
-def test_domain_errors_pass_through_unchanged(toolbox):
-    cid = toolbox.invoke("create_pre_authorization_case", AGENT, {})["id"]
-    with pytest.raises(ValidationFailedError) as exc:
-        toolbox.invoke("submit_information", AGENT, {"case_id": cid, "provider_number": "PRV-000001"})
-    assert exc.value.code == "UNKNOWN_PROVIDER"
+        toolbox.invoke("log_transcript", AGENT, {"summary": "too short", "outcome_communicated": "NOPE"})
 
 
 def test_http_tool_transport(services):
@@ -122,13 +109,15 @@ def test_http_tool_transport(services):
     with TestClient(create_app(services)) as client:
         tools = client.get("/api/v1/agent/tools", headers=headers).json()
         assert {t["name"] for t in tools} == EXPECTED_TOOLS
-        created = client.post("/api/v1/agent/tools/create_pre_authorization_case", json={}, headers=headers)
-        assert created.status_code == 200 and created.json()["status"] == "RECEIVED"
-        bad = client.post("/api/v1/agent/tools/get_case", json={}, headers=headers)
-        assert bad.status_code == 422 and bad.json()["error"]["code"] == "TOOL_ARGUMENTS_INVALID"
-        reviewer = client.post(
-            "/api/v1/agent/tools/get_case",
-            json={"case_id": created.json()["id"]},
-            headers={"X-Actor-Type": "HUMAN_REVIEWER", "X-Actor-Id": "r", "X-Actor-Roles": "CLINICAL_REVIEWER"},
+        response = client.post(
+            "/api/v1/agent/tools/verify_caller",
+            json={
+                "caller_role": "PROVIDER_STAFF",
+                "organisation_name": "Al Hudaiba Crescent Hospital",
+                "caller_reference": "PRV-30011",
+            },
+            headers=headers,
         )
-        assert reviewer.status_code == 403
+        assert response.status_code == 200 and response.json()["authorised"] is True
+        forbidden = client.post("/api/v1/agent/tools/record_decision", json={}, headers=headers)
+        assert forbidden.status_code == 404

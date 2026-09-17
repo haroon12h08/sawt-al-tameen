@@ -14,7 +14,13 @@ from typing import Any, Protocol
 from pydantic import BaseModel, ConfigDict
 
 from preauth.domain.enums import MissingInformationSource, RecommendationOutcome, RuleOutcome
-from preauth.rules.model import MissingInformation, RuleContext, RuleResult, SourceReference
+from preauth.rules.model import (
+    EscalationRuleFacts,
+    MissingInformation,
+    RuleContext,
+    RuleResult,
+    SourceReference,
+)
 
 
 class RecommendationDraft(BaseModel):
@@ -26,6 +32,7 @@ class RecommendationDraft(BaseModel):
     evidence: dict[str, Any]
     missing_information: tuple[MissingInformation, ...]
     sources: tuple["AttributedSource", ...]
+    escalation_citations: tuple[EscalationRuleFacts, ...]
     engine_name: str
     engine_version: str
 
@@ -74,19 +81,25 @@ class DeterministicRecommendationEngine:
                 rationale += f" Additionally, {len(unknown)} rule(s) could not be evaluated."
         elif insurer_unknown:
             outcome, determining = RecommendationOutcome.ESCALATE, insurer_unknown
+            cited = ", ".join(sorted({r.escalation_rule_id for r in insurer_unknown if r.escalation_rule_id}))
             rationale = (
-                "Escalate for human review: information the insurer must resolve is unavailable. "
-                + _describe(insurer_unknown)
+                f"Escalate for human review under {cited or 'the escalation rules'}. " + _describe(insurer_unknown)
             )
         elif unknown:
             outcome, determining = RecommendationOutcome.REQUEST_MORE_INFORMATION, unknown
-            rationale = "Request more information from the provider: " + "; ".join(m.description for m in missing)
+            cited = ", ".join(sorted({r.escalation_rule_id for r in unknown if r.escalation_rule_id}))
+            rationale = (
+                f"Request more information from the provider ({cited}): " if cited
+                else "Request more information from the provider: "
+            ) + "; ".join(m.description for m in missing)
         else:
             outcome, determining = RecommendationOutcome.RECOMMEND_APPROVAL, list(results)
             rationale = f"Recommend approval. All {len(results)} rules passed."
 
-        if ctx.coverage is not None and not ctx.coverage.preauth_required:
-            rationale += " Note: coverage terms indicate pre-authorisation is not required for this procedure."
+        if ctx.coverage is not None and not ctx.coverage.pre_authorisation_required:
+            rationale += (
+                f" Note: pre-authorisation is not required for this procedure on the {ctx.tier.name} tier."
+            )
 
         return RecommendationDraft(
             outcome=outcome,
@@ -96,9 +109,23 @@ class DeterministicRecommendationEngine:
             # Missing information is only actionable when the recommendation asks for it or escalates on it.
             missing_information=missing if outcome is not RecommendationOutcome.RECOMMEND_APPROVAL else (),
             sources=_attribute_sources(results),
+            escalation_citations=_escalation_citations(results, ctx),
             engine_name=self.name,
             engine_version=self.version,
         )
+
+
+def _escalation_citations(
+    results: Sequence[RuleResult], ctx: RuleContext
+) -> tuple[EscalationRuleFacts, ...]:
+    """The ESC-### rules the determining results cited, with their text, so the reason is never generic."""
+    seen: dict[str, EscalationRuleFacts] = {}
+    for r in results:
+        if r.escalation_rule_id and r.outcome is RuleOutcome.UNKNOWN:
+            rule = ctx.escalation(r.escalation_rule_id)
+            if rule is not None:
+                seen.setdefault(rule.rule_id, rule)
+    return tuple(seen.values())
 
 
 def _attribute_sources(results: Sequence[RuleResult]) -> tuple[AttributedSource, ...]:

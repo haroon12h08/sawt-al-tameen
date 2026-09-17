@@ -1,0 +1,54 @@
+{
+  "disclaimer": "SYNTHETIC TEST DATA. Fictional insurer, plans, providers, members and procedure codes. Structurally modelled on UAE health-insurance regulation (DHA/DOH) for demonstration only. Not real policy data and not valid for any real authorisation decision.",
+  "note": "Machine-readable form of escalation_rules.md; the rules engine cites this text verbatim.",
+  "rules": [
+    {
+      "rule_id": "ESC-001",
+      "title": "Missing documentation",
+      "situation": "The benefit schedule requires evidence (treatment history, imaging report, clinical notes) that has not been supplied.",
+      "agent_action": "Tell the caller exactly which documents are needed and how to submit them. Escalate if they are unavailable."
+    },
+    {
+      "rule_id": "ESC-002",
+      "title": "Conflicting policy clauses",
+      "situation": "Two clauses of the same policy point to different answers, for example a benefit listed on a tier and also named in the general exclusions.",
+      "agent_action": "Escalate to the medical director's queue. Do not choose a clause."
+    },
+    {
+      "rule_id": "ESC-003",
+      "title": "Amount exceeds a limit",
+      "situation": "The requested amount exceeds the tier's annual limit, the relevant sub-limit, or the member's remaining balance for the policy year.",
+      "agent_action": "Escalate with the amount and the limit; a human decides on partial cover."
+    },
+    {
+      "rule_id": "ESC-004",
+      "title": "Disputed diagnosis or procedure coding",
+      "situation": "The submitted code disagrees with the clinical description, or two codes with different tariffs describe the same treatment.",
+      "agent_action": "Escalate for coding review. Do not re-code the request."
+    },
+    {
+      "rule_id": "ESC-005",
+      "title": "Procedure not in the coverage list, or new technology",
+      "situation": "The procedure has no entry in the benefit schedule, or is an emerging technique with no tariff line.",
+      "agent_action": "Escalate to the medical director. Never infer cover from a similar procedure."
+    },
+    {
+      "rule_id": "ESC-006",
+      "title": "Clinical versus cosmetic intent",
+      "situation": "Cover depends on whether the procedure is reconstructive or cosmetic, or on an accident that must be evidenced.",
+      "agent_action": "Escalate for clinical review."
+    },
+    {
+      "rule_id": "ESC-007",
+      "title": "Member eligibility in doubt",
+      "situation": "The policy is lapsed or suspended, the treatment falls inside a waiting period, or a pre-existing condition clause may apply.",
+      "agent_action": "Tell the caller the request cannot proceed on eligibility grounds and escalate."
+    },
+    {
+      "rule_id": "ESC-008",
+      "title": "Provider not active in the network",
+      "situation": "The requesting provider is suspended, still onboarding, or outside the member's network, or the call is a supplier or onboarding enquiry.",
+      "agent_action": "Escalate to the network department. Onboarding questions are never answered by the pre-authorisation desk."
+    }
+  ]
+}

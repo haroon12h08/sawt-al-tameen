@@ -8,26 +8,39 @@ from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, StringConstr
 from preauth.domain.enums import (
     CallbackReason,
     CallerRole,
+    CallOutcome,
     CloseReason,
     DocumentType,
     HumanDecisionType,
-    PlaceOfService,
     Urgency,
 )
 
-Identifier = Annotated[str, StringConstraints(strip_whitespace=True, pattern=r"^[A-Z0-9][A-Z0-9-]{1,39}$")]
-# ICD-10 code with the dot, e.g. M23.221
-# E.164 without separators, e.g. +971501234567 or +919812345678
-PhoneNumber = Annotated[str, StringConstraints(strip_whitespace=True, pattern=r"^\+[1-9][0-9]{7,14}$")]
-# Normalised before the pattern check (StringConstraints applies its pattern before case transforms).
-LanguageCode = Annotated[
-    str,
-    StringConstraints(pattern=r"^[a-z]{2}$"),
-    BeforeValidator(lambda v: v.strip().lower() if isinstance(v, str) else v),
+
+def _upper(value: object) -> object:
+    return value.strip().upper() if isinstance(value, str) else value
+
+
+def _lower(value: object) -> object:
+    return value.strip().lower() if isinstance(value, str) else value
+
+
+# Identifiers are normalised before their pattern is checked (spoken input arrives in any case).
+ProviderNumber = Annotated[str, StringConstraints(pattern=r"^PRV-[0-9]{5}$"), BeforeValidator(_upper)]
+PolicyNumber = Annotated[str, StringConstraints(pattern=r"^POL-[A-Z]{2}-[0-9]{4}-[0-9]{6}$"), BeforeValidator(_upper)]
+ProcedureCode = Annotated[str, StringConstraints(pattern=r"^SP-[0-9]{5}$"), BeforeValidator(_upper)]
+CaseReference = Annotated[str, StringConstraints(pattern=r"^PA-[0-9A-Z]{8}$"), BeforeValidator(_upper)]
+CallerReference = Annotated[
+    str, StringConstraints(min_length=2, max_length=60), BeforeValidator(_upper)
 ]
-PersonName = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=100)]
 Icd10Code = Annotated[
-    str, StringConstraints(strip_whitespace=True, pattern=r"^[A-TV-Z][0-9][0-9AB](\.[0-9A-TV-Z]{1,4})?$")
+    str, StringConstraints(pattern=r"^[A-TV-Z][0-9][0-9AB](\.[0-9A-TV-Z]{1,4})?$"), BeforeValidator(_upper)
+]
+PhoneNumber = Annotated[str, StringConstraints(pattern=r"^\+[1-9][0-9]{7,14}$"), BeforeValidator(_upper)]
+LanguageCode = Annotated[str, StringConstraints(pattern=r"^[a-z]{2}$"), BeforeValidator(_lower)]
+PersonName = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=100)]
+OrganisationName = Annotated[str, StringConstraints(strip_whitespace=True, min_length=2, max_length=200)]
+Uuid = Annotated[
+    str, StringConstraints(pattern=r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
 ]
 
 
@@ -35,40 +48,48 @@ class StrictModel(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
 
-class PatientIdentification(StrictModel):
-    member_id: Identifier
-    date_of_birth: date
+class VerifyCallerCommand(StrictModel):
+    """Identify the calling organisation, and optionally the member the call is about."""
 
-
-class CaseInformationUpdate(StrictModel):
-    """Partial update of the information collected for a case. Only supplied fields are applied."""
-
-    provider_number: Identifier | None = None
-    patient: PatientIdentification | None = None
-    policy_number: Identifier | None = None
-    procedure_code: Identifier | None = None
-    requested_service_date: date | None = None
-    place_of_service: PlaceOfService | None = None
-    diagnosis_code: Icd10Code | None = None
-    diagnosis_description: Annotated[str, StringConstraints(min_length=1, max_length=300)] | None = None
-    urgency: Urgency | None = None
-    conservative_treatment_weeks: Annotated[int, Field(ge=0, le=520)] | None = None
-    clinical_summary: Annotated[str, StringConstraints(min_length=1, max_length=4000)] | None = None
+    caller_role: CallerRole
+    organisation_name: OrganisationName
+    caller_reference: CallerReference
     caller_name: PersonName | None = None
-    caller_role: CallerRole | None = None
+    member_policy_number: PolicyNumber | None = None
+    member_date_of_birth: date | None = None
 
     @model_validator(mode="after")
-    def _require_non_null_fields(self) -> "CaseInformationUpdate":
-        if not self.model_fields_set:
-            raise ValueError("At least one information field must be supplied")
-        nulls = sorted(f for f in self.model_fields_set if getattr(self, f) is None)
-        if nulls:
-            raise ValueError(f"Fields may not be set to null: {nulls}")
+    def _member_pair(self) -> "VerifyCallerCommand":
+        if (self.member_policy_number is None) != (self.member_date_of_birth is None):
+            raise ValueError("member_policy_number and member_date_of_birth must be provided together")
         return self
 
 
-class CreateCaseCommand(StrictModel):
-    information: CaseInformationUpdate | None = None
+class CoverageCheckCommand(StrictModel):
+    """A complete pre-authorisation request to check against the benefit schedule."""
+
+    verification_id: Uuid
+    procedure_code: ProcedureCode
+    treatment_date: date
+    estimated_cost_aed: Annotated[int, Field(ge=0, le=100_000_000)]
+    urgency: Urgency = Urgency.STANDARD
+    diagnosis_code: Icd10Code | None = None
+    clinical_summary: Annotated[str, StringConstraints(min_length=1, max_length=4000)] | None = None
+    # Supplied when re-checking an existing case, e.g. after documents were submitted.
+    case_reference: CaseReference | None = None
+
+
+class LogTranscriptCommand(StrictModel):
+    """Record what the caller was told, before any sign-off language is spoken."""
+
+    summary: Annotated[str, StringConstraints(min_length=10, max_length=2000)]
+    outcome_communicated: CallOutcome
+    verification_id: Uuid | None = None
+    case_reference: CaseReference | None = None
+    caller_name: PersonName | None = None
+    callback_phone: PhoneNumber | None = None
+    preferred_language: LanguageCode = "en"
+    callback_reason: CallbackReason | None = None
 
 
 class RegisterDocumentCommand(StrictModel):
@@ -82,7 +103,7 @@ class RegisterDocumentCommand(StrictModel):
 
 
 class HumanDecisionCommand(StrictModel):
-    recommendation_id: Annotated[str, StringConstraints(min_length=36, max_length=36)]
+    recommendation_id: Uuid
     decision: HumanDecisionType
     rationale: Annotated[str, StringConstraints(min_length=10, max_length=4000)]
 
@@ -90,9 +111,9 @@ class HumanDecisionCommand(StrictModel):
 class RequestCallbackCommand(StrictModel):
     """Hand a caller to a human: ambiguous, non-rule-based, or out-of-scope requests."""
 
-    case_id: Annotated[str, StringConstraints(min_length=36, max_length=36)] | None = None
+    case_id: Uuid | None = None
     caller_name: PersonName
-    caller_organisation: Annotated[str, StringConstraints(min_length=1, max_length=200)] | None = None
+    caller_organisation: OrganisationName | None = None
     caller_role: CallerRole
     callback_phone: PhoneNumber
     preferred_language: LanguageCode

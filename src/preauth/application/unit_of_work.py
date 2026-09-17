@@ -16,8 +16,8 @@ from preauth.infrastructure.db.models import AuditEvent, PreAuthorizationCase
 from preauth.infrastructure.db.repositories import (
     AuditRepository,
     CaseRepository,
+    CatalogueRepository,
     EvaluationRepository,
-    ReferenceDataRepository,
     ReviewRepository,
     VoiceChannelRepository,
 )
@@ -75,7 +75,7 @@ class UnitOfWork:
 
     def __enter__(self) -> "UnitOfWork":
         self.session = self._session_factory()
-        self.reference = ReferenceDataRepository(self.session)
+        self.catalogue = CatalogueRepository(self.session)
         self.cases = CaseRepository(self.session)
         self.evaluations = EvaluationRepository(self.session)
         self.reviews = ReviewRepository(self.session)

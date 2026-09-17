@@ -27,7 +27,7 @@ every time the tunnel restarts.
 uv sync --extra postgres
 export PREAUTH_VOICE_AGENT_TOKEN=... PREAUTH_GATEWAY_SECRET=... PREAUTH_ELEVENLABS_WEBHOOK_SECRET=...
 uv run alembic upgrade head
-uv run python -m preauth.seed --if-empty
+uv run python -m preauth.seed --if-empty      # loads the catalogue from knowledge_base/
 uv run uvicorn preauth.main:app --port 8000
 
 # terminal 2: public HTTPS URL
@@ -54,6 +54,7 @@ When the tunnel URL changes, re-run the setup script and update the post-call we
    `PREAUTH_GATEWAY_SECRET` and `PREAUTH_ELEVENLABS_WEBHOOK_SECRET`. Optionally add `PREAUTH_SEED_SCENARIOS=1` to
    create the five demo cases on first start.
 5. **URL.** The public URL is `https://<user>-<space>.hf.space`. Use it as `PREAUTH_PUBLIC_BASE_URL`.
+6. **Space README.** Copy `deploy/huggingface/README.md` over the Space's `README.md` for the required front matter.
 
 On start, the container runs migrations, loads synthetic reference data if the database is empty, and serves on
 port 7860 (`scripts/start.sh`).
@@ -75,9 +76,10 @@ export PREAUTH_VOICE_AGENT_TOKEN=... PREAUTH_GATEWAY_SECRET=... PREAUTH_ELEVENLA
 uv run python scripts/verify_deployment.py --base-url https://your-backend.example
 ```
 
-It creates a synthetic case, checks intake, member verification, the rules, source citations, routing, the
-guardrails (no decision tool; sign-off blocked until the transcript is logged), and the signed post-call webhook,
-then closes the case. It exits non-zero if any check fails.
+Twenty-eight checks: caller verification (including a lapsed member and a wrong date of birth), supplier
+onboarding, the rules and their cited sources, escalation with a cited ESC rule, the guardrails (no decision tool;
+coverage blocked without verification; sign-off blocked until the transcript is logged), and the signed post-call
+webhook. It closes the case it creates, and exits non-zero if any check fails.
 
 ## Phone numbers: what is and isn't free
 

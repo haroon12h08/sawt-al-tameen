@@ -25,6 +25,7 @@
       "waiting_period_months": 0,
       "waiting_period_waived_for_emergency": false,
       "exclusions": [],
+      "required_documents": [],
       "coverage_by_tier": {
         "BASIC": {
           "covered": true,
@@ -32,6 +33,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": 20,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.1 SP-10010: Chest X-ray, two views",
           "reason_not_covered": null
         },
         "ENHANCED": {
@@ -40,6 +43,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": 15,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.1 SP-10010: Chest X-ray, two views",
           "reason_not_covered": null
         },
         "COMPREHENSIVE": {
@@ -48,6 +53,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": 10,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.1 SP-10010: Chest X-ray, two views",
           "reason_not_covered": null
         },
         "EXECUTIVE": {
@@ -56,6 +63,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.1 SP-10010: Chest X-ray, two views",
           "reason_not_covered": null
         }
       },
@@ -74,6 +83,7 @@
       "waiting_period_months": 0,
       "waiting_period_waived_for_emergency": false,
       "exclusions": [],
+      "required_documents": [],
       "coverage_by_tier": {
         "BASIC": {
           "covered": true,
@@ -81,6 +91,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": 20,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.2 SP-10020: Ultrasound, abdomen complete",
           "reason_not_covered": null
         },
         "ENHANCED": {
@@ -89,6 +101,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": 15,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.2 SP-10020: Ultrasound, abdomen complete",
           "reason_not_covered": null
         },
         "COMPREHENSIVE": {
@@ -97,6 +111,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": 10,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.2 SP-10020: Ultrasound, abdomen complete",
           "reason_not_covered": null
         },
         "EXECUTIVE": {
@@ -105,6 +121,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.2 SP-10020: Ultrasound, abdomen complete",
           "reason_not_covered": null
         }
       },
@@ -123,6 +141,9 @@
       "waiting_period_months": 0,
       "waiting_period_waived_for_emergency": false,
       "exclusions": [],
+      "required_documents": [
+        "CLINICAL_NOTES"
+      ],
       "coverage_by_tier": {
         "BASIC": {
           "covered": true,
@@ -130,6 +151,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": 20,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.3 SP-10030: CT scan, head, without contrast",
           "reason_not_covered": null
         },
         "ENHANCED": {
@@ -138,6 +161,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": 15,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.3 SP-10030: CT scan, head, without contrast",
           "reason_not_covered": null
         },
         "COMPREHENSIVE": {
@@ -146,6 +171,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": 10,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.3 SP-10030: CT scan, head, without contrast",
           "reason_not_covered": null
         },
         "EXECUTIVE": {
@@ -154,6 +181,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.3 SP-10030: CT scan, head, without contrast",
           "reason_not_covered": null
         }
       },
@@ -172,6 +201,9 @@
       "waiting_period_months": 0,
       "waiting_period_waived_for_emergency": false,
       "exclusions": [],
+      "required_documents": [
+        "CLINICAL_NOTES"
+      ],
       "coverage_by_tier": {
         "BASIC": {
           "covered": true,
@@ -179,6 +211,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": 20,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.4 SP-10040: MRI, brain, without contrast",
           "reason_not_covered": null
         },
         "ENHANCED": {
@@ -187,6 +221,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": 15,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.4 SP-10040: MRI, brain, without contrast",
           "reason_not_covered": null
         },
         "COMPREHENSIVE": {
@@ -195,6 +231,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": 10,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.4 SP-10040: MRI, brain, without contrast",
           "reason_not_covered": null
         },
         "EXECUTIVE": {
@@ -203,6 +241,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.4 SP-10040: MRI, brain, without contrast",
           "reason_not_covered": null
         }
       },
@@ -223,6 +263,9 @@
       "exclusions": [
         "Not covered when requested solely for screening without clinical findings"
       ],
+      "required_documents": [
+        "CLINICAL_NOTES"
+      ],
       "coverage_by_tier": {
         "BASIC": {
           "covered": true,
@@ -230,6 +273,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": 20,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.5 SP-10050: MRI, knee, without contrast",
           "reason_not_covered": null
         },
         "ENHANCED": {
@@ -238,6 +283,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": 15,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.5 SP-10050: MRI, knee, without contrast",
           "reason_not_covered": null
         },
         "COMPREHENSIVE": {
@@ -246,6 +293,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": 10,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.5 SP-10050: MRI, knee, without contrast",
           "reason_not_covered": null
         },
         "EXECUTIVE": {
@@ -254,6 +303,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.5 SP-10050: MRI, knee, without contrast",
           "reason_not_covered": null
         }
       },
@@ -272,6 +323,9 @@
       "waiting_period_months": 0,
       "waiting_period_waived_for_emergency": false,
       "exclusions": [],
+      "required_documents": [
+        "CLINICAL_NOTES"
+      ],
       "coverage_by_tier": {
         "BASIC": {
           "covered": false,
@@ -279,6 +333,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.6 SP-10060: PET-CT, whole body",
           "reason_not_covered": "Benefit starts at the Enhanced tier"
         },
         "ENHANCED": {
@@ -287,6 +343,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": 15,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.6 SP-10060: PET-CT, whole body",
           "reason_not_covered": null
         },
         "COMPREHENSIVE": {
@@ -295,6 +353,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": 10,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.6 SP-10060: PET-CT, whole body",
           "reason_not_covered": null
         },
         "EXECUTIVE": {
@@ -303,6 +363,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.6 SP-10060: PET-CT, whole body",
           "reason_not_covered": null
         }
       },
@@ -321,6 +383,7 @@
       "waiting_period_months": 0,
       "waiting_period_waived_for_emergency": false,
       "exclusions": [],
+      "required_documents": [],
       "coverage_by_tier": {
         "BASIC": {
           "covered": true,
@@ -328,6 +391,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": 20,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.7 SP-10070: Echocardiogram, transthoracic",
           "reason_not_covered": null
         },
         "ENHANCED": {
@@ -336,6 +401,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": 15,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.7 SP-10070: Echocardiogram, transthoracic",
           "reason_not_covered": null
         },
         "COMPREHENSIVE": {
@@ -344,6 +411,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": 10,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.7 SP-10070: Echocardiogram, transthoracic",
           "reason_not_covered": null
         },
         "EXECUTIVE": {
@@ -352,6 +421,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.7 SP-10070: Echocardiogram, transthoracic",
           "reason_not_covered": null
         }
       },
@@ -370,6 +441,7 @@
       "waiting_period_months": 0,
       "waiting_period_waived_for_emergency": false,
       "exclusions": [],
+      "required_documents": [],
       "coverage_by_tier": {
         "BASIC": {
           "covered": true,
@@ -377,6 +449,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": 20,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.8 SP-10090: Complete blood count",
           "reason_not_covered": null
         },
         "ENHANCED": {
@@ -385,6 +459,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": 15,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.8 SP-10090: Complete blood count",
           "reason_not_covered": null
         },
         "COMPREHENSIVE": {
@@ -393,6 +469,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": 10,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.8 SP-10090: Complete blood count",
           "reason_not_covered": null
         },
         "EXECUTIVE": {
@@ -401,6 +479,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.8 SP-10090: Complete blood count",
           "reason_not_covered": null
         }
       },
@@ -421,6 +501,10 @@
       "exclusions": [
         "Not covered for population screening without a qualifying family history"
       ],
+      "required_documents": [
+        "CLINICAL_NOTES",
+        "REFERRAL_LETTER"
+      ],
       "coverage_by_tier": {
         "BASIC": {
           "covered": false,
@@ -428,6 +512,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.9 SP-10110: Hereditary cancer multigene panel",
           "reason_not_covered": "Benefit starts at the Comprehensive tier"
         },
         "ENHANCED": {
@@ -436,6 +522,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.9 SP-10110: Hereditary cancer multigene panel",
           "reason_not_covered": "Benefit starts at the Comprehensive tier"
         },
         "COMPREHENSIVE": {
@@ -444,6 +532,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": 10,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.9 SP-10110: Hereditary cancer multigene panel",
           "reason_not_covered": null
         },
         "EXECUTIVE": {
@@ -452,6 +542,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.9 SP-10110: Hereditary cancer multigene panel",
           "reason_not_covered": null
         }
       },
@@ -473,6 +565,9 @@
       "waiting_period_months": 0,
       "waiting_period_waived_for_emergency": false,
       "exclusions": [],
+      "required_documents": [
+        "CLINICAL_NOTES"
+      ],
       "coverage_by_tier": {
         "BASIC": {
           "covered": false,
@@ -480,6 +575,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.10 SP-10120: Sleep study, attended polysomnography",
           "reason_not_covered": "Benefit starts at the Enhanced tier"
         },
         "ENHANCED": {
@@ -488,6 +585,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": 15,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.10 SP-10120: Sleep study, attended polysomnography",
           "reason_not_covered": null
         },
         "COMPREHENSIVE": {
@@ -496,6 +595,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": 10,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.10 SP-10120: Sleep study, attended polysomnography",
           "reason_not_covered": null
         },
         "EXECUTIVE": {
@@ -504,6 +605,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.10 SP-10120: Sleep study, attended polysomnography",
           "reason_not_covered": null
         }
       },
@@ -525,6 +628,9 @@
       "waiting_period_months": 0,
       "waiting_period_waived_for_emergency": false,
       "exclusions": [],
+      "required_documents": [
+        "CLINICAL_NOTES"
+      ],
       "coverage_by_tier": {
         "BASIC": {
           "covered": true,
@@ -532,6 +638,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": 20,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.11 SP-10130: Colonoscopy, diagnostic",
           "reason_not_covered": null
         },
         "ENHANCED": {
@@ -540,6 +648,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": 15,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.11 SP-10130: Colonoscopy, diagnostic",
           "reason_not_covered": null
         },
         "COMPREHENSIVE": {
@@ -548,6 +658,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": 10,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.11 SP-10130: Colonoscopy, diagnostic",
           "reason_not_covered": null
         },
         "EXECUTIVE": {
@@ -556,6 +668,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.11 SP-10130: Colonoscopy, diagnostic",
           "reason_not_covered": null
         }
       },
@@ -574,6 +688,10 @@
       "waiting_period_months": 0,
       "waiting_period_waived_for_emergency": false,
       "exclusions": [],
+      "required_documents": [
+        "CLINICAL_NOTES",
+        "OPERATIVE_PLAN"
+      ],
       "coverage_by_tier": {
         "BASIC": {
           "covered": true,
@@ -581,6 +699,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": 20,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.12 SP-20010: Appendectomy, laparoscopic",
           "reason_not_covered": null
         },
         "ENHANCED": {
@@ -589,6 +709,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": 10,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.12 SP-20010: Appendectomy, laparoscopic",
           "reason_not_covered": null
         },
         "COMPREHENSIVE": {
@@ -597,6 +719,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.12 SP-20010: Appendectomy, laparoscopic",
           "reason_not_covered": null
         },
         "EXECUTIVE": {
@@ -605,6 +729,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.12 SP-20010: Appendectomy, laparoscopic",
           "reason_not_covered": null
         }
       },
@@ -623,6 +749,10 @@
       "waiting_period_months": 0,
       "waiting_period_waived_for_emergency": false,
       "exclusions": [],
+      "required_documents": [
+        "CLINICAL_NOTES",
+        "OPERATIVE_PLAN"
+      ],
       "coverage_by_tier": {
         "BASIC": {
           "covered": true,
@@ -630,6 +760,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": 20,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.13 SP-20020: Cholecystectomy, laparoscopic",
           "reason_not_covered": null
         },
         "ENHANCED": {
@@ -638,6 +770,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": 10,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.13 SP-20020: Cholecystectomy, laparoscopic",
           "reason_not_covered": null
         },
         "COMPREHENSIVE": {
@@ -646,6 +780,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.13 SP-20020: Cholecystectomy, laparoscopic",
           "reason_not_covered": null
         },
         "EXECUTIVE": {
@@ -654,6 +790,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.13 SP-20020: Cholecystectomy, laparoscopic",
           "reason_not_covered": null
         }
       },
@@ -674,6 +812,11 @@
       "exclusions": [
         "Requires documented failure of at least six weeks of conservative treatment"
       ],
+      "required_documents": [
+        "CLINICAL_NOTES",
+        "OPERATIVE_PLAN",
+        "PRIOR_TREATMENT_RECORD"
+      ],
       "coverage_by_tier": {
         "BASIC": {
           "covered": true,
@@ -681,6 +824,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": 20,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.14 SP-20040: Knee arthroscopy with partial meniscectomy",
           "reason_not_covered": null
         },
         "ENHANCED": {
@@ -689,6 +834,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": 10,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.14 SP-20040: Knee arthroscopy with partial meniscectomy",
           "reason_not_covered": null
         },
         "COMPREHENSIVE": {
@@ -697,6 +844,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.14 SP-20040: Knee arthroscopy with partial meniscectomy",
           "reason_not_covered": null
         },
         "EXECUTIVE": {
@@ -705,6 +854,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.14 SP-20040: Knee arthroscopy with partial meniscectomy",
           "reason_not_covered": null
         }
       },
@@ -723,6 +874,11 @@
       "waiting_period_months": 0,
       "waiting_period_waived_for_emergency": false,
       "exclusions": [],
+      "required_documents": [
+        "CLINICAL_NOTES",
+        "IMAGING_REPORT",
+        "OPERATIVE_PLAN"
+      ],
       "coverage_by_tier": {
         "BASIC": {
           "covered": false,
@@ -730,6 +886,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.15 SP-20050: Total knee replacement",
           "reason_not_covered": "Benefit starts at the Enhanced tier"
         },
         "ENHANCED": {
@@ -738,6 +896,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": 10,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.15 SP-20050: Total knee replacement",
           "reason_not_covered": null
         },
         "COMPREHENSIVE": {
@@ -746,6 +906,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.15 SP-20050: Total knee replacement",
           "reason_not_covered": null
         },
         "EXECUTIVE": {
@@ -754,6 +916,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.15 SP-20050: Total knee replacement",
           "reason_not_covered": null
         }
       },
@@ -772,6 +936,11 @@
       "waiting_period_months": 0,
       "waiting_period_waived_for_emergency": false,
       "exclusions": [],
+      "required_documents": [
+        "CLINICAL_NOTES",
+        "IMAGING_REPORT",
+        "OPERATIVE_PLAN"
+      ],
       "coverage_by_tier": {
         "BASIC": {
           "covered": false,
@@ -779,6 +948,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.16 SP-20060: Spinal fusion, single level",
           "reason_not_covered": "Benefit starts at the Comprehensive tier"
         },
         "ENHANCED": {
@@ -787,6 +958,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.16 SP-20060: Spinal fusion, single level",
           "reason_not_covered": "Benefit starts at the Comprehensive tier"
         },
         "COMPREHENSIVE": {
@@ -795,6 +968,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.16 SP-20060: Spinal fusion, single level",
           "reason_not_covered": null
         },
         "EXECUTIVE": {
@@ -803,6 +978,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.16 SP-20060: Spinal fusion, single level",
           "reason_not_covered": null
         }
       },
@@ -824,6 +1001,10 @@
       "waiting_period_months": 0,
       "waiting_period_waived_for_emergency": false,
       "exclusions": [],
+      "required_documents": [
+        "CLINICAL_NOTES",
+        "OPERATIVE_PLAN"
+      ],
       "coverage_by_tier": {
         "BASIC": {
           "covered": false,
@@ -831,6 +1012,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.17 SP-20070: Coronary angioplasty with stent",
           "reason_not_covered": "Benefit starts at the Enhanced tier"
         },
         "ENHANCED": {
@@ -839,6 +1022,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": 10,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.17 SP-20070: Coronary angioplasty with stent",
           "reason_not_covered": null
         },
         "COMPREHENSIVE": {
@@ -847,6 +1032,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.17 SP-20070: Coronary angioplasty with stent",
           "reason_not_covered": null
         },
         "EXECUTIVE": {
@@ -855,6 +1042,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.17 SP-20070: Coronary angioplasty with stent",
           "reason_not_covered": null
         }
       },
@@ -873,6 +1062,10 @@
       "waiting_period_months": 0,
       "waiting_period_waived_for_emergency": false,
       "exclusions": [],
+      "required_documents": [
+        "CLINICAL_NOTES",
+        "OPERATIVE_PLAN"
+      ],
       "coverage_by_tier": {
         "BASIC": {
           "covered": false,
@@ -880,6 +1073,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.18 SP-20080: Coronary artery bypass graft",
           "reason_not_covered": "Benefit starts at the Enhanced tier"
         },
         "ENHANCED": {
@@ -888,6 +1083,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": 10,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.18 SP-20080: Coronary artery bypass graft",
           "reason_not_covered": null
         },
         "COMPREHENSIVE": {
@@ -896,6 +1093,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.18 SP-20080: Coronary artery bypass graft",
           "reason_not_covered": null
         },
         "EXECUTIVE": {
@@ -904,6 +1103,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.18 SP-20080: Coronary artery bypass graft",
           "reason_not_covered": null
         }
       },
@@ -924,6 +1125,10 @@
       "exclusions": [
         "Premium multifocal lenses are an upgrade payable by the member"
       ],
+      "required_documents": [
+        "CLINICAL_NOTES",
+        "OPERATIVE_PLAN"
+      ],
       "coverage_by_tier": {
         "BASIC": {
           "covered": true,
@@ -931,6 +1136,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": 20,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.19 SP-20090: Cataract extraction with intraocular lens",
           "reason_not_covered": null
         },
         "ENHANCED": {
@@ -939,6 +1146,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": 10,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.19 SP-20090: Cataract extraction with intraocular lens",
           "reason_not_covered": null
         },
         "COMPREHENSIVE": {
@@ -947,6 +1156,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.19 SP-20090: Cataract extraction with intraocular lens",
           "reason_not_covered": null
         },
         "EXECUTIVE": {
@@ -955,6 +1166,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.19 SP-20090: Cataract extraction with intraocular lens",
           "reason_not_covered": null
         }
       },
@@ -973,6 +1186,11 @@
       "waiting_period_months": 12,
       "waiting_period_waived_for_emergency": false,
       "exclusions": [],
+      "required_documents": [
+        "CLINICAL_NOTES",
+        "OPERATIVE_PLAN",
+        "PRIOR_TREATMENT_RECORD"
+      ],
       "coverage_by_tier": {
         "BASIC": {
           "covered": false,
@@ -980,6 +1198,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.20 SP-20110: Bariatric surgery, sleeve gastrectomy",
           "reason_not_covered": "Benefit starts at the Comprehensive tier"
         },
         "ENHANCED": {
@@ -988,6 +1208,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.20 SP-20110: Bariatric surgery, sleeve gastrectomy",
           "reason_not_covered": "Benefit starts at the Comprehensive tier"
         },
         "COMPREHENSIVE": {
@@ -996,6 +1218,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.20 SP-20110: Bariatric surgery, sleeve gastrectomy",
           "reason_not_covered": null
         },
         "EXECUTIVE": {
@@ -1004,6 +1228,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.20 SP-20110: Bariatric surgery, sleeve gastrectomy",
           "reason_not_covered": null
         }
       },
@@ -1025,6 +1251,10 @@
       "waiting_period_months": 0,
       "waiting_period_waived_for_emergency": false,
       "exclusions": [],
+      "required_documents": [
+        "CLINICAL_NOTES",
+        "OPERATIVE_PLAN"
+      ],
       "coverage_by_tier": {
         "BASIC": {
           "covered": true,
@@ -1032,6 +1262,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": 20,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.21 SP-20120: Septoplasty for deviated nasal septum",
           "reason_not_covered": null
         },
         "ENHANCED": {
@@ -1040,6 +1272,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": 10,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.21 SP-20120: Septoplasty for deviated nasal septum",
           "reason_not_covered": null
         },
         "COMPREHENSIVE": {
@@ -1048,6 +1282,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.21 SP-20120: Septoplasty for deviated nasal septum",
           "reason_not_covered": null
         },
         "EXECUTIVE": {
@@ -1056,6 +1292,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.21 SP-20120: Septoplasty for deviated nasal septum",
           "reason_not_covered": null
         }
       },
@@ -1077,6 +1315,10 @@
       "waiting_period_months": 0,
       "waiting_period_waived_for_emergency": false,
       "exclusions": [],
+      "required_documents": [
+        "CLINICAL_NOTES",
+        "OPERATIVE_PLAN"
+      ],
       "coverage_by_tier": {
         "BASIC": {
           "covered": false,
@@ -1084,6 +1326,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.22 SP-20130: Robotic-assisted radical prostatectomy",
           "reason_not_covered": "Benefit starts at the Executive tier"
         },
         "ENHANCED": {
@@ -1092,6 +1336,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.22 SP-20130: Robotic-assisted radical prostatectomy",
           "reason_not_covered": "Benefit starts at the Executive tier"
         },
         "COMPREHENSIVE": {
@@ -1100,6 +1346,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.22 SP-20130: Robotic-assisted radical prostatectomy",
           "reason_not_covered": "Benefit starts at the Executive tier"
         },
         "EXECUTIVE": {
@@ -1108,6 +1356,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.22 SP-20130: Robotic-assisted radical prostatectomy",
           "reason_not_covered": null
         }
       },
@@ -1131,6 +1381,7 @@
       "exclusions": [
         "Cosmetic surgery is excluded on all tiers unless it reconstructs an accidental injury covered by the policy"
       ],
+      "required_documents": [],
       "coverage_by_tier": {
         "BASIC": {
           "covered": false,
@@ -1138,6 +1389,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.23 SP-20140: Rhinoplasty, cosmetic",
           "reason_not_covered": "Excluded on all tiers"
         },
         "ENHANCED": {
@@ -1146,6 +1399,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.23 SP-20140: Rhinoplasty, cosmetic",
           "reason_not_covered": "Excluded on all tiers"
         },
         "COMPREHENSIVE": {
@@ -1154,6 +1409,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.23 SP-20140: Rhinoplasty, cosmetic",
           "reason_not_covered": "Excluded on all tiers"
         },
         "EXECUTIVE": {
@@ -1162,6 +1419,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.23 SP-20140: Rhinoplasty, cosmetic",
           "reason_not_covered": "Excluded on all tiers"
         }
       },
@@ -1182,6 +1441,7 @@
       "exclusions": [
         "Cosmetic treatment excluded on all tiers"
       ],
+      "required_documents": [],
       "coverage_by_tier": {
         "BASIC": {
           "covered": false,
@@ -1189,6 +1449,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.24 SP-20150: Hair transplantation",
           "reason_not_covered": "Excluded on all tiers"
         },
         "ENHANCED": {
@@ -1197,6 +1459,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.24 SP-20150: Hair transplantation",
           "reason_not_covered": "Excluded on all tiers"
         },
         "COMPREHENSIVE": {
@@ -1205,6 +1469,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.24 SP-20150: Hair transplantation",
           "reason_not_covered": "Excluded on all tiers"
         },
         "EXECUTIVE": {
@@ -1213,6 +1479,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.24 SP-20150: Hair transplantation",
           "reason_not_covered": "Excluded on all tiers"
         }
       },
@@ -1231,6 +1499,9 @@
       "waiting_period_months": 12,
       "waiting_period_waived_for_emergency": true,
       "exclusions": [],
+      "required_documents": [
+        "CLINICAL_NOTES"
+      ],
       "coverage_by_tier": {
         "BASIC": {
           "covered": true,
@@ -1238,6 +1509,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": 20,
           "applicable_sub_limit_aed": 7000,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.25 SP-30010: Antenatal care package",
           "reason_not_covered": null
         },
         "ENHANCED": {
@@ -1246,6 +1519,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": 20,
           "applicable_sub_limit_aed": 15000,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.25 SP-30010: Antenatal care package",
           "reason_not_covered": null
         },
         "COMPREHENSIVE": {
@@ -1254,6 +1529,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": 10,
           "applicable_sub_limit_aed": 30000,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.25 SP-30010: Antenatal care package",
           "reason_not_covered": null
         },
         "EXECUTIVE": {
@@ -1262,6 +1539,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": 60000,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.25 SP-30010: Antenatal care package",
           "reason_not_covered": null
         }
       },
@@ -1280,6 +1559,9 @@
       "waiting_period_months": 12,
       "waiting_period_waived_for_emergency": true,
       "exclusions": [],
+      "required_documents": [
+        "CLINICAL_NOTES"
+      ],
       "coverage_by_tier": {
         "BASIC": {
           "covered": true,
@@ -1287,6 +1569,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": 20,
           "applicable_sub_limit_aed": 7000,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.26 SP-30020: Normal vaginal delivery",
           "reason_not_covered": null
         },
         "ENHANCED": {
@@ -1295,6 +1579,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": 20,
           "applicable_sub_limit_aed": 15000,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.26 SP-30020: Normal vaginal delivery",
           "reason_not_covered": null
         },
         "COMPREHENSIVE": {
@@ -1303,6 +1589,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": 10,
           "applicable_sub_limit_aed": 30000,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.26 SP-30020: Normal vaginal delivery",
           "reason_not_covered": null
         },
         "EXECUTIVE": {
@@ -1311,6 +1599,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": 60000,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.26 SP-30020: Normal vaginal delivery",
           "reason_not_covered": null
         }
       },
@@ -1329,6 +1619,9 @@
       "waiting_period_months": 12,
       "waiting_period_waived_for_emergency": true,
       "exclusions": [],
+      "required_documents": [
+        "CLINICAL_NOTES"
+      ],
       "coverage_by_tier": {
         "BASIC": {
           "covered": true,
@@ -1336,6 +1629,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": 20,
           "applicable_sub_limit_aed": 7000,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.27 SP-30030: Caesarean section, elective",
           "reason_not_covered": null
         },
         "ENHANCED": {
@@ -1344,6 +1639,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": 20,
           "applicable_sub_limit_aed": 15000,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.27 SP-30030: Caesarean section, elective",
           "reason_not_covered": null
         },
         "COMPREHENSIVE": {
@@ -1352,6 +1649,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": 10,
           "applicable_sub_limit_aed": 30000,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.27 SP-30030: Caesarean section, elective",
           "reason_not_covered": null
         },
         "EXECUTIVE": {
@@ -1360,6 +1659,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": 60000,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.27 SP-30030: Caesarean section, elective",
           "reason_not_covered": null
         }
       },
@@ -1378,6 +1679,9 @@
       "waiting_period_months": 12,
       "waiting_period_waived_for_emergency": true,
       "exclusions": [],
+      "required_documents": [
+        "CLINICAL_NOTES"
+      ],
       "coverage_by_tier": {
         "BASIC": {
           "covered": true,
@@ -1385,6 +1689,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": 20,
           "applicable_sub_limit_aed": 7000,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.28 SP-30040: Caesarean section, emergency",
           "reason_not_covered": null
         },
         "ENHANCED": {
@@ -1393,6 +1699,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": 20,
           "applicable_sub_limit_aed": 15000,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.28 SP-30040: Caesarean section, emergency",
           "reason_not_covered": null
         },
         "COMPREHENSIVE": {
@@ -1401,6 +1709,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": 10,
           "applicable_sub_limit_aed": 30000,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.28 SP-30040: Caesarean section, emergency",
           "reason_not_covered": null
         },
         "EXECUTIVE": {
@@ -1409,6 +1719,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": 60000,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.28 SP-30040: Caesarean section, emergency",
           "reason_not_covered": null
         }
       },
@@ -1427,6 +1739,9 @@
       "waiting_period_months": 0,
       "waiting_period_waived_for_emergency": true,
       "exclusions": [],
+      "required_documents": [
+        "CLINICAL_NOTES"
+      ],
       "coverage_by_tier": {
         "BASIC": {
           "covered": true,
@@ -1434,6 +1749,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": 20,
           "applicable_sub_limit_aed": 7000,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.29 SP-30050: Neonatal intensive care, per day",
           "reason_not_covered": null
         },
         "ENHANCED": {
@@ -1442,6 +1759,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": 20,
           "applicable_sub_limit_aed": 15000,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.29 SP-30050: Neonatal intensive care, per day",
           "reason_not_covered": null
         },
         "COMPREHENSIVE": {
@@ -1450,6 +1769,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": 10,
           "applicable_sub_limit_aed": 30000,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.29 SP-30050: Neonatal intensive care, per day",
           "reason_not_covered": null
         },
         "EXECUTIVE": {
@@ -1458,6 +1779,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": 60000,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.29 SP-30050: Neonatal intensive care, per day",
           "reason_not_covered": null
         }
       },
@@ -1476,6 +1799,9 @@
       "waiting_period_months": 24,
       "waiting_period_waived_for_emergency": true,
       "exclusions": [],
+      "required_documents": [
+        "CLINICAL_NOTES"
+      ],
       "coverage_by_tier": {
         "BASIC": {
           "covered": false,
@@ -1483,6 +1809,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.30 SP-30060: IVF treatment cycle",
           "reason_not_covered": "Benefit starts at the Executive tier"
         },
         "ENHANCED": {
@@ -1491,6 +1819,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.30 SP-30060: IVF treatment cycle",
           "reason_not_covered": "Benefit starts at the Executive tier"
         },
         "COMPREHENSIVE": {
@@ -1499,6 +1829,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.30 SP-30060: IVF treatment cycle",
           "reason_not_covered": "Benefit starts at the Executive tier"
         },
         "EXECUTIVE": {
@@ -1507,6 +1839,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": 60000,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.30 SP-30060: IVF treatment cycle",
           "reason_not_covered": null
         }
       },
@@ -1528,6 +1862,7 @@
       "waiting_period_months": 6,
       "waiting_period_waived_for_emergency": false,
       "exclusions": [],
+      "required_documents": [],
       "coverage_by_tier": {
         "BASIC": {
           "covered": false,
@@ -1535,6 +1870,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.31 SP-40010: Dental consultation and examination",
           "reason_not_covered": "Benefit starts at the Enhanced tier"
         },
         "ENHANCED": {
@@ -1543,6 +1880,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": 20,
           "applicable_sub_limit_aed": 2500,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.31 SP-40010: Dental consultation and examination",
           "reason_not_covered": null
         },
         "COMPREHENSIVE": {
@@ -1551,6 +1890,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": 10,
           "applicable_sub_limit_aed": 6000,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.31 SP-40010: Dental consultation and examination",
           "reason_not_covered": null
         },
         "EXECUTIVE": {
@@ -1559,6 +1900,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": 15000,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.31 SP-40010: Dental consultation and examination",
           "reason_not_covered": null
         }
       },
@@ -1577,6 +1920,7 @@
       "waiting_period_months": 3,
       "waiting_period_waived_for_emergency": false,
       "exclusions": [],
+      "required_documents": [],
       "coverage_by_tier": {
         "BASIC": {
           "covered": false,
@@ -1584,6 +1928,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.32 SP-40040: Root canal treatment, molar",
           "reason_not_covered": "Benefit starts at the Comprehensive tier"
         },
         "ENHANCED": {
@@ -1592,6 +1938,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.32 SP-40040: Root canal treatment, molar",
           "reason_not_covered": "Benefit starts at the Comprehensive tier"
         },
         "COMPREHENSIVE": {
@@ -1600,6 +1948,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": 10,
           "applicable_sub_limit_aed": 6000,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.32 SP-40040: Root canal treatment, molar",
           "reason_not_covered": null
         },
         "EXECUTIVE": {
@@ -1608,6 +1958,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": 15000,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.32 SP-40040: Root canal treatment, molar",
           "reason_not_covered": null
         }
       },
@@ -1626,6 +1978,10 @@
       "waiting_period_months": 3,
       "waiting_period_waived_for_emergency": false,
       "exclusions": [],
+      "required_documents": [
+        "CLINICAL_NOTES",
+        "IMAGING_REPORT"
+      ],
       "coverage_by_tier": {
         "BASIC": {
           "covered": false,
@@ -1633,6 +1989,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.33 SP-40050: Dental crown, porcelain",
           "reason_not_covered": "Benefit starts at the Comprehensive tier"
         },
         "ENHANCED": {
@@ -1641,6 +1999,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.33 SP-40050: Dental crown, porcelain",
           "reason_not_covered": "Benefit starts at the Comprehensive tier"
         },
         "COMPREHENSIVE": {
@@ -1649,6 +2009,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": 10,
           "applicable_sub_limit_aed": 6000,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.33 SP-40050: Dental crown, porcelain",
           "reason_not_covered": null
         },
         "EXECUTIVE": {
@@ -1657,6 +2019,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": 15000,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.33 SP-40050: Dental crown, porcelain",
           "reason_not_covered": null
         }
       },
@@ -1675,6 +2039,10 @@
       "waiting_period_months": 0,
       "waiting_period_waived_for_emergency": false,
       "exclusions": [],
+      "required_documents": [
+        "CLINICAL_NOTES",
+        "IMAGING_REPORT"
+      ],
       "coverage_by_tier": {
         "BASIC": {
           "covered": false,
@@ -1682,6 +2050,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.34 SP-40060: Dental implant, single tooth",
           "reason_not_covered": "Benefit starts at the Executive tier"
         },
         "ENHANCED": {
@@ -1690,6 +2060,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.34 SP-40060: Dental implant, single tooth",
           "reason_not_covered": "Benefit starts at the Executive tier"
         },
         "COMPREHENSIVE": {
@@ -1698,6 +2070,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.34 SP-40060: Dental implant, single tooth",
           "reason_not_covered": "Benefit starts at the Executive tier"
         },
         "EXECUTIVE": {
@@ -1706,6 +2080,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": 15000,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.34 SP-40060: Dental implant, single tooth",
           "reason_not_covered": null
         }
       },
@@ -1729,6 +2105,7 @@
       "exclusions": [
         "One examination per policy year"
       ],
+      "required_documents": [],
       "coverage_by_tier": {
         "BASIC": {
           "covered": false,
@@ -1736,6 +2113,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.35 SP-50010: Optometry eye examination",
           "reason_not_covered": "Benefit starts at the Enhanced tier"
         },
         "ENHANCED": {
@@ -1744,6 +2123,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": 20,
           "applicable_sub_limit_aed": 1200,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.35 SP-50010: Optometry eye examination",
           "reason_not_covered": null
         },
         "COMPREHENSIVE": {
@@ -1752,6 +2133,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": 10,
           "applicable_sub_limit_aed": 2000,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.35 SP-50010: Optometry eye examination",
           "reason_not_covered": null
         },
         "EXECUTIVE": {
@@ -1760,6 +2143,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": 4000,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.35 SP-50010: Optometry eye examination",
           "reason_not_covered": null
         }
       },
@@ -1780,6 +2165,7 @@
       "exclusions": [
         "One pair every 24 months; frames subject to the optical sub-limit"
       ],
+      "required_documents": [],
       "coverage_by_tier": {
         "BASIC": {
           "covered": false,
@@ -1787,6 +2173,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.36 SP-50020: Prescription spectacle lenses",
           "reason_not_covered": "Benefit starts at the Enhanced tier"
         },
         "ENHANCED": {
@@ -1795,6 +2183,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": 20,
           "applicable_sub_limit_aed": 1200,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.36 SP-50020: Prescription spectacle lenses",
           "reason_not_covered": null
         },
         "COMPREHENSIVE": {
@@ -1803,6 +2193,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": 10,
           "applicable_sub_limit_aed": 2000,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.36 SP-50020: Prescription spectacle lenses",
           "reason_not_covered": null
         },
         "EXECUTIVE": {
@@ -1811,6 +2203,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": 4000,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.36 SP-50020: Prescription spectacle lenses",
           "reason_not_covered": null
         }
       },
@@ -1831,6 +2225,7 @@
       "exclusions": [
         "Refractive surgery for cosmetic or convenience reasons is excluded on all tiers"
       ],
+      "required_documents": [],
       "coverage_by_tier": {
         "BASIC": {
           "covered": false,
@@ -1838,6 +2233,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.37 SP-50030: LASIK refractive surgery",
           "reason_not_covered": "Excluded on all tiers"
         },
         "ENHANCED": {
@@ -1846,6 +2243,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.37 SP-50030: LASIK refractive surgery",
           "reason_not_covered": "Excluded on all tiers"
         },
         "COMPREHENSIVE": {
@@ -1854,6 +2253,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.37 SP-50030: LASIK refractive surgery",
           "reason_not_covered": "Excluded on all tiers"
         },
         "EXECUTIVE": {
@@ -1862,6 +2263,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.37 SP-50030: LASIK refractive surgery",
           "reason_not_covered": "Excluded on all tiers"
         }
       },
@@ -1880,6 +2283,10 @@
       "waiting_period_months": 6,
       "waiting_period_waived_for_emergency": false,
       "exclusions": [],
+      "required_documents": [
+        "CLINICAL_NOTES",
+        "PRIOR_TREATMENT_RECORD"
+      ],
       "coverage_by_tier": {
         "BASIC": {
           "covered": true,
@@ -1887,6 +2294,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": 20,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.38 SP-60010: Diabetes management programme, annual",
           "reason_not_covered": null
         },
         "ENHANCED": {
@@ -1895,6 +2304,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": 20,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.38 SP-60010: Diabetes management programme, annual",
           "reason_not_covered": null
         },
         "COMPREHENSIVE": {
@@ -1903,6 +2314,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": 10,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.38 SP-60010: Diabetes management programme, annual",
           "reason_not_covered": null
         },
         "EXECUTIVE": {
@@ -1911,6 +2324,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.38 SP-60010: Diabetes management programme, annual",
           "reason_not_covered": null
         }
       },
@@ -1929,6 +2344,10 @@
       "waiting_period_months": 3,
       "waiting_period_waived_for_emergency": false,
       "exclusions": [],
+      "required_documents": [
+        "CLINICAL_NOTES",
+        "PRIOR_TREATMENT_RECORD"
+      ],
       "coverage_by_tier": {
         "BASIC": {
           "covered": false,
@@ -1936,6 +2355,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.39 SP-60020: Insulin pump consumables, six months",
           "reason_not_covered": "Benefit starts at the Comprehensive tier"
         },
         "ENHANCED": {
@@ -1944,6 +2365,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.39 SP-60020: Insulin pump consumables, six months",
           "reason_not_covered": "Benefit starts at the Comprehensive tier"
         },
         "COMPREHENSIVE": {
@@ -1952,6 +2375,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": 10,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.39 SP-60020: Insulin pump consumables, six months",
           "reason_not_covered": null
         },
         "EXECUTIVE": {
@@ -1960,6 +2385,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.39 SP-60020: Insulin pump consumables, six months",
           "reason_not_covered": null
         }
       },
@@ -1978,6 +2405,10 @@
       "waiting_period_months": 6,
       "waiting_period_waived_for_emergency": false,
       "exclusions": [],
+      "required_documents": [
+        "CLINICAL_NOTES",
+        "PRIOR_TREATMENT_RECORD"
+      ],
       "coverage_by_tier": {
         "BASIC": {
           "covered": true,
@@ -1985,6 +2416,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": 20,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.40 SP-60030: Haemodialysis, per session",
           "reason_not_covered": null
         },
         "ENHANCED": {
@@ -1993,6 +2426,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": 20,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.40 SP-60030: Haemodialysis, per session",
           "reason_not_covered": null
         },
         "COMPREHENSIVE": {
@@ -2001,6 +2436,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": 10,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.40 SP-60030: Haemodialysis, per session",
           "reason_not_covered": null
         },
         "EXECUTIVE": {
@@ -2009,6 +2446,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.40 SP-60030: Haemodialysis, per session",
           "reason_not_covered": null
         }
       },
@@ -2027,6 +2466,10 @@
       "waiting_period_months": 6,
       "waiting_period_waived_for_emergency": false,
       "exclusions": [],
+      "required_documents": [
+        "CLINICAL_NOTES",
+        "PRIOR_TREATMENT_RECORD"
+      ],
       "coverage_by_tier": {
         "BASIC": {
           "covered": true,
@@ -2034,6 +2477,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": 20,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.41 SP-60040: Chemotherapy cycle, standard regimen",
           "reason_not_covered": null
         },
         "ENHANCED": {
@@ -2042,6 +2487,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": 20,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.41 SP-60040: Chemotherapy cycle, standard regimen",
           "reason_not_covered": null
         },
         "COMPREHENSIVE": {
@@ -2050,6 +2497,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": 10,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.41 SP-60040: Chemotherapy cycle, standard regimen",
           "reason_not_covered": null
         },
         "EXECUTIVE": {
@@ -2058,6 +2507,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.41 SP-60040: Chemotherapy cycle, standard regimen",
           "reason_not_covered": null
         }
       },
@@ -2076,6 +2527,11 @@
       "waiting_period_months": 3,
       "waiting_period_waived_for_emergency": false,
       "exclusions": [],
+      "required_documents": [
+        "CLINICAL_NOTES",
+        "LAB_RESULTS",
+        "PRIOR_TREATMENT_RECORD"
+      ],
       "coverage_by_tier": {
         "BASIC": {
           "covered": false,
@@ -2083,6 +2539,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.42 SP-60050: Biologic therapy for rheumatoid arthritis, monthly",
           "reason_not_covered": "Benefit starts at the Comprehensive tier"
         },
         "ENHANCED": {
@@ -2091,6 +2549,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.42 SP-60050: Biologic therapy for rheumatoid arthritis, monthly",
           "reason_not_covered": "Benefit starts at the Comprehensive tier"
         },
         "COMPREHENSIVE": {
@@ -2099,6 +2559,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": 10,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.42 SP-60050: Biologic therapy for rheumatoid arthritis, monthly",
           "reason_not_covered": null
         },
         "EXECUTIVE": {
@@ -2107,6 +2569,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.42 SP-60050: Biologic therapy for rheumatoid arthritis, monthly",
           "reason_not_covered": null
         }
       },
@@ -2128,6 +2592,10 @@
       "waiting_period_months": 0,
       "waiting_period_waived_for_emergency": false,
       "exclusions": [],
+      "required_documents": [
+        "CLINICAL_NOTES",
+        "PRIOR_TREATMENT_RECORD"
+      ],
       "coverage_by_tier": {
         "BASIC": {
           "covered": false,
@@ -2135,6 +2603,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.43 SP-60060: Proton beam radiotherapy",
           "reason_not_covered": "Benefit starts at the Executive tier"
         },
         "ENHANCED": {
@@ -2143,6 +2613,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.43 SP-60060: Proton beam radiotherapy",
           "reason_not_covered": "Benefit starts at the Executive tier"
         },
         "COMPREHENSIVE": {
@@ -2151,6 +2623,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.43 SP-60060: Proton beam radiotherapy",
           "reason_not_covered": "Benefit starts at the Executive tier"
         },
         "EXECUTIVE": {
@@ -2159,6 +2633,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.43 SP-60060: Proton beam radiotherapy",
           "reason_not_covered": null
         }
       },
@@ -2180,6 +2656,7 @@
       "waiting_period_months": 0,
       "waiting_period_waived_for_emergency": false,
       "exclusions": [],
+      "required_documents": [],
       "coverage_by_tier": {
         "BASIC": {
           "covered": false,
@@ -2187,6 +2664,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.44 SP-70010: Psychiatric consultation, outpatient",
           "reason_not_covered": "Benefit starts at the Enhanced tier"
         },
         "ENHANCED": {
@@ -2195,6 +2674,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": 20,
           "applicable_sub_limit_aed": 10000,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.44 SP-70010: Psychiatric consultation, outpatient",
           "reason_not_covered": null
         },
         "COMPREHENSIVE": {
@@ -2203,6 +2684,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": 10,
           "applicable_sub_limit_aed": 25000,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.44 SP-70010: Psychiatric consultation, outpatient",
           "reason_not_covered": null
         },
         "EXECUTIVE": {
@@ -2211,6 +2694,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": 60000,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.44 SP-70010: Psychiatric consultation, outpatient",
           "reason_not_covered": null
         }
       },
@@ -2231,6 +2716,7 @@
       "exclusions": [
         "Limited to twelve sessions per policy year"
       ],
+      "required_documents": [],
       "coverage_by_tier": {
         "BASIC": {
           "covered": false,
@@ -2238,6 +2724,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.45 SP-70020: Psychotherapy session, 45 minutes",
           "reason_not_covered": "Benefit starts at the Enhanced tier"
         },
         "ENHANCED": {
@@ -2246,6 +2734,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": 20,
           "applicable_sub_limit_aed": 10000,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.45 SP-70020: Psychotherapy session, 45 minutes",
           "reason_not_covered": null
         },
         "COMPREHENSIVE": {
@@ -2254,6 +2744,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": 10,
           "applicable_sub_limit_aed": 25000,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.45 SP-70020: Psychotherapy session, 45 minutes",
           "reason_not_covered": null
         },
         "EXECUTIVE": {
@@ -2262,6 +2754,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": 60000,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.45 SP-70020: Psychotherapy session, 45 minutes",
           "reason_not_covered": null
         }
       },
@@ -2280,6 +2774,10 @@
       "waiting_period_months": 0,
       "waiting_period_waived_for_emergency": false,
       "exclusions": [],
+      "required_documents": [
+        "CLINICAL_NOTES",
+        "REFERRAL_LETTER"
+      ],
       "coverage_by_tier": {
         "BASIC": {
           "covered": false,
@@ -2287,6 +2785,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.46 SP-70030: Inpatient psychiatric admission, per day",
           "reason_not_covered": "Benefit starts at the Comprehensive tier"
         },
         "ENHANCED": {
@@ -2295,6 +2795,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.46 SP-70030: Inpatient psychiatric admission, per day",
           "reason_not_covered": "Benefit starts at the Comprehensive tier"
         },
         "COMPREHENSIVE": {
@@ -2303,6 +2805,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": 10,
           "applicable_sub_limit_aed": 25000,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.46 SP-70030: Inpatient psychiatric admission, per day",
           "reason_not_covered": null
         },
         "EXECUTIVE": {
@@ -2311,6 +2815,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": 60000,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.46 SP-70030: Inpatient psychiatric admission, per day",
           "reason_not_covered": null
         }
       },
@@ -2332,6 +2838,7 @@
       "waiting_period_months": 0,
       "waiting_period_waived_for_emergency": false,
       "exclusions": [],
+      "required_documents": [],
       "coverage_by_tier": {
         "BASIC": {
           "covered": false,
@@ -2339,6 +2846,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.47 SP-80010: Annual health screening package",
           "reason_not_covered": "Benefit starts at the Comprehensive tier"
         },
         "ENHANCED": {
@@ -2347,6 +2856,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.47 SP-80010: Annual health screening package",
           "reason_not_covered": "Benefit starts at the Comprehensive tier"
         },
         "COMPREHENSIVE": {
@@ -2355,6 +2866,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": 10,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.47 SP-80010: Annual health screening package",
           "reason_not_covered": null
         },
         "EXECUTIVE": {
@@ -2363,6 +2876,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.47 SP-80010: Annual health screening package",
           "reason_not_covered": null
         }
       },
@@ -2381,6 +2896,7 @@
       "waiting_period_months": 0,
       "waiting_period_waived_for_emergency": false,
       "exclusions": [],
+      "required_documents": [],
       "coverage_by_tier": {
         "BASIC": {
           "covered": true,
@@ -2388,6 +2904,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": 20,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.48 SP-80020: Influenza vaccination",
           "reason_not_covered": null
         },
         "ENHANCED": {
@@ -2396,6 +2914,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": 20,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.48 SP-80020: Influenza vaccination",
           "reason_not_covered": null
         },
         "COMPREHENSIVE": {
@@ -2404,6 +2924,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": 10,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.48 SP-80020: Influenza vaccination",
           "reason_not_covered": null
         },
         "EXECUTIVE": {
@@ -2412,6 +2934,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.48 SP-80020: Influenza vaccination",
           "reason_not_covered": null
         }
       },
@@ -2432,6 +2956,7 @@
       "exclusions": [
         "Emergency care never requires pre-authorisation; notify the insurer within 24 hours of admission"
       ],
+      "required_documents": [],
       "coverage_by_tier": {
         "BASIC": {
           "covered": true,
@@ -2439,6 +2964,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.49 SP-80030: Emergency department attendance",
           "reason_not_covered": null
         },
         "ENHANCED": {
@@ -2447,6 +2974,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.49 SP-80030: Emergency department attendance",
           "reason_not_covered": null
         },
         "COMPREHENSIVE": {
@@ -2455,6 +2984,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.49 SP-80030: Emergency department attendance",
           "reason_not_covered": null
         },
         "EXECUTIVE": {
@@ -2463,6 +2994,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.49 SP-80030: Emergency department attendance",
           "reason_not_covered": null
         }
       },
@@ -2483,6 +3016,7 @@
       "exclusions": [
         "Requires insurer coordination except where life-threatening and clinically unavoidable"
       ],
+      "required_documents": [],
       "coverage_by_tier": {
         "BASIC": {
           "covered": false,
@@ -2490,6 +3024,8 @@
           "network": "BASIC_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Basic (Essential Benefits equivalent) Schedule of Benefits 2026",
+          "source_section": "Section 4.50 SP-80050: Air ambulance evacuation",
           "reason_not_covered": "Benefit starts at the Executive tier"
         },
         "ENHANCED": {
@@ -2498,6 +3034,8 @@
           "network": "ENHANCED_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Enhanced Schedule of Benefits 2026",
+          "source_section": "Section 4.50 SP-80050: Air ambulance evacuation",
           "reason_not_covered": "Benefit starts at the Executive tier"
         },
         "COMPREHENSIVE": {
@@ -2506,6 +3044,8 @@
           "network": "COMPREHENSIVE_NETWORK",
           "member_co_payment_percent": null,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Comprehensive Schedule of Benefits 2026",
+          "source_section": "Section 4.50 SP-80050: Air ambulance evacuation",
           "reason_not_covered": "Benefit starts at the Executive tier"
         },
         "EXECUTIVE": {
@@ -2514,6 +3054,8 @@
           "network": "EXECUTIVE_NETWORK",
           "member_co_payment_percent": 0,
           "applicable_sub_limit_aed": null,
+          "source_document": "Sawt Assurance Executive Schedule of Benefits 2026",
+          "source_section": "Section 4.50 SP-80050: Air ambulance evacuation",
           "reason_not_covered": null
         }
       },

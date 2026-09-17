@@ -1,138 +1,183 @@
-"""Demonstration scenarios, driven entirely through the application services.
+"""Demonstration cases, driven entirely through the application services.
 
-Because the scenarios use the same services as the API, every demo case has a genuine audit trail, evaluation
-records, and recommendation history. Nothing is inserted directly into case tables.
+Because the scenarios use the same services as the voice tools, every demo case has a genuine audit trail,
+evaluation records and recommendation history. Nothing is inserted directly into case tables.
 """
 
 from dataclasses import dataclass
 from datetime import date, timedelta
-from typing import Any
 
 from preauth.application.commands import (
-    CaseInformationUpdate,
-    CreateCaseCommand,
+    CoverageCheckCommand,
     HumanDecisionCommand,
+    LogTranscriptCommand,
     RegisterDocumentCommand,
+    VerifyCallerCommand,
 )
 from preauth.application.services import ApplicationServices
 from preauth.domain.actors import Actor
-from preauth.domain.enums import ActorType, DocumentType, HumanDecisionType, ReviewerRole
+from preauth.domain.enums import ActorType, CallOutcome, DocumentType, HumanDecisionType, ReviewerRole
 
 VOICE_AGENT = Actor(ActorType.VOICE_AGENT, "voice-agent-dev")
+PROVIDER_PORTAL = Actor(ActorType.PROVIDER_PORTAL, "portal-dev")
 CLINICAL_REVIEWER = Actor(
     ActorType.HUMAN_REVIEWER, "reviewer-clin-001", frozenset({ReviewerRole.CLINICAL_REVIEWER})
 )
 MEDICAL_DIRECTOR = Actor(
-    ActorType.HUMAN_REVIEWER, "reviewer-md-001", frozenset({ReviewerRole.CLINICAL_REVIEWER, ReviewerRole.MEDICAL_DIRECTOR})
+    ActorType.HUMAN_REVIEWER,
+    "reviewer-md-001",
+    frozenset({ReviewerRole.CLINICAL_REVIEWER, ReviewerRole.MEDICAL_DIRECTOR}),
 )
 
 
 @dataclass(frozen=True)
 class ScenarioResult:
     name: str
-    case_id: str
     case_reference: str
+    outcome: str
+    status: str
 
 
-def _document(doc_type: DocumentType, n: int) -> RegisterDocumentCommand:
-    return RegisterDocumentCommand(
-        document_type=doc_type,
-        title=f"Synthetic {doc_type.value.replace('_', ' ').lower()}",
-        storage_uri=f"docstore://synthetic/{doc_type.value.lower()}-{n}.pdf",
-        media_type="application/pdf",
+def _verify(services, *, provider: str, organisation: str, policy: str, dob: str, caller: str):
+    return services.desk.verify_caller(
+        VOICE_AGENT,
+        VerifyCallerCommand(
+            caller_role="PROVIDER_STAFF",
+            organisation_name=organisation,
+            caller_reference=provider,
+            caller_name=caller,
+            member_policy_number=policy,
+            member_date_of_birth=date.fromisoformat(dob),
+        ),
     )
 
 
-def _intake(services: ApplicationServices, info: dict[str, Any], documents: list[DocumentType]) -> str:
-    case = services.cases.create_case(VOICE_AGENT, CreateCaseCommand(information=CaseInformationUpdate(**info)))
-    for n, doc_type in enumerate(documents):
-        services.cases.register_document(case.id, VOICE_AGENT, _document(doc_type, n))
-    return case.id
-
-
-def _decide(services: ApplicationServices, case_id: str, reviewer: Actor, decision: HumanDecisionType, why: str):
-    services.review.assign_reviewer(case_id, reviewer)
-    recommendation = services.queries.get_latest_recommendation(case_id, reviewer)
-    return services.review.record_decision(
-        case_id,
-        reviewer,
-        HumanDecisionCommand(recommendation_id=recommendation.id, decision=decision, rationale=why),
+def _check(services, verification, **kwargs):
+    return services.desk.check_coverage_rule(
+        VOICE_AGENT, CoverageCheckCommand(verification_id=verification.verification_id, **kwargs)
     )
 
 
-def run_scenarios(services: ApplicationServices, today: date) -> list[ScenarioResult]:
-    service_date = today + timedelta(days=14)
-    results: list[tuple[str, str]] = []
+def _documents(services, case_id: str, types: list[DocumentType]) -> None:
+    for document_type in types:
+        services.cases.register_document(
+            case_id,
+            PROVIDER_PORTAL,
+            RegisterDocumentCommand(
+                document_type=document_type,
+                title=f"Synthetic {document_type.value.replace('_', ' ').lower()}",
+                storage_uri=f"docstore://synthetic/{document_type.value.lower()}.pdf",
+                media_type="application/pdf",
+            ),
+        )
 
-    # 1. Complete request -> RECOMMEND_APPROVAL -> reviewer confirms.
-    case_id = _intake(
-        services,
-        dict(provider_number="PRV-100234", patient={"member_id": "MBR-5001-01", "date_of_birth": "1984-03-12"},
-             policy_number="POL-000101", procedure_code="PROC-MRI-KNEE", requested_service_date=service_date,
-             place_of_service="OUTPATIENT", diagnosis_code="M23.221", diagnosis_description="Old tear, medial meniscus, right knee",
-             urgency="STANDARD", conservative_treatment_weeks=8),
-        [DocumentType.CLINICAL_NOTES],
+
+def _log(services, verification, result, outcome: CallOutcome, summary: str) -> None:
+    services.desk.log_transcript(
+        VOICE_AGENT,
+        LogTranscriptCommand(
+            summary=summary,
+            outcome_communicated=outcome,
+            verification_id=verification.verification_id,
+            case_reference=result.case_reference,
+        ),
     )
-    services.evaluation.submit_for_evaluation(case_id, VOICE_AGENT)
-    services.review.request_human_review(case_id, VOICE_AGENT)
-    _decide(services, case_id, CLINICAL_REVIEWER, HumanDecisionType.APPROVE,
-            "Criteria met; documentation supports imaging.")
-    results.append(("complete_request_approved", case_id))
 
-    # 2. Missing documentation -> REQUEST_MORE_INFORMATION -> PENDING_INFORMATION.
-    case_id = _intake(
-        services,
-        dict(provider_number="PRV-100871", patient={"member_id": "MBR-5002-01", "date_of_birth": "1971-11-02"},
-             policy_number="POL-000102", procedure_code="PROC-KNEE-ARTHROSCOPY", requested_service_date=service_date,
-             place_of_service="OUTPATIENT", diagnosis_code="M23.222", urgency="STANDARD",
-             conservative_treatment_weeks=10),
-        [DocumentType.CLINICAL_NOTES],
+
+def run_scenarios(services: ApplicationServices, today: date | None = None) -> list[ScenarioResult]:
+    today = today or date.today()
+    treatment = (today + timedelta(days=21)).isoformat()
+    results: list[ScenarioResult] = []
+
+    def record(name: str, result) -> None:
+        status = services.queries.get_status(result.case_id, CLINICAL_REVIEWER)
+        results.append(
+            ScenarioResult(name, result.case_reference, result.outcome.value, status.status.value)
+        )
+
+    # 1. Complete request with documents -> recommendation to approve -> reviewer confirms.
+    verification = _verify(
+        services, provider="PRV-30011", organisation="Al Hudaiba Crescent Hospital",
+        policy="POL-SA-2026-100001", dob="1986-04-17", caller="Aisha Rahman",
     )
-    services.evaluation.submit_for_evaluation(case_id, VOICE_AGENT)
-    results.append(("missing_documentation", case_id))
-
-    # 3. Rule failure (procedure excluded) -> RECOMMEND_DENIAL -> awaiting clinical review.
-    case_id = _intake(
-        services,
-        dict(provider_number="PRV-100871", patient={"member_id": "MBR-5003-01", "date_of_birth": "1990-07-25"},
-             policy_number="POL-000103", procedure_code="PROC-RHINOPLASTY-COSMETIC",
-             requested_service_date=service_date, place_of_service="OUTPATIENT", diagnosis_code="J34.2",
-             urgency="STANDARD"),
-        [DocumentType.CLINICAL_NOTES],
+    first = _check(services, verification, procedure_code="SP-10040", treatment_date=treatment, estimated_cost_aed=2600)
+    _documents(services, first.case_id, [DocumentType.CLINICAL_NOTES])
+    approved = _check(
+        services, verification, procedure_code="SP-10040", treatment_date=treatment,
+        estimated_cost_aed=2600, case_reference=first.case_reference,
     )
-    services.evaluation.submit_for_evaluation(case_id, VOICE_AGENT)
-    services.review.request_human_review(case_id, VOICE_AGENT)
-    results.append(("rule_failure_denial_recommended", case_id))
-
-    # 4. No coverage terms for the procedure -> ESCALATE -> medical director queue.
-    case_id = _intake(
-        services,
-        dict(provider_number="PRV-100990", patient={"member_id": "MBR-5004-01", "date_of_birth": "1966-01-30"},
-             policy_number="POL-000104", procedure_code="PROC-GENETIC-PANEL", requested_service_date=service_date,
-             place_of_service="OFFICE", diagnosis_code="Z80.3", urgency="STANDARD"),
-        [DocumentType.REFERRAL_LETTER],
+    _log(services, verification, approved, CallOutcome.RECOMMENDATION_PREPARED,
+         "MRI brain pre-authorisation requested; recommendation prepared for sign-off.")
+    services.review.assign_reviewer(approved.case_id, CLINICAL_REVIEWER)
+    recommendation = services.queries.get_latest_recommendation(approved.case_id, CLINICAL_REVIEWER)
+    services.review.record_decision(
+        approved.case_id,
+        CLINICAL_REVIEWER,
+        HumanDecisionCommand(
+            recommendation_id=recommendation.id,
+            decision=HumanDecisionType.APPROVE,
+            rationale="Criteria met and clinical notes support the request.",
+        ),
     )
-    services.evaluation.submit_for_evaluation(case_id, VOICE_AGENT)
-    services.review.request_human_review(case_id, VOICE_AGENT)
-    results.append(("insufficient_knowledge_escalated", case_id))
+    record("complete_request_approved", approved)
 
-    # 5. Conservative-treatment rule fails -> RECOMMEND_DENIAL -> reviewer overrides to APPROVE.
-    case_id = _intake(
-        services,
-        dict(provider_number="PRV-100234", patient={"member_id": "MBR-5005-01", "date_of_birth": "1979-09-09"},
-             policy_number="POL-000105", procedure_code="PROC-MRI-KNEE", requested_service_date=service_date,
-             place_of_service="OUTPATIENT", diagnosis_code="M25.561", urgency="EXPEDITED",
-             conservative_treatment_weeks=3,
-             clinical_summary="Acute mechanical locking of the right knee with effusion after twisting injury."),
-        [DocumentType.CLINICAL_NOTES],
+    # 2. Missing documentation -> more information requested.
+    verification = _verify(
+        services, provider="PRV-30021", organisation="Corniche Lagoon Hospital",
+        policy="POL-SA-2026-100004", dob="1975-01-22", caller="Mahmoud Selim",
     )
-    services.evaluation.submit_for_evaluation(case_id, VOICE_AGENT)
-    services.review.request_human_review(case_id, VOICE_AGENT)
-    _decide(services, case_id, CLINICAL_REVIEWER, HumanDecisionType.APPROVE,
-            "Mechanical locking is a red-flag presentation; conservative-treatment prerequisite waived.")
-    results.append(("human_override_approved", case_id))
+    more_info = _check(
+        services, verification, procedure_code="SP-20020", treatment_date=treatment, estimated_cost_aed=24000
+    )
+    _log(services, verification, more_info, CallOutcome.MORE_INFORMATION_REQUESTED,
+         "Laparoscopic cholecystectomy requested; operative plan and clinical notes outstanding.")
+    record("missing_documentation", more_info)
 
-    return [
-        ScenarioResult(name, cid, services.queries.get_case(cid, CLINICAL_REVIEWER).case_reference)
-        for name, cid in results
-    ]
+    # 3. Benefit starts at a higher tier -> recommendation to decline.
+    verification = _verify(
+        services, provider="PRV-30011", organisation="Al Hudaiba Crescent Hospital",
+        policy="POL-SA-2026-100003", dob="1991-07-29", caller="Grace Lim",
+    )
+    denial = _check(
+        services, verification, procedure_code="SP-20050", treatment_date=treatment, estimated_cost_aed=62000
+    )
+    _log(services, verification, denial, CallOutcome.RECOMMENDATION_PREPARED,
+         "Total knee replacement requested on the Basic tier; recommendation prepared for sign-off.")
+    record("tier_boundary_denial_recommended", denial)
+
+    # 4. Ambiguous procedure -> escalation citing its rule.
+    verification = _verify(
+        services, provider="PRV-30023", organisation="Yas Horizon Specialist Hospital",
+        policy="POL-SA-2026-100011", dob="1981-05-02", caller="Noura Al Ameri",
+    )
+    escalated = _check(
+        services, verification, procedure_code="SP-20110", treatment_date=treatment, estimated_cost_aed=48000
+    )
+    _log(services, verification, escalated, CallOutcome.ESCALATED,
+         "Sleeve gastrectomy requested; referred to the medical director for eligibility criteria.")
+    record("ambiguous_escalated", escalated)
+
+    # 5. Reviewer overrides a recommendation to decline.
+    verification = _verify(
+        services, provider="PRV-30012", organisation="Jumeirah Dunes Specialist Centre",
+        policy="POL-SA-2026-100002", dob="1979-11-03", caller="Rami Haddad",
+    )
+    override = _check(
+        services, verification, procedure_code="SP-20140", treatment_date=treatment, estimated_cost_aed=32000
+    )
+    _log(services, verification, override, CallOutcome.RECOMMENDATION_PREPARED,
+         "Rhinoplasty requested; recommendation prepared for sign-off.")
+    services.review.assign_reviewer(override.case_id, CLINICAL_REVIEWER)
+    recommendation = services.queries.get_latest_recommendation(override.case_id, CLINICAL_REVIEWER)
+    services.review.record_decision(
+        override.case_id,
+        CLINICAL_REVIEWER,
+        HumanDecisionCommand(
+            recommendation_id=recommendation.id,
+            decision=HumanDecisionType.APPROVE,
+            rationale="Documented post-traumatic deformity; reconstructive rather than cosmetic on review.",
+        ),
+    )
+    record("human_override_approved", override)
+
+    return results

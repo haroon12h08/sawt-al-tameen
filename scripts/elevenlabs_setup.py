@@ -1,8 +1,9 @@
 """Create or update the ElevenLabs agent, its server tools, secret and knowledge base.
 
-Everything the agent needs comes from this repository: tool schemas from ``preauth.agent_tools``, the system prompt
-from ``voice/system_prompt.md``, knowledge-base documents from ``voice/knowledge_base``. Re-running updates in
-place (IDs are kept in ``.elevenlabs-state.json``, which is git-ignored).
+Everything the agent needs comes from this repository: tool schemas from ``preauth.agent_tools`` (three tools, none
+of which can decide a case), the system prompt from ``voice/system_prompt.md``, and the knowledge base from
+``knowledge_base/`` — the same catalogue the rules engine decides from. Re-running updates in place (IDs are kept
+in ``.elevenlabs-state.json``, which is git-ignored).
 
 Required environment:
     ELEVENLABS_API_KEY          your ElevenLabs API key
@@ -28,51 +29,74 @@ from pathlib import Path
 from typing import Any
 
 from preauth.agent_tools.elevenlabs import all_webhook_tool_configs
-from preauth.seed.reference_data import COVERAGE, PROCEDURES, PROVIDERS
+
+KNOWLEDGE_BASE = Path(__file__).resolve().parents[1] / "knowledge_base"
 
 ROOT = Path(__file__).resolve().parents[1]
 STATE_FILE = ROOT / ".elevenlabs-state.json"
 API = "https://api.elevenlabs.io"
 
-AGENT_NAME = "Sawt Al Tameen - Provider Pre-Authorisation Desk"
+AGENT_NAME = "Sawt Assurance - Provider Pre-Authorisation Line"
 DEFAULT_LLM = "gemini-2.5-flash"
 DEFAULT_TTS_MODEL = "eleven_v3_conversational"
-DEFAULT_VOICE_ID = "EXAVITQu4vr4xnSDxMaL"  # premade voice; replace with a Voice Design / Voice Library voice
+# Voice Library premade voice with a neutral, professional register, suited to a B2B compliance line rather than
+# a consumer-warm one. Override with --voice-id after listening to the preview in your workspace.
+DEFAULT_VOICE_ID = "EXAVITQu4vr4xnSDxMaL"
+# Keyterm biasing works best on a focused list; the most collision-prone terms come first.
+KEYTERM_LIMIT = 100
 
 FIRST_MESSAGE_EN = (
-    "Pre-authorisation desk. This call is recorded for audit. May I have your name and the organisation you are "
-    "calling from?"
+    "Sawt Assurance pre-authorisation line, this is an automated assistant. The call is recorded for audit. "
+    "Who am I speaking with?"
 )
-FIRST_MESSAGE_AR = "مكتب التفويض المسبق. يتم تسجيل هذه المكالمة لأغراض التدقيق. هل يمكنني معرفة اسمك والجهة التي تتصل منها؟"
+FIRST_MESSAGE_AR = (
+    "خط التفويض المسبق في صوت التأمين، أنا مساعد آلي. يتم تسجيل هذه المكالمة لأغراض التدقيق. مع من أتحدث؟"
+)
+
+
+def _catalogue(name: str) -> dict[str, Any]:
+    return json.loads((KNOWLEDGE_BASE / name).read_text())
 
 
 def keyterms() -> list[str]:
-    """Domain vocabulary for speech recognition biasing: codes and terms callers will say aloud."""
+    """Scribe keyterm biasing: the codes, names and formats callers say aloud and generic models mishear."""
     terms = [
-        "pre-authorisation", "pre-authorization", "member ID", "policy number", "provider number", "ICD-10",
-        "outpatient", "inpatient", "expedited", "conservative treatment", "clinical notes", "imaging report",
-        "referral letter",
+        "pre-authorisation", "pre-authorization", "prior authorisation", "policy number", "provider number",
+        "Emirates ID", "ICD-10", "eClaimLink", "Shafafiya", "DHA", "DOH", "AED", "co-payment", "co-insurance",
+        "outpatient", "inpatient", "day surgery", "expedited", "network tier", "sub-limit", "onboarding",
+        "clinical notes", "operative plan", "imaging report", "prior treatment record",
     ]
-    terms += [number for number, *_ in PROVIDERS]
-    terms += [code for code, *_ in PROCEDURES]
-    terms += ["MRI", "arthroscopy", "meniscectomy", "polysomnography", "rhinoplasty"]
-    terms += sorted({dx for (_, _, _, diagnoses, _, _) in COVERAGE.values() for dx in diagnoses} | {"Z80.3", "J34.2"})
-    return list(dict.fromkeys(terms))
+    # Tier names and the network they map to.
+    for tier in _catalogue("policy_tiers.json")["tiers"]:
+        terms += [tier["name"], tier["network"]["name"]]
+    # Every procedure code, plus the distinctive words in their names.
+    procedures = _catalogue("procedure_coverage.json")["procedures"]
+    terms += [p["code"] for p in procedures]
+    terms += [
+        "arthroscopy", "meniscectomy", "cholecystectomy", "polysomnography", "rhinoplasty", "septoplasty",
+        "sleeve gastrectomy", "angioplasty", "prostatectomy", "polysomnography", "haemodialysis",
+    ]
+    # Provider numbers from the directory.
+    terms += [p["provider_id"] for p in _catalogue("network_providers.json")["providers"]]
+    # Identifier formats callers read out.
+    terms += ["PRV", "POL-SA", "SP", "MBR", "ONB-APP", "PA", "CL"]
+    # Provider names are added last: they are the least likely to be misheard in a way that breaks the flow, and
+    # keyterm lists work best kept short.
+    terms += [p["name"] for p in _catalogue("network_providers.json")["providers"]]
+    return list(dict.fromkeys(terms))[:KEYTERM_LIMIT]
 
 
-def knowledge_base_documents(include_uae: bool = False) -> dict[str, str]:
-    """Documents uploaded to the agent's knowledge base.
+def knowledge_base_documents() -> dict[str, str]:
+    """The knowledge base is knowledge_base/, the same catalogue the rules engine decides from.
 
-    By default these are generated from the backend's own seed data, so the sources the rules cite are retrievable.
-    ``--include-uae-knowledge-base`` adds the standalone synthetic UAE catalogue under knowledge_base/; the two
-    describe different fictional product families, so loading both will give contradictory plan answers.
+    The per-tier schedules and the escalation rules carry the sections the tools cite, so a citation the agent
+    reads out always resolves to a document it can retrieve.
     """
-    documents = {p.stem: p.read_text() for p in sorted((ROOT / "voice" / "knowledge_base").glob("*.md"))}
-    if include_uae:
-        for path in sorted((ROOT / "knowledge_base").glob("*")):
-            if path.suffix in (".md", ".json"):
-                documents[f"uae-{path.stem}"] = path.read_text()
-    return documents
+    return {
+        path.stem: path.read_text()
+        for path in sorted(KNOWLEDGE_BASE.glob("*"))
+        if path.suffix in (".md", ".json")
+    }
 
 
 def system_tool(name: str) -> dict[str, Any]:
@@ -140,13 +164,8 @@ def main() -> int:
     parser.add_argument("--llm", default=DEFAULT_LLM)
     parser.add_argument("--tts-model", default=DEFAULT_TTS_MODEL)
     parser.add_argument("--voice-id", default=DEFAULT_VOICE_ID)
-    parser.add_argument(
-        "--include-uae-knowledge-base",
-        action="store_true",
-        help="also upload knowledge_base/ (the standalone synthetic UAE catalogue)",
-    )
     args = parser.parse_args()
-    documents = knowledge_base_documents(args.include_uae_knowledge_base)
+    documents = knowledge_base_documents()
 
     base_url = os.environ.get("PREAUTH_PUBLIC_BASE_URL", "").rstrip("/")
     token = os.environ.get("PREAUTH_VOICE_AGENT_TOKEN", "")
