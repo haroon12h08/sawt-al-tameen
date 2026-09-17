@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  tests:
+    name: tests (${{ matrix.database }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        database: [sqlite, postgres]
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: preauth
+          POSTGRES_PASSWORD: preauth
+          POSTGRES_DB: preauth
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U preauth -d preauth"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --frozen --extra postgres
+      - name: Run tests
+        env:
+          PREAUTH_TEST_DATABASE_URL: ${{ matrix.database == 'postgres' && 'postgres://preauth:preauth@localhost:5432/preauth' || '' }}
+        run: uv run pytest -q
+
+  generated-files:
+    name: generated files are current
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --frozen
+      - run: uv run python scripts/export_api_docs.py --check
+      - run: uv run python scripts/generate_knowledge_base.py --check
+      - run: uv run python scripts/elevenlabs_setup.py --dry-run > /dev/null
+
+  docker:
+    name: docker image starts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t preauth:ci .
+      - name: Start container and check health
+        run: |
+          docker run -d --name preauth-ci -p 7860:7860 \
+            -e PREAUTH_DATABASE_URL=sqlite:////tmp/preauth.db \
+            -e PREAUTH_VOICE_AGENT_TOKEN=ci-token \
+            preauth:ci
+          for i in $(seq 1 60); do curl -sf localhost:7860/health && break; sleep 2; done
+          curl -sf localhost:7860/health | grep -q '"ok"'
+          docker rm -f preauth-ci

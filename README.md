@@ -27,6 +27,12 @@ All data in this repository is synthetic.
 3. Add the post-call webhook in the ElevenLabs dashboard, then talk to the agent from the printed browser link or
    an attached phone number. See [VOICE_AGENT.md](docs/VOICE_AGENT.md).
 
+Check a deployment end to end at any time:
+
+```bash
+uv run python scripts/verify_deployment.py --base-url https://your-backend.example
+```
+
 ## Requirements
 
 Python 3.12 and [uv](https://docs.astral.sh/uv/). Docker is optional, for PostgreSQL.
@@ -40,10 +46,13 @@ uv sync --extra postgres
 ## Run tests
 
 ```bash
-uv run pytest
+uv run pytest                                             # SQLite
+docker compose up -d --wait                               # PostgreSQL
+PREAUTH_TEST_DATABASE_URL=postgres://preauth:preauth@localhost:55432/preauth uv run pytest
 ```
 
-The integration tests build their SQLite databases by running the real Alembic migrations.
+The integration tests build their databases by running the real Alembic migrations. CI runs the suite against both
+databases, checks the generated files, and starts the Docker image.
 
 ## Run locally
 

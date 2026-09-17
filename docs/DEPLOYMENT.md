@@ -48,14 +48,8 @@ When the tunnel URL changes, re-run the setup script and update the post-call we
    (`postgresql://...sslmode=require`). The backend converts it to the right driver automatically.
 2. **Space.** Create a Space at [huggingface.co/new-space](https://huggingface.co/new-space) with SDK **Docker** and
    visibility **Public**. ElevenLabs must reach it without a Hugging Face login.
-3. **Code.** Push this repository to the Space. The Space's `README.md` must start with this front matter:
-   ```yaml
-   ---
-   title: Sawt Al Tameen
-   sdk: docker
-   app_port: 7860
-   ---
-   ```
+3. **Code.** Push this repository to the Space, then copy `deploy/huggingface/README.md` over the Space's
+   `README.md`. Hugging Face needs that file's front matter to build the Space as a Docker app on port 7860.
 4. **Secrets.** In the Space settings, add `PREAUTH_DATABASE_URL`, `PREAUTH_VOICE_AGENT_TOKEN`,
    `PREAUTH_GATEWAY_SECRET` and `PREAUTH_ELEVENLABS_WEBHOOK_SECRET`. Optionally add `PREAUTH_SEED_SCENARIOS=1` to
    create the five demo cases on first start.
@@ -71,6 +65,19 @@ Caveats:
 
 Render's free web services also work with the same Dockerfile. They sleep after about 15 minutes idle, though, and
 the cold start can exceed the tools' 20-second timeout.
+
+## Verify a deployment
+
+Before pointing ElevenLabs at the backend, run the same sequence the agent will:
+
+```bash
+export PREAUTH_VOICE_AGENT_TOKEN=... PREAUTH_GATEWAY_SECRET=... PREAUTH_ELEVENLABS_WEBHOOK_SECRET=...
+uv run python scripts/verify_deployment.py --base-url https://your-backend.example
+```
+
+It creates a synthetic case, checks intake, member verification, the rules, source citations, routing, the
+guardrails (no decision tool; sign-off blocked until the transcript is logged), and the signed post-call webhook,
+then closes the case. It exits non-zero if any check fails.
 
 ## Phone numbers: what is and isn't free
 

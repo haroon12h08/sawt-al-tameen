@@ -19,6 +19,7 @@ def test_migrations_match_orm_metadata(engine):
 
 
 def test_upgrade_downgrade_upgrade_round_trip(tmp_path):
+    """SQLite path: exercises the batch table rebuild in 0002. The PostgreSQL path is covered in CI."""
     url = f"sqlite:///{tmp_path / 'roundtrip.db'}"
     cfg = alembic_config(url)
     command.upgrade(cfg, "head")
@@ -27,6 +28,12 @@ def test_upgrade_downgrade_upgrade_round_trip(tmp_path):
     assert set(inspect(eng).get_table_names()) == {"alembic_version"}
     eng.dispose()
     command.upgrade(cfg, "head")
+
+
+def _trigger_names(conn) -> set[str]:
+    if conn.dialect.name == "postgresql":
+        return set(conn.execute(text("SELECT tgname FROM pg_trigger WHERE NOT tgisinternal")).scalars())
+    return set(conn.execute(text("SELECT name FROM sqlite_master WHERE type = 'trigger'")).scalars())
 
 
 def _insert_case_and_event(conn):
@@ -61,10 +68,14 @@ def test_audit_events_cannot_be_updated_or_deleted(engine):
 
 def test_every_append_only_table_has_triggers(engine):
     with engine.connect() as conn:
-        triggers = set(conn.execute(text("SELECT name FROM sqlite_master WHERE type = 'trigger'")).scalars())
+        triggers = _trigger_names(conn)
+        postgres = conn.dialect.name == "postgresql"
     for table in APPEND_ONLY_TABLES:
-        assert f"trg_{table}_no_update" in triggers
-        assert f"trg_{table}_no_delete" in triggers
+        if postgres:
+            assert f"trg_{table}_append_only" in triggers
+        else:
+            assert f"trg_{table}_no_update" in triggers
+            assert f"trg_{table}_no_delete" in triggers
 
 
 def test_review_decision_status_must_match_decision_type(engine):
@@ -73,11 +84,12 @@ def test_review_decision_status_must_match_decision_type(engine):
     with pytest.raises(IntegrityError, match="decision_matches_status"), engine.begin() as conn:
         conn.execute(
             text(
-                "INSERT INTO review_decisions (id, case_id, sequence, recommendation_id, decision, rationale, reviewer_id, "
-                "reviewer_role, is_override, from_status, to_status, decided_at) VALUES "
-                "('d1', 'c1', 1, 'r-missing', 'DENY', 'x', 'rev', 'CLINICAL_REVIEWER', 0, 'PENDING_HUMAN_REVIEW', "
-                "'APPROVED', '2026-09-16T00:00:00')"
-            )
+                "INSERT INTO review_decisions (id, case_id, sequence, recommendation_id, decision, rationale, "
+                "reviewer_id, reviewer_role, is_override, from_status, to_status, decided_at) VALUES "
+                "('d1', 'c1', 1, 'r-missing', 'DENY', 'x', 'rev', 'CLINICAL_REVIEWER', :false, "
+                "'PENDING_HUMAN_REVIEW', 'APPROVED', :now)"
+            ),
+            {"false": False, "now": datetime.now(UTC)},
         )
 
 
@@ -87,6 +99,27 @@ def test_invalid_enum_value_rejected_by_database(engine):
             text(
                 "INSERT INTO pre_authorization_cases (id, case_reference, status, created_by_actor_type, "
                 "created_by_actor_id, created_at, updated_at, version) "
-                "VALUES ('c2', 'PA-TEST0002', 'AUTO_APPROVED', 'SYSTEM', 'sys', '2026', '2026', 1)"
-            )
+                "VALUES ('c2', 'PA-TEST0002', 'AUTO_APPROVED', 'SYSTEM', 'sys', :now, :now, 1)"
+            ),
+            {"now": datetime.now(UTC)},
+        )
+
+
+def test_migration_0002_widened_audit_event_types(engine):
+    with engine.begin() as conn:
+        _insert_case_and_event(conn)
+        conn.execute(
+            text(
+                "INSERT INTO audit_events (id, case_id, sequence, event_type, actor_type, occurred_at, data) "
+                "VALUES ('e2', 'c1', 2, 'CALL_RECORDED', 'SYSTEM', :now, '{}')"
+            ),
+            {"now": datetime.now(UTC)},
+        )
+    with pytest.raises(IntegrityError, match="auditeventtype"), engine.begin() as conn:
+        conn.execute(
+            text(
+                "INSERT INTO audit_events (id, case_id, sequence, event_type, actor_type, occurred_at, data) "
+                "VALUES ('e3', 'c1', 3, 'AUTO_APPROVED_BY_AGENT', 'SYSTEM', :now, '{}')"
+            ),
+            {"now": datetime.now(UTC)},
         )

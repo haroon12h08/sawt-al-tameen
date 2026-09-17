@@ -181,9 +181,9 @@ These gaps are deliberate phase-1 scope limits. They must be resolved before pro
    neither verified nor classified.
 6. **Workflow gaps.** There are no service-level-agreement timers for expedited requests, no provider
    notifications, and no supervisor reassignment.
-7. **PostgreSQL test coverage.** The automated suite runs on SQLite, built through the real migrations.
-   Migrations, triggers, the seed scenarios, and the HTTP review flow have been verified on PostgreSQL by hand.
-   CI should run the whole suite against PostgreSQL.
+7. **Rules content.** The ruleset is illustrative and small. Real clinical policy, plan documents and
+   medical-necessity criteria would replace it, most likely with a rule-authoring workflow rather than code
+   changes.
 8. **Voice channel.**
    - **Authentication.** The voice channel authenticates with one shared bearer token.
    - **`X-Conversation-ID` trust.** The header is trusted as supplied by the voice platform; anyone holding the token
