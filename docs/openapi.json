@@ -27,7 +27,10 @@
           "REVIEWER_ASSIGNED",
           "HUMAN_DECISION_RECORDED",
           "RECOMMENDATION_OVERRIDDEN",
-          "CASE_CLOSED"
+          "CASE_CLOSED",
+          "HUMAN_CALLBACK_REQUESTED",
+          "HUMAN_CALLBACK_RESOLVED",
+          "CALL_RECORDED"
         ],
         "title": "AuditEventType",
         "type": "string"
@@ -94,10 +97,291 @@
         "title": "AuditEventView",
         "type": "object"
       },
+      "CallRecordView": {
+        "properties": {
+          "agent_id": {
+            "title": "Agent Id",
+            "type": "string"
+          },
+          "analysis": {
+            "additionalProperties": true,
+            "title": "Analysis",
+            "type": "object"
+          },
+          "call_duration_secs": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Call Duration Secs"
+          },
+          "call_successful": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Call Successful"
+          },
+          "conversation_id": {
+            "title": "Conversation Id",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "platform": {
+            "title": "Platform",
+            "type": "string"
+          },
+          "received_at": {
+            "format": "date-time",
+            "title": "Received At",
+            "type": "string"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          },
+          "transcript": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Transcript",
+            "type": "array"
+          },
+          "transcript_summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Transcript Summary"
+          }
+        },
+        "required": [
+          "id",
+          "conversation_id",
+          "agent_id",
+          "platform",
+          "status",
+          "call_duration_secs",
+          "transcript_summary",
+          "call_successful",
+          "transcript",
+          "analysis",
+          "received_at"
+        ],
+        "title": "CallRecordView",
+        "type": "object"
+      },
+      "CallbackReason": {
+        "enum": [
+          "NON_STANDARD_REQUEST",
+          "CALLER_REQUESTED_HUMAN",
+          "SUPPLIER_ENQUIRY",
+          "URGENT_CLINICAL",
+          "COMPLAINT",
+          "UNSUPPORTED_LANGUAGE",
+          "OTHER"
+        ],
+        "title": "CallbackReason",
+        "type": "string"
+      },
+      "CallbackStatus": {
+        "enum": [
+          "OPEN",
+          "RESOLVED"
+        ],
+        "title": "CallbackStatus",
+        "type": "string"
+      },
+      "CallbackView": {
+        "properties": {
+          "callback_phone": {
+            "title": "Callback Phone",
+            "type": "string"
+          },
+          "caller_name": {
+            "title": "Caller Name",
+            "type": "string"
+          },
+          "caller_organisation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Caller Organisation"
+          },
+          "caller_role": {
+            "$ref": "#/components/schemas/CallerRole"
+          },
+          "case_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Case Id"
+          },
+          "conversation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conversation Id"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "preferred_language": {
+            "title": "Preferred Language",
+            "type": "string"
+          },
+          "reason": {
+            "$ref": "#/components/schemas/CallbackReason"
+          },
+          "reference": {
+            "title": "Reference",
+            "type": "string"
+          },
+          "resolution_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolution Note"
+          },
+          "resolved_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved At"
+          },
+          "resolved_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved By"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CallbackStatus"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "reference",
+          "case_id",
+          "conversation_id",
+          "caller_name",
+          "caller_organisation",
+          "caller_role",
+          "callback_phone",
+          "preferred_language",
+          "reason",
+          "summary",
+          "status",
+          "created_at",
+          "resolved_at",
+          "resolved_by",
+          "resolution_note"
+        ],
+        "title": "CallbackView",
+        "type": "object"
+      },
+      "CallerRole": {
+        "description": "Who is on the line. Only provider staff and brokers acting for a provider may open pre-auth cases.",
+        "enum": [
+          "PROVIDER_STAFF",
+          "BROKER",
+          "SUPPLIER",
+          "OTHER"
+        ],
+        "title": "CallerRole",
+        "type": "string"
+      },
       "CaseInformationUpdate": {
         "additionalProperties": false,
         "description": "Partial update of the information collected for a case. Only supplied fields are applied.",
         "properties": {
+          "caller_name": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Caller Name"
+          },
+          "caller_role": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CallerRole"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "clinical_summary": {
             "anyOf": [
               {
@@ -319,6 +603,27 @@
             ],
             "title": "Assigned Reviewer Id"
           },
+          "caller_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Caller Name"
+          },
+          "caller_role": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CallerRole"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "case_reference": {
             "title": "Case Reference",
             "type": "string"
@@ -496,6 +801,8 @@
           "diagnosis_description",
           "conservative_treatment_weeks",
           "clinical_summary",
+          "caller_name",
+          "caller_role",
           "documents",
           "review_queue",
           "assigned_reviewer_id",
@@ -741,6 +1048,19 @@
         "title": "EvaluationResultView",
         "type": "object"
       },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
       "HumanDecisionCommand": {
         "additionalProperties": false,
         "properties": {
@@ -950,6 +1270,43 @@
         "title": "PolicyView",
         "type": "object"
       },
+      "PostCallOutcome": {
+        "properties": {
+          "accepted": {
+            "title": "Accepted",
+            "type": "boolean"
+          },
+          "call_record_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Call Record Id"
+          },
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "linked_case_ids": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Linked Case Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "accepted",
+          "detail"
+        ],
+        "title": "PostCallOutcome",
+        "type": "object"
+      },
       "ProviderView": {
         "properties": {
           "credentialing_status": {
@@ -1059,6 +1416,13 @@
           "ruleset_version": {
             "title": "Ruleset Version",
             "type": "string"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/SourceAttributionView"
+            },
+            "title": "Sources",
+            "type": "array"
           }
         },
         "required": [
@@ -1070,6 +1434,7 @@
           "determining_rule_ids",
           "evidence",
           "missing_information",
+          "sources",
           "engine_name",
           "engine_version",
           "ruleset_name",
@@ -1245,6 +1610,22 @@
         "title": "RequiredInformationView",
         "type": "object"
       },
+      "ResolveCallbackCommand": {
+        "additionalProperties": false,
+        "properties": {
+          "resolution_note": {
+            "maxLength": 2000,
+            "minLength": 10,
+            "title": "Resolution Note",
+            "type": "string"
+          }
+        },
+        "required": [
+          "resolution_note"
+        ],
+        "title": "ResolveCallbackCommand",
+        "type": "object"
+      },
       "ReviewDecisionView": {
         "properties": {
           "decided_at": {
@@ -1314,6 +1695,20 @@
             "title": "Audit History",
             "type": "array"
           },
+          "callbacks": {
+            "items": {
+              "$ref": "#/components/schemas/CallbackView"
+            },
+            "title": "Callbacks",
+            "type": "array"
+          },
+          "calls": {
+            "items": {
+              "$ref": "#/components/schemas/CallRecordView"
+            },
+            "title": "Calls",
+            "type": "array"
+          },
           "case": {
             "$ref": "#/components/schemas/CaseView"
           },
@@ -1334,6 +1729,13 @@
             "title": "Decisions",
             "type": "array"
           },
+          "pending_call_conversation_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Pending Call Conversation Ids",
+            "type": "array"
+          },
           "recommendation_history": {
             "items": {
               "$ref": "#/components/schemas/RecommendationView"
@@ -1347,6 +1749,9 @@
           "current_recommendation",
           "recommendation_history",
           "decisions",
+          "calls",
+          "pending_call_conversation_ids",
+          "callbacks",
           "audit_history"
         ],
         "title": "ReviewPacketView",
@@ -1479,6 +1884,13 @@
           "rule_version": {
             "title": "Rule Version",
             "type": "string"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/SourceReference"
+            },
+            "title": "Sources",
+            "type": "array"
           }
         },
         "required": [
@@ -1487,9 +1899,56 @@
           "outcome",
           "explanation",
           "evidence",
-          "missing_information"
+          "missing_information",
+          "sources"
         ],
         "title": "RuleResultView",
+        "type": "object"
+      },
+      "SourceAttributionView": {
+        "properties": {
+          "document": {
+            "title": "Document",
+            "type": "string"
+          },
+          "rule_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Rule Ids",
+            "type": "array"
+          },
+          "section": {
+            "title": "Section",
+            "type": "string"
+          }
+        },
+        "required": [
+          "document",
+          "section",
+          "rule_ids"
+        ],
+        "title": "SourceAttributionView",
+        "type": "object"
+      },
+      "SourceReference": {
+        "additionalProperties": false,
+        "description": "Where a fact used by a rule is written down (policy document section or system-of-record entry).",
+        "properties": {
+          "document": {
+            "title": "Document",
+            "type": "string"
+          },
+          "section": {
+            "title": "Section",
+            "type": "string"
+          }
+        },
+        "required": [
+          "document",
+          "section"
+        ],
+        "title": "SourceReference",
         "type": "object"
       },
       "Urgency": {
@@ -1499,11 +1958,99 @@
         ],
         "title": "Urgency",
         "type": "string"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      },
+      "VoiceToolResponse": {
+        "properties": {
+          "error": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "guidance": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Guidance"
+          },
+          "ok": {
+            "title": "Ok",
+            "type": "boolean"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result"
+          }
+        },
+        "required": [
+          "ok"
+        ],
+        "title": "VoiceToolResponse",
+        "type": "object"
       }
     }
   },
   "info": {
-    "description": "\nBackend for provider pre-authorisation requests: case intake, validation, rule evaluation, advisory\nrecommendations, human review, and an immutable audit trail.\n\n**The system never issues final authorisations or denials.** Only an authorised human reviewer can move a case\nto `APPROVED` or `DENIED`.\n\n**Authentication assumption:** requests arrive through a gateway that authenticates the caller and sets\n`X-Actor-Type`, `X-Actor-Id`, and (for reviewers) `X-Actor-Roles`. The service must not be exposed directly.\n\nEvery response carries `X-Request-ID`. Errors use a uniform envelope: `{\"error\": {\"code\", \"message\", \"details\",\n\"request_id\", \"case_id\"}}`.\n",
+    "description": "\nBackend for provider pre-authorisation requests: case intake, validation, rule evaluation, advisory\nrecommendations, human review, and an immutable audit trail.\n\n**The system never issues final authorisations or denials.** Only an authorised human reviewer can move a case\nto `APPROVED` or `DENIED`.\n\n**Authentication assumption:** requests arrive through a gateway that authenticates the caller and sets\n`X-Actor-Type`, `X-Actor-Id`, and (for reviewers) `X-Actor-Roles`. When the service is exposed on a public URL\nwithout such a gateway, set `PREAUTH_GATEWAY_SECRET`; every `/api/v1` route except the voice channel then also\nrequires a matching `X-Gateway-Secret` header. Voice-channel routes authenticate separately (bearer token for\ntool calls, HMAC signature for the post-call webhook).\n\nEvery response carries `X-Request-ID`. Errors use a uniform envelope: `{\"error\": {\"code\", \"message\", \"details\",\n\"request_id\", \"case_id\"}}`.\n",
     "title": "Pre-Authorisation Case Service",
     "version": "0.1.0"
   },
@@ -1514,6 +2061,24 @@
         "description": "Tool names, descriptions, and JSON Schemas for inputs and outputs, suitable for registering with a tool-calling model. Contains no decision-making tools.\n\n**Authorisation:** Any authenticated actor.\n\n**State transitions:** None.",
         "operationId": "list_tools_api_v1_agent_tools_get",
         "parameters": [
+          {
+            "description": "Shared gateway secret, required when the deployment configures one",
+            "in": "header",
+            "name": "x-gateway-secret",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Shared gateway secret, required when the deployment configures one",
+              "title": "X-Gateway-Secret"
+            }
+          },
           {
             "description": "Verified actor type set by the gateway",
             "in": "header",
@@ -1593,7 +2158,7 @@
                 }
               }
             },
-            "description": "ACTOR_REQUIRED / INVALID_ACTOR"
+            "description": "ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID"
           },
           "422": {
             "content": {
@@ -1635,6 +2200,24 @@
               "pattern": "^[a-z_]{1,64}$",
               "title": "Tool Name",
               "type": "string"
+            }
+          },
+          {
+            "description": "Shared gateway secret, required when the deployment configures one",
+            "in": "header",
+            "name": "x-gateway-secret",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Shared gateway secret, required when the deployment configures one",
+              "title": "X-Gateway-Secret"
             }
           },
           {
@@ -1724,7 +2307,7 @@
                 }
               }
             },
-            "description": "ACTOR_REQUIRED / INVALID_ACTOR"
+            "description": "ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID"
           },
           "403": {
             "content": {
@@ -1788,6 +2371,24 @@
         "description": "Opens a new case, optionally with initial information. Returns the case with a short, speakable `case_reference` suitable for quoting to a caller.\n\n**Authorisation:** Actor type `PROVIDER_PORTAL` or `VOICE_AGENT`.\n\n**State transitions:** \u2192 `RECEIVED`; if information is supplied, `RECEIVED` \u2192 `INFORMATION_COLLECTION`.",
         "operationId": "create_case_api_v1_cases_post",
         "parameters": [
+          {
+            "description": "Shared gateway secret, required when the deployment configures one",
+            "in": "header",
+            "name": "x-gateway-secret",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Shared gateway secret, required when the deployment configures one",
+              "title": "X-Gateway-Secret"
+            }
+          },
           {
             "description": "Verified actor type set by the gateway",
             "in": "header",
@@ -1872,7 +2473,7 @@
                 }
               }
             },
-            "description": "ACTOR_REQUIRED / INVALID_ACTOR"
+            "description": "ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID"
           },
           "403": {
             "content": {
@@ -1924,6 +2525,24 @@
               "pattern": "^PA-[0-9A-Z]{8}$",
               "title": "Case Reference",
               "type": "string"
+            }
+          },
+          {
+            "description": "Shared gateway secret, required when the deployment configures one",
+            "in": "header",
+            "name": "x-gateway-secret",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Shared gateway secret, required when the deployment configures one",
+              "title": "X-Gateway-Secret"
             }
           },
           {
@@ -2000,7 +2619,7 @@
                 }
               }
             },
-            "description": "ACTOR_REQUIRED / INVALID_ACTOR"
+            "description": "ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID"
           },
           "404": {
             "content": {
@@ -2057,6 +2676,24 @@
             }
           },
           {
+            "description": "Shared gateway secret, required when the deployment configures one",
+            "in": "header",
+            "name": "x-gateway-secret",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Shared gateway secret, required when the deployment configures one",
+              "title": "X-Gateway-Secret"
+            }
+          },
+          {
             "description": "Verified actor type set by the gateway",
             "in": "header",
             "name": "x-actor-type",
@@ -2130,7 +2767,7 @@
                 }
               }
             },
-            "description": "ACTOR_REQUIRED / INVALID_ACTOR"
+            "description": "ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID"
           },
           "404": {
             "content": {
@@ -2184,6 +2821,24 @@
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
               "title": "Case Id",
               "type": "string"
+            }
+          },
+          {
+            "description": "Shared gateway secret, required when the deployment configures one",
+            "in": "header",
+            "name": "x-gateway-secret",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Shared gateway secret, required when the deployment configures one",
+              "title": "X-Gateway-Secret"
             }
           },
           {
@@ -2264,7 +2919,7 @@
                 }
               }
             },
-            "description": "ACTOR_REQUIRED / INVALID_ACTOR"
+            "description": "ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID"
           },
           "403": {
             "content": {
@@ -2328,6 +2983,24 @@
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
               "title": "Case Id",
               "type": "string"
+            }
+          },
+          {
+            "description": "Shared gateway secret, required when the deployment configures one",
+            "in": "header",
+            "name": "x-gateway-secret",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Shared gateway secret, required when the deployment configures one",
+              "title": "X-Gateway-Secret"
             }
           },
           {
@@ -2414,7 +3087,7 @@
                 }
               }
             },
-            "description": "ACTOR_REQUIRED / INVALID_ACTOR"
+            "description": "ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID"
           },
           "403": {
             "content": {
@@ -2488,6 +3161,24 @@
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
               "title": "Case Id",
               "type": "string"
+            }
+          },
+          {
+            "description": "Shared gateway secret, required when the deployment configures one",
+            "in": "header",
+            "name": "x-gateway-secret",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Shared gateway secret, required when the deployment configures one",
+              "title": "X-Gateway-Secret"
             }
           },
           {
@@ -2574,7 +3265,7 @@
                 }
               }
             },
-            "description": "ACTOR_REQUIRED / INVALID_ACTOR"
+            "description": "ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID"
           },
           "403": {
             "content": {
@@ -2651,6 +3342,24 @@
             }
           },
           {
+            "description": "Shared gateway secret, required when the deployment configures one",
+            "in": "header",
+            "name": "x-gateway-secret",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Shared gateway secret, required when the deployment configures one",
+              "title": "X-Gateway-Secret"
+            }
+          },
+          {
             "description": "Verified actor type set by the gateway",
             "in": "header",
             "name": "x-actor-type",
@@ -2724,7 +3433,7 @@
                 }
               }
             },
-            "description": "ACTOR_REQUIRED / INVALID_ACTOR"
+            "description": "ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID"
           },
           "403": {
             "content": {
@@ -2801,6 +3510,24 @@
             }
           },
           {
+            "description": "Shared gateway secret, required when the deployment configures one",
+            "in": "header",
+            "name": "x-gateway-secret",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Shared gateway secret, required when the deployment configures one",
+              "title": "X-Gateway-Secret"
+            }
+          },
+          {
             "description": "Verified actor type set by the gateway",
             "in": "header",
             "name": "x-actor-type",
@@ -2874,7 +3601,7 @@
                 }
               }
             },
-            "description": "ACTOR_REQUIRED / INVALID_ACTOR"
+            "description": "ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID"
           },
           "403": {
             "content": {
@@ -2948,6 +3675,24 @@
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
               "title": "Case Id",
               "type": "string"
+            }
+          },
+          {
+            "description": "Shared gateway secret, required when the deployment configures one",
+            "in": "header",
+            "name": "x-gateway-secret",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Shared gateway secret, required when the deployment configures one",
+              "title": "X-Gateway-Secret"
             }
           },
           {
@@ -3034,7 +3779,7 @@
                 }
               }
             },
-            "description": "ACTOR_REQUIRED / INVALID_ACTOR"
+            "description": "ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID"
           },
           "403": {
             "content": {
@@ -3111,6 +3856,24 @@
             }
           },
           {
+            "description": "Shared gateway secret, required when the deployment configures one",
+            "in": "header",
+            "name": "x-gateway-secret",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Shared gateway secret, required when the deployment configures one",
+              "title": "X-Gateway-Secret"
+            }
+          },
+          {
             "description": "Verified actor type set by the gateway",
             "in": "header",
             "name": "x-actor-type",
@@ -3184,7 +3947,7 @@
                 }
               }
             },
-            "description": "ACTOR_REQUIRED / INVALID_ACTOR"
+            "description": "ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID"
           },
           "404": {
             "content": {
@@ -3238,6 +4001,24 @@
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
               "title": "Case Id",
               "type": "string"
+            }
+          },
+          {
+            "description": "Shared gateway secret, required when the deployment configures one",
+            "in": "header",
+            "name": "x-gateway-secret",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Shared gateway secret, required when the deployment configures one",
+              "title": "X-Gateway-Secret"
             }
           },
           {
@@ -3314,7 +4095,7 @@
                 }
               }
             },
-            "description": "ACTOR_REQUIRED / INVALID_ACTOR"
+            "description": "ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID"
           },
           "404": {
             "content": {
@@ -3368,6 +4149,24 @@
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
               "title": "Case Id",
               "type": "string"
+            }
+          },
+          {
+            "description": "Shared gateway secret, required when the deployment configures one",
+            "in": "header",
+            "name": "x-gateway-secret",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Shared gateway secret, required when the deployment configures one",
+              "title": "X-Gateway-Secret"
             }
           },
           {
@@ -3444,7 +4243,7 @@
                 }
               }
             },
-            "description": "ACTOR_REQUIRED / INVALID_ACTOR"
+            "description": "ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID"
           },
           "404": {
             "content": {
@@ -3483,6 +4282,353 @@
         ]
       }
     },
+    "/api/v1/review/callbacks": {
+      "get": {
+        "description": "Callers the voice agent handed to a human (ambiguous or non-standard requests, supplier enquiries, complaints, urgent concerns, unsupported languages). Oldest first.\n\n**Authorisation:** Actor type `HUMAN_REVIEWER`.\n\n**State transitions:** None.",
+        "operationId": "list_callbacks_api_v1_review_callbacks_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/CallbackStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": "OPEN",
+              "title": "Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Shared gateway secret, required when the deployment configures one",
+            "in": "header",
+            "name": "x-gateway-secret",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Shared gateway secret, required when the deployment configures one",
+              "title": "X-Gateway-Secret"
+            }
+          },
+          {
+            "description": "Verified actor type set by the gateway",
+            "in": "header",
+            "name": "x-actor-type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Verified actor type set by the gateway",
+              "title": "X-Actor-Type"
+            }
+          },
+          {
+            "description": "Verified actor identifier set by the gateway",
+            "in": "header",
+            "name": "x-actor-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Verified actor identifier set by the gateway",
+              "title": "X-Actor-Id"
+            }
+          },
+          {
+            "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
+            "in": "header",
+            "name": "x-actor-roles",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
+              "title": "X-Actor-Roles"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CallbackView"
+                  },
+                  "title": "Response List Callbacks Api V1 Review Callbacks Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "HUMAN_REVIEWER_REQUIRED"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "REQUEST_VALIDATION_FAILED"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "INTERNAL_ERROR / INTEGRITY_VIOLATION"
+          }
+        },
+        "summary": "List human callback requests",
+        "tags": [
+          "Human review"
+        ]
+      }
+    },
+    "/api/v1/review/callbacks/{callback_id}/resolution": {
+      "post": {
+        "description": "Marks a callback as handled with a note. Records `HUMAN_CALLBACK_RESOLVED` on the linked case, if any.\n\n**Authorisation:** Actor type `HUMAN_REVIEWER`.\n\n**State transitions:** None (callback `OPEN` \u2192 `RESOLVED`).",
+        "operationId": "resolve_callback_api_v1_review_callbacks__callback_id__resolution_post",
+        "parameters": [
+          {
+            "description": "Callback UUID",
+            "in": "path",
+            "name": "callback_id",
+            "required": true,
+            "schema": {
+              "description": "Callback UUID",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+              "title": "Callback Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Shared gateway secret, required when the deployment configures one",
+            "in": "header",
+            "name": "x-gateway-secret",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Shared gateway secret, required when the deployment configures one",
+              "title": "X-Gateway-Secret"
+            }
+          },
+          {
+            "description": "Verified actor type set by the gateway",
+            "in": "header",
+            "name": "x-actor-type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Verified actor type set by the gateway",
+              "title": "X-Actor-Type"
+            }
+          },
+          {
+            "description": "Verified actor identifier set by the gateway",
+            "in": "header",
+            "name": "x-actor-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Verified actor identifier set by the gateway",
+              "title": "X-Actor-Id"
+            }
+          },
+          {
+            "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
+            "in": "header",
+            "name": "x-actor-roles",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma-separated reviewer roles (HUMAN_REVIEWER only)",
+              "title": "X-Actor-Roles"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResolveCallbackCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CallbackView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "HUMAN_REVIEWER_REQUIRED"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "CALLBACK_NOT_FOUND"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "CALLBACK_ALREADY_RESOLVED"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "REQUEST_VALIDATION_FAILED"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "INTERNAL_ERROR / INTEGRITY_VIOLATION"
+          }
+        },
+        "summary": "Resolve a callback request",
+        "tags": [
+          "Human review"
+        ]
+      }
+    },
     "/api/v1/review/cases/{case_id}": {
       "get": {
         "description": "Everything a reviewer needs: case details, provider request, collected information, documents, current and historical recommendations with rule results and evidence, prior decisions, and full audit history.\n\n**Authorisation:** Actor type `HUMAN_REVIEWER`.\n\n**State transitions:** None.",
@@ -3498,6 +4644,24 @@
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
               "title": "Case Id",
               "type": "string"
+            }
+          },
+          {
+            "description": "Shared gateway secret, required when the deployment configures one",
+            "in": "header",
+            "name": "x-gateway-secret",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Shared gateway secret, required when the deployment configures one",
+              "title": "X-Gateway-Secret"
             }
           },
           {
@@ -3574,7 +4738,7 @@
                 }
               }
             },
-            "description": "ACTOR_REQUIRED / INVALID_ACTOR"
+            "description": "ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID"
           },
           "403": {
             "content": {
@@ -3638,6 +4802,24 @@
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
               "title": "Case Id",
               "type": "string"
+            }
+          },
+          {
+            "description": "Shared gateway secret, required when the deployment configures one",
+            "in": "header",
+            "name": "x-gateway-secret",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Shared gateway secret, required when the deployment configures one",
+              "title": "X-Gateway-Secret"
             }
           },
           {
@@ -3714,7 +4896,7 @@
                 }
               }
             },
-            "description": "ACTOR_REQUIRED / INVALID_ACTOR"
+            "description": "ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID"
           },
           "403": {
             "content": {
@@ -3788,6 +4970,24 @@
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
               "title": "Case Id",
               "type": "string"
+            }
+          },
+          {
+            "description": "Shared gateway secret, required when the deployment configures one",
+            "in": "header",
+            "name": "x-gateway-secret",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Shared gateway secret, required when the deployment configures one",
+              "title": "X-Gateway-Secret"
             }
           },
           {
@@ -3874,7 +5074,7 @@
                 }
               }
             },
-            "description": "ACTOR_REQUIRED / INVALID_ACTOR"
+            "description": "ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID"
           },
           "403": {
             "content": {
@@ -3959,6 +5159,24 @@
             }
           },
           {
+            "description": "Shared gateway secret, required when the deployment configures one",
+            "in": "header",
+            "name": "x-gateway-secret",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Shared gateway secret, required when the deployment configures one",
+              "title": "X-Gateway-Secret"
+            }
+          },
+          {
             "description": "Verified actor type set by the gateway",
             "in": "header",
             "name": "x-actor-type",
@@ -4036,7 +5254,7 @@
                 }
               }
             },
-            "description": "ACTOR_REQUIRED / INVALID_ACTOR"
+            "description": "ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID"
           },
           "403": {
             "content": {
@@ -4072,6 +5290,215 @@
         "summary": "List a review queue",
         "tags": [
           "Human review"
+        ]
+      }
+    },
+    "/api/v1/voice/elevenlabs/post-call": {
+      "post": {
+        "description": "Receives `post_call_transcription` events, stores the transcript and analysis as an immutable call record, and adds a `CALL_RECORDED` audit event to every case the conversation touched. Idempotent per conversation (platform retries are acknowledged, not duplicated). Other event types are acknowledged and ignored.\n\n**Authorisation:** Header `elevenlabs-signature` (HMAC-SHA256 with `PREAUTH_ELEVENLABS_WEBHOOK_SECRET`).\n\n**State transitions:** None. Human sign-off on affected cases becomes possible once all their calls are recorded.",
+        "operationId": "post_call_webhook_api_v1_voice_elevenlabs_post_call_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "elevenlabs-signature",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Elevenlabs-Signature"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostCallOutcome"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "WEBHOOK_PAYLOAD_INVALID"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "WEBHOOK_SIGNATURE_INVALID"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "INTERNAL_ERROR"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "CHANNEL_NOT_CONFIGURED"
+          }
+        },
+        "summary": "ElevenLabs post-call webhook",
+        "tags": [
+          "Voice channel (ElevenLabs)"
+        ]
+      }
+    },
+    "/api/v1/voice/tools/{tool_name}": {
+      "post": {
+        "description": "Invokes one agent tool on behalf of the voice platform. The body is the tool's flat parameter object (see `scripts/elevenlabs_setup.py` or `preauth.agent_tools.elevenlabs`). Empty strings and nulls are treated as omitted. Business failures return HTTP 200 with `ok=false`, a stable `error.code`, and `guidance` the agent can act on, because the model must be able to recover mid-call. Unexpected failures return the standard 500 envelope. Calls carrying `X-Conversation-ID` are linked to the cases they touch.\n\n**Authorisation:** Header `Authorization: Bearer <PREAUTH_VOICE_AGENT_TOKEN>`. Acts as actor `VOICE_AGENT`.\n\n**State transitions:** Those of the underlying tool. Never `APPROVED` or `DENIED`.",
+        "operationId": "voice_tool_api_v1_voice_tools__tool_name__post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tool_name",
+            "required": true,
+            "schema": {
+              "pattern": "^[a-z_]{1,64}$",
+              "title": "Tool Name",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "description": "Voice platform conversation id",
+            "in": "header",
+            "name": "x-conversation-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Voice platform conversation id",
+              "title": "X-Conversation-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": true,
+                "title": "Arguments",
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VoiceToolResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "VOICE_TOKEN_INVALID"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "INTERNAL_ERROR"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "CHANNEL_NOT_CONFIGURED"
+          }
+        },
+        "summary": "Voice platform server-tool call",
+        "tags": [
+          "Voice channel (ElevenLabs)"
         ]
       }
     },

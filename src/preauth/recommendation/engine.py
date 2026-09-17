@@ -14,7 +14,7 @@ from typing import Any, Protocol
 from pydantic import BaseModel, ConfigDict
 
 from preauth.domain.enums import MissingInformationSource, RecommendationOutcome, RuleOutcome
-from preauth.rules.model import MissingInformation, RuleContext, RuleResult
+from preauth.rules.model import MissingInformation, RuleContext, RuleResult, SourceReference
 
 
 class RecommendationDraft(BaseModel):
@@ -25,8 +25,22 @@ class RecommendationDraft(BaseModel):
     determining_rule_ids: tuple[str, ...]
     evidence: dict[str, Any]
     missing_information: tuple[MissingInformation, ...]
+    sources: tuple["AttributedSource", ...]
     engine_name: str
     engine_version: str
+
+
+class AttributedSource(BaseModel):
+    """A source document section together with the rules whose results relied on it."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    document: str
+    section: str
+    rule_ids: tuple[str, ...]
+
+
+RecommendationDraft.model_rebuild()
 
 
 class RecommendationEngine(Protocol):
@@ -38,7 +52,8 @@ class RecommendationEngine(Protocol):
 
 class DeterministicRecommendationEngine:
     name = "deterministic-recommender"
-    version = "1.0.0"
+    # 1.1.0: recommendations carry source attribution.
+    version = "1.1.0"
 
     def recommend(self, results: Sequence[RuleResult], ctx: RuleContext) -> RecommendationDraft:
         failed = [r for r in results if r.outcome is RuleOutcome.FAIL]
@@ -80,9 +95,20 @@ class DeterministicRecommendationEngine:
             evidence={r.rule_id: {"outcome": r.outcome, **r.evidence} for r in results},
             # Missing information is only actionable when the recommendation asks for it or escalates on it.
             missing_information=missing if outcome is not RecommendationOutcome.RECOMMEND_APPROVAL else (),
+            sources=_attribute_sources(results),
             engine_name=self.name,
             engine_version=self.version,
         )
+
+
+def _attribute_sources(results: Sequence[RuleResult]) -> tuple[AttributedSource, ...]:
+    by_source: dict[SourceReference, list[str]] = {}
+    for r in results:
+        for source in r.sources:
+            by_source.setdefault(source, []).append(r.rule_id)
+    return tuple(
+        AttributedSource(document=s.document, section=s.section, rule_ids=tuple(ids)) for s, ids in by_source.items()
+    )
 
 
 def _describe(results: Sequence[RuleResult]) -> str:

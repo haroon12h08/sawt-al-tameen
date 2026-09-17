@@ -80,6 +80,18 @@ MEMBERS = [
 ]
 
 
+def plan_document_name(plan_code: str) -> str:
+    plan_name = next(name for code, name, _ in PLANS if code == plan_code)
+    return f"{plan_name} Schedule of Benefits and Pre-Authorisation Rules 2026"
+
+
+def coverage_section(procedure_code: str) -> str:
+    """Section numbering shared with the generated knowledge-base documents, so citations always resolve."""
+    number = [code for code, _, _ in PROCEDURES].index(procedure_code) + 1
+    description = next(d for code, d, _ in PROCEDURES if code == procedure_code)
+    return f"Section 4.{number} {procedure_code}: {description}"
+
+
 def load_reference_data(session: Session, today: date) -> None:
     for code, name, oon in PLANS:
         session.add(InsurancePlan(plan_code=code, name=name, out_of_network_covered=oon))
@@ -97,6 +109,8 @@ def load_reference_data(session: Session, today: date) -> None:
                 preauth_required=preauth,
                 min_conservative_treatment_weeks=min_weeks,
                 annual_case_limit=limit,
+                source_document=plan_document_name(plan_code),
+                source_section=coverage_section(procedure_code),
             )
             term.required_documents = [CoverageRequiredDocument(document_type=d) for d in docs]
             term.indicated_diagnoses = [CoverageIndicatedDiagnosis(diagnosis_code=c) for c in diagnoses]

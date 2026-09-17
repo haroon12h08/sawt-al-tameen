@@ -134,6 +134,7 @@ class EvaluationService:
                     explanation=r.explanation,
                     evidence=r.model_dump(mode="json")["evidence"],
                     missing_information=[mi.model_dump(mode="json") for mi in r.missing_information],
+                    sources=[src.model_dump(mode="json") for src in r.sources],
                 )
                 for position, r in enumerate(outcome.results)
             ],
@@ -166,6 +167,7 @@ class EvaluationService:
             determining_rule_ids=list(draft.determining_rule_ids),
             evidence=draft.model_dump(mode="json")["evidence"],
             missing_information=[mi.model_dump(mode="json") for mi in draft.missing_information],
+            sources=[src.model_dump(mode="json") for src in draft.sources],
             engine_name=draft.engine_name,
             engine_version=draft.engine_version,
             generated_at=self._clock.now(),

@@ -19,6 +19,7 @@ from preauth.infrastructure.db.repositories import (
     EvaluationRepository,
     ReferenceDataRepository,
     ReviewRepository,
+    VoiceChannelRepository,
 )
 from preauth.infrastructure.observability import request_id_var
 
@@ -80,6 +81,7 @@ class UnitOfWork:
         self.reviews = ReviewRepository(self.session)
         self.audit = AuditRecorder(AuditRepository(self.session), self.clock)
         self.audit_events = AuditRepository(self.session)
+        self.voice = VoiceChannelRepository(self.session)
         return self
 
     def __exit__(self, exc_type, exc, tb) -> None:

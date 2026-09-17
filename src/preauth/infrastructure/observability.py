@@ -13,8 +13,10 @@ from datetime import UTC, datetime
 request_id_var: ContextVar[str | None] = ContextVar("request_id", default=None)
 case_id_var: ContextVar[str | None] = ContextVar("case_id", default=None)
 actor_var: ContextVar[str | None] = ContextVar("actor", default=None)
+# Voice-platform conversation handling the current request, when the request arrives through the voice channel.
+conversation_id_var: ContextVar[str | None] = ContextVar("conversation_id", default=None)
 
-_CONTEXT_FIELDS = ("request_id", "case_id", "actor")
+_CONTEXT_FIELDS = ("request_id", "case_id", "actor", "conversation_id")
 _RESERVED = set(vars(logging.makeLogRecord({})).keys()) | {"message", "asctime", *_CONTEXT_FIELDS}
 _base_record_factory = logging.getLogRecordFactory()
 
@@ -29,6 +31,7 @@ def _record_factory(*args, **kwargs) -> logging.LogRecord:
     record.request_id = request_id_var.get()
     record.case_id = case_id_var.get()
     record.actor = actor_var.get()
+    record.conversation_id = conversation_id_var.get()
     return record
 
 
@@ -48,6 +51,7 @@ class JsonFormatter(logging.Formatter):
             "request_id": getattr(record, "request_id", None),
             "case_id": getattr(record, "case_id", None),
             "actor": getattr(record, "actor", None),
+            "conversation_id": getattr(record, "conversation_id", None),
         }
         payload.update({k: v for k, v in record.__dict__.items() if k not in _RESERVED})
         if record.exc_info:

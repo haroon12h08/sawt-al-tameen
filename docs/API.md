@@ -9,7 +9,10 @@ recommendations, human review, and an immutable audit trail.
 to `APPROVED` or `DENIED`.
 
 **Authentication assumption:** requests arrive through a gateway that authenticates the caller and sets
-`X-Actor-Type`, `X-Actor-Id`, and (for reviewers) `X-Actor-Roles`. The service must not be exposed directly.
+`X-Actor-Type`, `X-Actor-Id`, and (for reviewers) `X-Actor-Roles`. When the service is exposed on a public URL
+without such a gateway, set `PREAUTH_GATEWAY_SECRET`; every `/api/v1` route except the voice channel then also
+requires a matching `X-Gateway-Secret` header. Voice-channel routes authenticate separately (bearer token for
+tool calls, HMAC signature for the post-call webhook).
 
 Every response carries `X-Request-ID`. Errors use a uniform envelope: `{"error": {"code", "message", "details",
 "request_id", "case_id"}}`.
@@ -31,7 +34,7 @@ Opens a new case, optionally with initial information. Returns the case with a s
 | Status | Response | Error codes / meaning |
 |---|---|---|
 | 201 | `CaseView` | Successful Response |
-| 401 | `ErrorResponse` | ACTOR_REQUIRED / INVALID_ACTOR |
+| 401 | `ErrorResponse` | ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID |
 | 403 | `ErrorResponse` | INTAKE_ACTOR_REQUIRED |
 | 422 | `ErrorResponse` | REQUEST_VALIDATION_FAILED / UNKNOWN_PROVIDER / MEMBER_NOT_VERIFIED / UNKNOWN_POLICY / POLICY_MEMBER_MISMATCH / UNKNOWN_PROCEDURE / SERVICE_DATE_IN_PAST |
 | 500 | `ErrorResponse` | INTERNAL_ERROR / INTEGRITY_VIOLATION |
@@ -51,7 +54,7 @@ Resolves a caller-quoted case reference (e.g. `PA-7K3M9Q2B`).
 | Status | Response | Error codes / meaning |
 |---|---|---|
 | 200 | `CaseView` | Successful Response |
-| 401 | `ErrorResponse` | ACTOR_REQUIRED / INVALID_ACTOR |
+| 401 | `ErrorResponse` | ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID |
 | 404 | `ErrorResponse` | CASE_NOT_FOUND |
 | 422 | `ErrorResponse` | REQUEST_VALIDATION_FAILED |
 | 500 | `ErrorResponse` | INTERNAL_ERROR / INTEGRITY_VIOLATION |
@@ -71,7 +74,7 @@ Returns all collected information, documents, and current status.
 | Status | Response | Error codes / meaning |
 |---|---|---|
 | 200 | `CaseView` | Successful Response |
-| 401 | `ErrorResponse` | ACTOR_REQUIRED / INVALID_ACTOR |
+| 401 | `ErrorResponse` | ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID |
 | 404 | `ErrorResponse` | CASE_NOT_FOUND |
 | 422 | `ErrorResponse` | REQUEST_VALIDATION_FAILED |
 | 500 | `ErrorResponse` | INTERNAL_ERROR / INTEGRITY_VIOLATION |
@@ -91,7 +94,7 @@ Partial update: only fields present in the body are applied; explicit nulls are 
 | Status | Response | Error codes / meaning |
 |---|---|---|
 | 200 | `CaseView` | Successful Response |
-| 401 | `ErrorResponse` | ACTOR_REQUIRED / INVALID_ACTOR |
+| 401 | `ErrorResponse` | ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID |
 | 403 | `ErrorResponse` | INTAKE_ACTOR_REQUIRED |
 | 404 | `ErrorResponse` | CASE_NOT_FOUND |
 | 409 | `ErrorResponse` | CASE_NOT_EDITABLE / CONCURRENT_MODIFICATION |
@@ -113,7 +116,7 @@ Registers metadata for a document already placed in the document store (`storage
 | Status | Response | Error codes / meaning |
 |---|---|---|
 | 201 | `DocumentView` | Successful Response |
-| 401 | `ErrorResponse` | ACTOR_REQUIRED / INVALID_ACTOR |
+| 401 | `ErrorResponse` | ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID |
 | 403 | `ErrorResponse` | INTAKE_ACTOR_REQUIRED |
 | 404 | `ErrorResponse` | CASE_NOT_FOUND |
 | 409 | `ErrorResponse` | CASE_NOT_EDITABLE / CONCURRENT_MODIFICATION |
@@ -135,7 +138,7 @@ Lists intake requirements and what is still missing. When intake is complete the
 | Status | Response | Error codes / meaning |
 |---|---|---|
 | 200 | `RequiredInformationView` | Successful Response |
-| 401 | `ErrorResponse` | ACTOR_REQUIRED / INVALID_ACTOR |
+| 401 | `ErrorResponse` | ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID |
 | 404 | `ErrorResponse` | CASE_NOT_FOUND |
 | 422 | `ErrorResponse` | REQUEST_VALIDATION_FAILED |
 | 500 | `ErrorResponse` | INTERNAL_ERROR / INTEGRITY_VIOLATION |
@@ -155,7 +158,7 @@ Current status, review queue, statuses reachable from here, and the final human 
 | Status | Response | Error codes / meaning |
 |---|---|---|
 | 200 | `CaseStatusView` | Successful Response |
-| 401 | `ErrorResponse` | ACTOR_REQUIRED / INVALID_ACTOR |
+| 401 | `ErrorResponse` | ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID |
 | 404 | `ErrorResponse` | CASE_NOT_FOUND |
 | 422 | `ErrorResponse` | REQUEST_VALIDATION_FAILED |
 | 500 | `ErrorResponse` | INTERNAL_ERROR / INTEGRITY_VIOLATION |
@@ -175,7 +178,7 @@ Validates intake completeness, evaluates the ruleset, and generates an advisory 
 | Status | Response | Error codes / meaning |
 |---|---|---|
 | 200 | `EvaluationResultView` | Successful Response |
-| 401 | `ErrorResponse` | ACTOR_REQUIRED / INVALID_ACTOR |
+| 401 | `ErrorResponse` | ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID |
 | 403 | `ErrorResponse` | INTAKE_ACTOR_REQUIRED |
 | 404 | `ErrorResponse` | CASE_NOT_FOUND |
 | 409 | `ErrorResponse` | INVALID_STATE_TRANSITION / CONCURRENT_MODIFICATION |
@@ -197,7 +200,7 @@ The most recent system recommendation with its rule results, evidence, rationale
 | Status | Response | Error codes / meaning |
 |---|---|---|
 | 200 | `RecommendationView` | Successful Response |
-| 401 | `ErrorResponse` | ACTOR_REQUIRED / INVALID_ACTOR |
+| 401 | `ErrorResponse` | ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID |
 | 404 | `ErrorResponse` | CASE_NOT_FOUND / RECOMMENDATION_NOT_FOUND |
 | 422 | `ErrorResponse` | REQUEST_VALIDATION_FAILED |
 | 500 | `ErrorResponse` | INTERNAL_ERROR / INTEGRITY_VIOLATION |
@@ -217,7 +220,7 @@ Routes the current recommendation to a human review queue. `ESCALATE` recommenda
 | Status | Response | Error codes / meaning |
 |---|---|---|
 | 200 | `CaseStatusView` | Successful Response |
-| 401 | `ErrorResponse` | ACTOR_REQUIRED / INVALID_ACTOR |
+| 401 | `ErrorResponse` | ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID |
 | 403 | `ErrorResponse` | TRANSITION_NOT_AUTHORIZED |
 | 404 | `ErrorResponse` | CASE_NOT_FOUND |
 | 409 | `ErrorResponse` | RECOMMENDATION_NOT_READY / CONCURRENT_MODIFICATION |
@@ -239,7 +242,7 @@ Routes the current recommendation to a human review queue. `ESCALATE` recommenda
 | Status | Response | Error codes / meaning |
 |---|---|---|
 | 200 | `CaseView` | Successful Response |
-| 401 | `ErrorResponse` | ACTOR_REQUIRED / INVALID_ACTOR |
+| 401 | `ErrorResponse` | ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID |
 | 403 | `ErrorResponse` | TRANSITION_NOT_AUTHORIZED |
 | 404 | `ErrorResponse` | CASE_NOT_FOUND |
 | 409 | `ErrorResponse` | INVALID_CLOSE_REASON / INVALID_STATE_TRANSITION / CONCURRENT_MODIFICATION |
@@ -263,7 +266,7 @@ Immutable, ordered audit events for the case. Events are append-only at the data
 | Status | Response | Error codes / meaning |
 |---|---|---|
 | 200 | array of `AuditEventView` | Successful Response |
-| 401 | `ErrorResponse` | ACTOR_REQUIRED / INVALID_ACTOR |
+| 401 | `ErrorResponse` | ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID |
 | 403 | `ErrorResponse` | HUMAN_REVIEWER_REQUIRED |
 | 404 | `ErrorResponse` | CASE_NOT_FOUND |
 | 422 | `ErrorResponse` | REQUEST_VALIDATION_FAILED |
@@ -286,7 +289,7 @@ Cases awaiting review in the queue; expedited first, then oldest first.
 | Status | Response | Error codes / meaning |
 |---|---|---|
 | 200 | array of `ReviewQueueItemView` | Successful Response |
-| 401 | `ErrorResponse` | ACTOR_REQUIRED / INVALID_ACTOR |
+| 401 | `ErrorResponse` | ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID |
 | 403 | `ErrorResponse` | HUMAN_REVIEWER_REQUIRED |
 | 422 | `ErrorResponse` | REQUEST_VALIDATION_FAILED |
 | 500 | `ErrorResponse` | INTERNAL_ERROR / INTEGRITY_VIOLATION |
@@ -306,7 +309,7 @@ Everything a reviewer needs: case details, provider request, collected informati
 | Status | Response | Error codes / meaning |
 |---|---|---|
 | 200 | `ReviewPacketView` | Successful Response |
-| 401 | `ErrorResponse` | ACTOR_REQUIRED / INVALID_ACTOR |
+| 401 | `ErrorResponse` | ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID |
 | 403 | `ErrorResponse` | HUMAN_REVIEWER_REQUIRED |
 | 404 | `ErrorResponse` | CASE_NOT_FOUND |
 | 422 | `ErrorResponse` | REQUEST_VALIDATION_FAILED |
@@ -327,7 +330,7 @@ Self-assignment. A decision can only be recorded by the assigned reviewer. Reass
 | Status | Response | Error codes / meaning |
 |---|---|---|
 | 200 | `CaseStatusView` | Successful Response |
-| 401 | `ErrorResponse` | ACTOR_REQUIRED / INVALID_ACTOR |
+| 401 | `ErrorResponse` | ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID |
 | 403 | `ErrorResponse` | HUMAN_REVIEWER_REQUIRED / INSUFFICIENT_REVIEWER_ROLE |
 | 404 | `ErrorResponse` | CASE_NOT_FOUND |
 | 409 | `ErrorResponse` | CASE_NOT_UNDER_REVIEW / CONCURRENT_MODIFICATION |
@@ -349,10 +352,52 @@ Records the reviewer's decision against the current recommendation (`recommendat
 | Status | Response | Error codes / meaning |
 |---|---|---|
 | 201 | `ReviewDecisionView` | Successful Response |
-| 401 | `ErrorResponse` | ACTOR_REQUIRED / INVALID_ACTOR |
+| 401 | `ErrorResponse` | ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID |
 | 403 | `ErrorResponse` | HUMAN_REVIEWER_REQUIRED / INSUFFICIENT_REVIEWER_ROLE / REVIEWER_NOT_ASSIGNED |
 | 404 | `ErrorResponse` | CASE_NOT_FOUND |
 | 409 | `ErrorResponse` | CASE_NOT_UNDER_REVIEW / STALE_RECOMMENDATION / INVALID_STATE_TRANSITION / CONCURRENT_MODIFICATION |
+| 422 | `ErrorResponse` | REQUEST_VALIDATION_FAILED |
+| 500 | `ErrorResponse` | INTERNAL_ERROR / INTEGRITY_VIOLATION |
+
+### `GET /api/v1/review/callbacks` — List human callback requests
+
+Callers the voice agent handed to a human (ambiguous or non-standard requests, supplier enquiries, complaints, urgent concerns, unsupported languages). Oldest first.
+
+**Authorisation:** Actor type `HUMAN_REVIEWER`.
+
+**State transitions:** None.
+
+**Parameters:** `status` (query), `limit` (query)
+
+**Request body:** —
+
+| Status | Response | Error codes / meaning |
+|---|---|---|
+| 200 | array of `CallbackView` | Successful Response |
+| 401 | `ErrorResponse` | ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID |
+| 403 | `ErrorResponse` | HUMAN_REVIEWER_REQUIRED |
+| 422 | `ErrorResponse` | REQUEST_VALIDATION_FAILED |
+| 500 | `ErrorResponse` | INTERNAL_ERROR / INTEGRITY_VIOLATION |
+
+### `POST /api/v1/review/callbacks/{callback_id}/resolution` — Resolve a callback request
+
+Marks a callback as handled with a note. Records `HUMAN_CALLBACK_RESOLVED` on the linked case, if any.
+
+**Authorisation:** Actor type `HUMAN_REVIEWER`.
+
+**State transitions:** None (callback `OPEN` → `RESOLVED`).
+
+**Parameters:** `callback_id` (path)
+
+**Request body:** `ResolveCallbackCommand`
+
+| Status | Response | Error codes / meaning |
+|---|---|---|
+| 200 | `CallbackView` | Successful Response |
+| 401 | `ErrorResponse` | ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID |
+| 403 | `ErrorResponse` | HUMAN_REVIEWER_REQUIRED |
+| 404 | `ErrorResponse` | CALLBACK_NOT_FOUND |
+| 409 | `ErrorResponse` | CALLBACK_ALREADY_RESOLVED |
 | 422 | `ErrorResponse` | REQUEST_VALIDATION_FAILED |
 | 500 | `ErrorResponse` | INTERNAL_ERROR / INTEGRITY_VIOLATION |
 
@@ -371,7 +416,7 @@ Tool names, descriptions, and JSON Schemas for inputs and outputs, suitable for 
 | Status | Response | Error codes / meaning |
 |---|---|---|
 | 200 | array of JSON object (see tool `input_schema` / `output_schema`) | Successful Response |
-| 401 | `ErrorResponse` | ACTOR_REQUIRED / INVALID_ACTOR |
+| 401 | `ErrorResponse` | ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID |
 | 422 | `ErrorResponse` | REQUEST_VALIDATION_FAILED |
 | 500 | `ErrorResponse` | INTERNAL_ERROR / INTEGRITY_VIOLATION |
 
@@ -390,12 +435,53 @@ Invokes one tool. The body is the tool's arguments object and is validated stric
 | Status | Response | Error codes / meaning |
 |---|---|---|
 | 200 | JSON object (see tool `input_schema` / `output_schema`) | Successful Response |
-| 401 | `ErrorResponse` | ACTOR_REQUIRED / INVALID_ACTOR |
+| 401 | `ErrorResponse` | ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID |
 | 403 | `ErrorResponse` | VOICE_AGENT_REQUIRED / TRANSITION_NOT_AUTHORIZED |
 | 404 | `ErrorResponse` | TOOL_NOT_FOUND / CASE_NOT_FOUND / RECOMMENDATION_NOT_FOUND |
 | 409 | `ErrorResponse` | INVALID_STATE_TRANSITION / CASE_NOT_EDITABLE / RECOMMENDATION_NOT_READY / CONCURRENT_MODIFICATION |
 | 422 | `ErrorResponse` | REQUEST_VALIDATION_FAILED / TOOL_ARGUMENTS_INVALID / UNKNOWN_PROVIDER / MEMBER_NOT_VERIFIED / ... |
 | 500 | `ErrorResponse` | INTERNAL_ERROR / INTEGRITY_VIOLATION |
+
+## Voice channel (ElevenLabs)
+
+### `POST /api/v1/voice/tools/{tool_name}` — Voice platform server-tool call
+
+Invokes one agent tool on behalf of the voice platform. The body is the tool's flat parameter object (see `scripts/elevenlabs_setup.py` or `preauth.agent_tools.elevenlabs`). Empty strings and nulls are treated as omitted. Business failures return HTTP 200 with `ok=false`, a stable `error.code`, and `guidance` the agent can act on, because the model must be able to recover mid-call. Unexpected failures return the standard 500 envelope. Calls carrying `X-Conversation-ID` are linked to the cases they touch.
+
+**Authorisation:** Header `Authorization: Bearer <PREAUTH_VOICE_AGENT_TOKEN>`. Acts as actor `VOICE_AGENT`.
+
+**State transitions:** Those of the underlying tool. Never `APPROVED` or `DENIED`.
+
+**Parameters:** `tool_name` (path)
+
+**Request body:** JSON object (see tool `input_schema` / `output_schema`)
+
+| Status | Response | Error codes / meaning |
+|---|---|---|
+| 200 | `VoiceToolResponse` | Successful Response |
+| 401 | `ErrorResponse` | VOICE_TOKEN_INVALID |
+| 422 | `HTTPValidationError` | Validation Error |
+| 500 | `ErrorResponse` | INTERNAL_ERROR |
+| 503 | `ErrorResponse` | CHANNEL_NOT_CONFIGURED |
+
+### `POST /api/v1/voice/elevenlabs/post-call` — ElevenLabs post-call webhook
+
+Receives `post_call_transcription` events, stores the transcript and analysis as an immutable call record, and adds a `CALL_RECORDED` audit event to every case the conversation touched. Idempotent per conversation (platform retries are acknowledged, not duplicated). Other event types are acknowledged and ignored.
+
+**Authorisation:** Header `elevenlabs-signature` (HMAC-SHA256 with `PREAUTH_ELEVENLABS_WEBHOOK_SECRET`).
+
+**State transitions:** None. Human sign-off on affected cases becomes possible once all their calls are recorded.
+
+**Request body:** —
+
+| Status | Response | Error codes / meaning |
+|---|---|---|
+| 200 | `PostCallOutcome` | Successful Response |
+| 400 | `ErrorResponse` | WEBHOOK_PAYLOAD_INVALID |
+| 401 | `ErrorResponse` | WEBHOOK_SIGNATURE_INVALID |
+| 422 | `HTTPValidationError` | Validation Error |
+| 500 | `ErrorResponse` | INTERNAL_ERROR |
+| 503 | `ErrorResponse` | CHANNEL_NOT_CONFIGURED |
 
 ## Operations
 

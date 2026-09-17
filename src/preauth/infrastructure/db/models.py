@@ -5,7 +5,7 @@ production insurer would integrate with. Case, evaluation, recommendation, decis
 system of record for pre-authorisation.
 
 Append-only tables (enforced by database triggers in the migrations): rule_evaluations, rule_results,
-recommendations, review_decisions, audit_events.
+recommendations, review_decisions, audit_events, voice_tool_invocations, call_records.
 """
 
 from datetime import date, datetime
@@ -13,6 +13,7 @@ from enum import StrEnum
 from typing import Any
 
 from sqlalchemy import (
+    BigInteger,
     Boolean,
     CheckConstraint,
     Date,
@@ -25,11 +26,15 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
 )
+from sqlalchemy import text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 from preauth.domain.enums import (
     ActorType,
     AuditEventType,
+    CallbackReason,
+    CallbackStatus,
+    CallerRole,
     CaseStatus,
     CloseReason,
     CredentialingStatus,
@@ -148,6 +153,9 @@ class CoverageTerm(Base):
     preauth_required: Mapped[bool] = mapped_column(Boolean)
     min_conservative_treatment_weeks: Mapped[int | None] = mapped_column(Integer)
     annual_case_limit: Mapped[int | None] = mapped_column(Integer)
+    # Where these terms are written down; cited in rule evidence and recommendations.
+    source_document: Mapped[str | None] = mapped_column(String(200))
+    source_section: Mapped[str | None] = mapped_column(String(100))
 
     required_documents: Mapped[list["CoverageRequiredDocument"]] = relationship(
         order_by="CoverageRequiredDocument.document_type"
@@ -204,6 +212,12 @@ class PreAuthorizationCase(Base):
     diagnosis_description: Mapped[str | None] = mapped_column(String(300))
     conservative_treatment_weeks: Mapped[int | None] = mapped_column(Integer)
     clinical_summary: Mapped[str | None] = mapped_column(Text)
+    caller_name: Mapped[str | None] = mapped_column(String(100))
+    # Plain VARCHAR (no CHECK): added after the initial schema; validated by the application commands.
+    caller_role: Mapped[CallerRole | None] = mapped_column(
+        Enum(CallerRole, native_enum=False, create_constraint=False, length=40,
+             values_callable=lambda e: [m.value for m in e])
+    )
 
     review_requested_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
     assigned_reviewer_id: Mapped[str | None] = mapped_column(String(100))
@@ -294,6 +308,7 @@ class RuleResultRecord(Base):
     explanation: Mapped[str] = mapped_column(Text)
     evidence: Mapped[dict[str, Any]] = mapped_column(JsonType)
     missing_information: Mapped[list[dict[str, Any]]] = mapped_column(JsonType)
+    sources: Mapped[list[dict[str, Any]]] = mapped_column(JsonType, server_default=text("'[]'"))
 
 
 class Recommendation(Base):
@@ -310,6 +325,7 @@ class Recommendation(Base):
     engine_name: Mapped[str] = mapped_column(String(80))
     engine_version: Mapped[str] = mapped_column(String(40))
     generated_at: Mapped[datetime] = mapped_column(UTCDateTime)
+    sources: Mapped[list[dict[str, Any]]] = mapped_column(JsonType, server_default=text("'[]'"))
 
     evaluation: Mapped[RuleEvaluation] = relationship()
 
@@ -369,4 +385,75 @@ class AuditEvent(Base):
     data: Mapped[dict[str, Any]] = mapped_column(JsonType)
 
 
-APPEND_ONLY_TABLES = ("rule_evaluations", "rule_results", "recommendations", "review_decisions", "audit_events")
+# --------------------------------------------------------------------------- voice channel
+
+
+class CallbackRequest(Base):
+    """A request for a human to call the caller back: ambiguous, non-rule-based, or out-of-scope enquiries."""
+
+    __tablename__ = "callback_requests"
+
+    id: Mapped[str] = mapped_column(ID, primary_key=True)
+    reference: Mapped[str] = mapped_column(String(20), unique=True)
+    case_id: Mapped[str | None] = mapped_column(ForeignKey("pre_authorization_cases.id"), index=True)
+    conversation_id: Mapped[str | None] = mapped_column(String(100), index=True)
+    caller_name: Mapped[str] = mapped_column(String(100))
+    caller_organisation: Mapped[str | None] = mapped_column(String(200))
+    caller_role: Mapped[CallerRole] = mapped_column(enum_column(CallerRole))
+    callback_phone: Mapped[str] = mapped_column(String(20))
+    preferred_language: Mapped[str] = mapped_column(String(5))
+    reason: Mapped[CallbackReason] = mapped_column(enum_column(CallbackReason))
+    summary: Mapped[str] = mapped_column(Text)
+    status: Mapped[CallbackStatus] = mapped_column(enum_column(CallbackStatus), index=True)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime)
+    created_by_actor_type: Mapped[ActorType] = mapped_column(enum_column(ActorType))
+    created_by_actor_id: Mapped[str] = mapped_column(String(100))
+    resolved_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
+    resolved_by: Mapped[str | None] = mapped_column(String(100))
+    resolution_note: Mapped[str | None] = mapped_column(Text)
+
+
+class VoiceToolInvocation(Base):
+    """Links a voice conversation to the cases it touched. Used to require the call transcript before sign-off."""
+
+    __tablename__ = "voice_tool_invocations"
+
+    id: Mapped[str] = mapped_column(ID, primary_key=True)
+    conversation_id: Mapped[str] = mapped_column(String(100), index=True)
+    tool_name: Mapped[str] = mapped_column(String(64))
+    case_id: Mapped[str | None] = mapped_column(ForeignKey("pre_authorization_cases.id"), index=True)
+    succeeded: Mapped[bool] = mapped_column(Boolean)
+    error_code: Mapped[str | None] = mapped_column(String(64))
+    request_id: Mapped[str | None] = mapped_column(String(64))
+    invoked_at: Mapped[datetime] = mapped_column(UTCDateTime)
+
+
+class CallRecord(Base):
+    """Transcript and analysis delivered by the voice platform's post-call webhook."""
+
+    __tablename__ = "call_records"
+
+    id: Mapped[str] = mapped_column(ID, primary_key=True)
+    conversation_id: Mapped[str] = mapped_column(String(100), unique=True)
+    agent_id: Mapped[str] = mapped_column(String(100))
+    platform: Mapped[str] = mapped_column(String(40))
+    status: Mapped[str | None] = mapped_column(String(40))
+    call_duration_secs: Mapped[int | None] = mapped_column(Integer)
+    transcript_summary: Mapped[str | None] = mapped_column(Text)
+    call_successful: Mapped[str | None] = mapped_column(String(40))
+    transcript: Mapped[list[dict[str, Any]]] = mapped_column(JsonType)
+    analysis: Mapped[dict[str, Any]] = mapped_column(JsonType)
+    call_metadata: Mapped[dict[str, Any]] = mapped_column(JsonType)
+    event_timestamp: Mapped[int | None] = mapped_column(BigInteger)
+    received_at: Mapped[datetime] = mapped_column(UTCDateTime)
+
+
+APPEND_ONLY_TABLES = (
+    "rule_evaluations",
+    "rule_results",
+    "recommendations",
+    "review_decisions",
+    "audit_events",
+    "voice_tool_invocations",
+    "call_records",
+)

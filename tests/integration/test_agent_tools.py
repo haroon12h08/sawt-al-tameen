@@ -15,6 +15,7 @@ EXPECTED_TOOLS = {
     "evaluate_case",
     "get_recommendation",
     "request_human_review",
+    "request_human_callback",
 }
 
 
@@ -55,16 +56,17 @@ def test_voice_conversation_flow_through_tools(toolbox, services):
         AGENT,
         {
             "case_id": cid,
-            "information": {
-                "provider_number": "PRV-100234",
-                "patient": {"member_id": "MBR-5001-01", "date_of_birth": "1984-03-12"},
-                "policy_number": "POL-000101",
-                "procedure_code": "PROC-MRI-KNEE",
-                "requested_service_date": SERVICE_DATE.isoformat(),
-                "place_of_service": "OUTPATIENT",
-                "diagnosis_code": "M23.221",
-                "urgency": "STANDARD",
-            },
+            "caller_name": "Aisha",
+            "caller_role": "PROVIDER_STAFF",
+            "provider_number": "prv-100234",
+            "patient_member_id": "MBR-5001-01",
+            "patient_date_of_birth": "1984-03-12",
+            "policy_number": "POL-000101",
+            "procedure_code": "PROC-MRI-KNEE",
+            "requested_service_date": SERVICE_DATE.isoformat(),
+            "place_of_service": "OUTPATIENT",
+            "diagnosis_code": "m23.221",
+            "urgency": "STANDARD",
         },
     )
     needed = toolbox.invoke("get_required_information", AGENT, {"case_id": cid})
@@ -76,7 +78,7 @@ def test_voice_conversation_flow_through_tools(toolbox, services):
 
     # Documents arrive via the provider portal, not the voice channel.
     services.cases.register_document(cid, PORTAL, document())
-    toolbox.invoke("submit_information", AGENT, {"case_id": cid, "information": {"conservative_treatment_weeks": 7}})
+    toolbox.invoke("submit_information", AGENT, {"case_id": cid, "conservative_treatment_weeks": 7})
 
     result = toolbox.invoke("evaluate_case", AGENT, {"case_id": cid})
     assert result["status"] == "RECOMMENDATION_READY"
@@ -84,6 +86,7 @@ def test_voice_conversation_flow_through_tools(toolbox, services):
     rec = toolbox.invoke("get_recommendation", AGENT, {"case_id": cid})
     assert rec["notice"] == RECOMMENDATION_NOTICE
     assert rec["recommendation"]["advisory_only"] is True
+    assert {"document", "section", "rule_ids"} <= set(rec["recommendation"]["sources"][0])
 
     routed = toolbox.invoke("request_human_review", AGENT, {"case_id": cid})
     assert routed["status"] == "PENDING_HUMAN_REVIEW"
@@ -110,9 +113,7 @@ def test_tool_argument_validation(toolbox):
 def test_domain_errors_pass_through_unchanged(toolbox):
     cid = toolbox.invoke("create_pre_authorization_case", AGENT, {})["id"]
     with pytest.raises(ValidationFailedError) as exc:
-        toolbox.invoke(
-            "submit_information", AGENT, {"case_id": cid, "information": {"provider_number": "PRV-000001"}}
-        )
+        toolbox.invoke("submit_information", AGENT, {"case_id": cid, "provider_number": "PRV-000001"})
     assert exc.value.code == "UNKNOWN_PROVIDER"
 
 

@@ -10,8 +10,11 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from preauth.application.commands import HumanDecisionCommand
 from preauth.application.unit_of_work import UnitOfWork
+from preauth.application.voice_channel_service import pending_conversation_ids
 from preauth.application.views import (
     AuditEventView,
+    CallbackView,
+    CallRecordView,
     CaseStatusView,
     ReviewDecisionView,
     ReviewPacketView,
@@ -121,6 +124,14 @@ class ReviewService:
                     code="REVIEWER_NOT_ASSIGNED",
                     details={"assigned_reviewer_id": case.assigned_reviewer_id},
                 )
+            pending_calls = pending_conversation_ids(uow, case.id)
+            if pending_calls:
+                raise OperationNotAllowedError(
+                    "Voice calls on this case have not been logged yet; the transcript must be on record before "
+                    "any sign-off action",
+                    code="CALL_RECORD_PENDING",
+                    details={"conversation_ids": pending_calls},
+                )
             recommendation = uow.evaluations.latest_recommendation(case.id)
             if recommendation.id != command.recommendation_id:
                 raise OperationNotAllowedError(
@@ -207,11 +218,15 @@ class ReviewService:
         with self._uow() as uow:
             case = uow.cases.get(case_id)
             recommendations = [recommendation_view(r) for r in uow.evaluations.recommendations(case.id)]
+            conversations = uow.voice.conversation_ids_for_case(case.id)
             return ReviewPacketView(
                 case=case_view(case),
                 current_recommendation=recommendations[-1] if recommendations else None,
                 recommendation_history=recommendations,
                 decisions=[ReviewDecisionView.model_validate(d) for d in uow.reviews.decisions(case.id)],
+                calls=[CallRecordView.model_validate(r) for r in uow.voice.call_records(conversations)],
+                pending_call_conversation_ids=pending_conversation_ids(uow, case.id),
+                callbacks=[CallbackView.model_validate(c) for c in uow.voice.callbacks_for_case(case.id)],
                 audit_history=[AuditEventView.model_validate(e) for e in uow.audit_events.for_case(case.id)],
             )
 

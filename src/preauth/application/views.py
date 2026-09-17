@@ -12,6 +12,9 @@ from preauth.domain.case_state import allowed_targets
 from preauth.domain.enums import (
     ActorType,
     AuditEventType,
+    CallbackReason,
+    CallbackStatus,
+    CallerRole,
     CaseStatus,
     CloseReason,
     CredentialingStatus,
@@ -28,7 +31,7 @@ from preauth.domain.enums import (
 )
 from preauth.domain.review import QUEUE_FOR_STATUS
 from preauth.infrastructure.db import models as m
-from preauth.rules.model import MissingInformation
+from preauth.rules.model import MissingInformation, SourceReference
 
 
 class View(BaseModel):
@@ -89,6 +92,8 @@ class CaseView(View):
     diagnosis_description: str | None
     conservative_treatment_weeks: int | None
     clinical_summary: str | None
+    caller_name: str | None
+    caller_role: CallerRole | None
     documents: list[DocumentView]
     review_queue: ReviewQueue | None
     assigned_reviewer_id: str | None
@@ -107,6 +112,13 @@ class RuleResultView(View):
     explanation: str
     evidence: dict[str, Any]
     missing_information: list[MissingInformation]
+    sources: list[SourceReference]
+
+
+class SourceAttributionView(View):
+    document: str
+    section: str
+    rule_ids: list[str]
 
 
 class RecommendationView(View):
@@ -118,6 +130,7 @@ class RecommendationView(View):
     determining_rule_ids: list[str]
     evidence: dict[str, Any]
     missing_information: list[MissingInformation]
+    sources: list[SourceAttributionView]
     engine_name: str
     engine_version: str
     ruleset_name: str
@@ -197,11 +210,49 @@ class ReviewQueueItemView(View):
     assigned_reviewer_id: str | None
 
 
+class CallbackView(View):
+    id: str
+    reference: str
+    case_id: str | None
+    conversation_id: str | None
+    caller_name: str
+    caller_organisation: str | None
+    caller_role: CallerRole
+    callback_phone: str
+    preferred_language: str
+    reason: CallbackReason
+    summary: str
+    status: CallbackStatus
+    created_at: datetime
+    resolved_at: datetime | None
+    resolved_by: str | None
+    resolution_note: str | None
+
+
+class CallRecordView(View):
+    id: str
+    conversation_id: str
+    agent_id: str
+    platform: str
+    status: str | None
+    call_duration_secs: int | None
+    transcript_summary: str | None
+    call_successful: str | None
+    transcript: list[dict[str, Any]]
+    analysis: dict[str, Any]
+    received_at: datetime
+
+
 class ReviewPacketView(View):
     case: CaseView
     current_recommendation: RecommendationView | None
     recommendation_history: list[RecommendationView]
     decisions: list[ReviewDecisionView]
+    calls: list[CallRecordView]
+    # Voice conversations that touched this case but whose transcript has not arrived yet. Sign-off is blocked
+    # until this list is empty.
+    pending_call_conversation_ids: list[str]
+    callbacks: list[CallbackView]
     audit_history: list[AuditEventView]
 
 
@@ -228,6 +279,8 @@ def case_view(case: m.PreAuthorizationCase) -> CaseView:
         diagnosis_description=case.diagnosis_description,
         conservative_treatment_weeks=case.conservative_treatment_weeks,
         clinical_summary=case.clinical_summary,
+        caller_name=case.caller_name,
+        caller_role=case.caller_role,
         documents=[DocumentView.model_validate(d) for d in case.documents],
         review_queue=QUEUE_FOR_STATUS.get(case.status),
         assigned_reviewer_id=case.assigned_reviewer_id,
@@ -251,6 +304,7 @@ def recommendation_view(rec: m.Recommendation) -> RecommendationView:
         determining_rule_ids=rec.determining_rule_ids,
         evidence=rec.evidence,
         missing_information=rec.missing_information,
+        sources=rec.sources,
         engine_name=rec.engine_name,
         engine_version=rec.engine_version,
         ruleset_name=evaluation.engine_name,

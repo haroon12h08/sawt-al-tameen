@@ -20,12 +20,14 @@ from preauth.domain.errors import (
     OperationNotAllowedError,
     ValidationFailedError,
 )
+from preauth.infrastructure.elevenlabs_signature import WebhookSignatureError
 from preauth.infrastructure.observability import case_id_var, request_id_var
 
 logger = logging.getLogger("preauth.api.errors")
 
 STATUS_BY_ERROR: list[tuple[type[DomainError], int]] = [
     (ActorRequiredError, 401),
+    (WebhookSignatureError, 401),
     (AuthorizationError, 403),
     (NotFoundError, 404),
     (InvalidStateTransitionError, 409),
@@ -35,6 +37,8 @@ STATUS_BY_ERROR: list[tuple[type[DomainError], int]] = [
     (ToolArgumentsInvalidError, 422),
     (IntegrityViolationError, 500),
 ]
+# Registered by name to avoid importing route modules here.
+STATUS_BY_CODE: dict[str, int] = {"CHANNEL_NOT_CONFIGURED": 503}
 
 
 class ErrorBody(BaseModel):
@@ -59,6 +63,8 @@ def error_envelope(status: int, code: str, message: str, details: dict[str, Any]
 
 
 def _status_for(exc: DomainError) -> int:
+    if exc.code in STATUS_BY_CODE:
+        return STATUS_BY_CODE[exc.code]
     for cls, status in STATUS_BY_ERROR:
         if isinstance(exc, cls):
             return status
@@ -83,7 +89,7 @@ def install_error_handlers(app: FastAPI) -> None:
 
 
 COMMON_ERRORS: dict[int | str, dict[str, Any]] = {
-    401: {"model": ErrorResponse, "description": "ACTOR_REQUIRED / INVALID_ACTOR"},
+    401: {"model": ErrorResponse, "description": "ACTOR_REQUIRED / INVALID_ACTOR / GATEWAY_SECRET_INVALID"},
     422: {"model": ErrorResponse, "description": "REQUEST_VALIDATION_FAILED"},
     500: {"model": ErrorResponse, "description": "INTERNAL_ERROR / INTEGRITY_VIOLATION"},
 }

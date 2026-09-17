@@ -3,12 +3,29 @@
 from datetime import date
 from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, Field, StringConstraints, model_validator
+from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, StringConstraints, model_validator
 
-from preauth.domain.enums import CloseReason, DocumentType, HumanDecisionType, PlaceOfService, Urgency
+from preauth.domain.enums import (
+    CallbackReason,
+    CallerRole,
+    CloseReason,
+    DocumentType,
+    HumanDecisionType,
+    PlaceOfService,
+    Urgency,
+)
 
 Identifier = Annotated[str, StringConstraints(strip_whitespace=True, pattern=r"^[A-Z0-9][A-Z0-9-]{1,39}$")]
 # ICD-10 code with the dot, e.g. M23.221
+# E.164 without separators, e.g. +971501234567 or +919812345678
+PhoneNumber = Annotated[str, StringConstraints(strip_whitespace=True, pattern=r"^\+[1-9][0-9]{7,14}$")]
+# Normalised before the pattern check (StringConstraints applies its pattern before case transforms).
+LanguageCode = Annotated[
+    str,
+    StringConstraints(pattern=r"^[a-z]{2}$"),
+    BeforeValidator(lambda v: v.strip().lower() if isinstance(v, str) else v),
+]
+PersonName = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=100)]
 Icd10Code = Annotated[
     str, StringConstraints(strip_whitespace=True, pattern=r"^[A-TV-Z][0-9][0-9AB](\.[0-9A-TV-Z]{1,4})?$")
 ]
@@ -37,6 +54,8 @@ class CaseInformationUpdate(StrictModel):
     urgency: Urgency | None = None
     conservative_treatment_weeks: Annotated[int, Field(ge=0, le=520)] | None = None
     clinical_summary: Annotated[str, StringConstraints(min_length=1, max_length=4000)] | None = None
+    caller_name: PersonName | None = None
+    caller_role: CallerRole | None = None
 
     @model_validator(mode="after")
     def _require_non_null_fields(self) -> "CaseInformationUpdate":
@@ -66,6 +85,23 @@ class HumanDecisionCommand(StrictModel):
     recommendation_id: Annotated[str, StringConstraints(min_length=36, max_length=36)]
     decision: HumanDecisionType
     rationale: Annotated[str, StringConstraints(min_length=10, max_length=4000)]
+
+
+class RequestCallbackCommand(StrictModel):
+    """Hand a caller to a human: ambiguous, non-rule-based, or out-of-scope requests."""
+
+    case_id: Annotated[str, StringConstraints(min_length=36, max_length=36)] | None = None
+    caller_name: PersonName
+    caller_organisation: Annotated[str, StringConstraints(min_length=1, max_length=200)] | None = None
+    caller_role: CallerRole
+    callback_phone: PhoneNumber
+    preferred_language: LanguageCode
+    reason: CallbackReason
+    summary: Annotated[str, StringConstraints(min_length=10, max_length=2000)]
+
+
+class ResolveCallbackCommand(StrictModel):
+    resolution_note: Annotated[str, StringConstraints(min_length=10, max_length=2000)]
 
 
 class CloseCaseCommand(StrictModel):

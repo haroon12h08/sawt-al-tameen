@@ -23,6 +23,9 @@ from preauth.seed.scenarios import run_scenarios
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--scenarios", action="store_true", help="also create the demonstration cases")
+    parser.add_argument(
+        "--if-empty", action="store_true", help="succeed without changes when reference data already exists"
+    )
     args = parser.parse_args()
 
     settings = Settings.from_env()
@@ -32,6 +35,9 @@ def main() -> int:
 
     with session_factory() as session:
         if session.scalar(select(func.count(Provider.id))):
+            if args.if_empty:
+                print("Reference data already present; nothing to do.")
+                return 0
             print("Reference data already present; refusing to load it twice.", file=sys.stderr)
             return 1
         load_reference_data(session, clock.today())

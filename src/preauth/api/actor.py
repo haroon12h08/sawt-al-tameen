@@ -5,9 +5,10 @@ caller (provider portal session, voice-agent service credential, or insurer staf
 identity in these headers, stripping any client-supplied copies. The service must never be exposed directly.
 """
 
+import hmac
 from typing import Annotated
 
-from fastapi import Depends, Header
+from fastapi import Depends, Header, Request
 
 from preauth.domain.actors import Actor
 from preauth.domain.enums import ActorType, ReviewerRole
@@ -20,12 +21,21 @@ class ActorRequiredError(DomainError):
 
 
 async def current_actor(
+    request: Request,
+    x_gateway_secret: Annotated[
+        str | None, Header(description="Shared gateway secret, required when the deployment configures one")
+    ] = None,
     x_actor_type: Annotated[str | None, Header(description="Verified actor type set by the gateway")] = None,
     x_actor_id: Annotated[str | None, Header(description="Verified actor identifier set by the gateway")] = None,
     x_actor_roles: Annotated[
         str | None, Header(description="Comma-separated reviewer roles (HUMAN_REVIEWER only)")
     ] = None,
 ) -> Actor:
+    expected_secret = request.app.state.settings.gateway_secret
+    if expected_secret is not None and not hmac.compare_digest(
+        (x_gateway_secret or "").encode(), expected_secret.encode()
+    ):
+        raise ActorRequiredError("Missing or invalid X-Gateway-Secret", code="GATEWAY_SECRET_INVALID")
     if not x_actor_type or not x_actor_id:
         raise ActorRequiredError("X-Actor-Type and X-Actor-Id headers are required")
     try:

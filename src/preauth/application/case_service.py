@@ -15,7 +15,7 @@ from preauth.application.unit_of_work import UnitOfWork
 from preauth.application.views import CaseView, DocumentView, case_view
 from preauth.domain.actors import Actor
 from preauth.domain.case_state import EDITABLE_STATES
-from preauth.domain.enums import ActorType, AuditEventType, CaseStatus, CloseReason
+from preauth.domain.enums import CASE_CALLER_ROLES, ActorType, AuditEventType, CaseStatus, CloseReason
 from preauth.domain.errors import AuthorizationError, OperationNotAllowedError, ValidationFailedError
 from preauth.infrastructure.clock import Clock, new_case_reference, new_id
 from preauth.infrastructure.db.models import CaseDocument, PreAuthorizationCase, RequestedService
@@ -183,7 +183,8 @@ class CaseService:
             if field in fields:
                 apply(rs, field, field, getattr(update, field))
         for field in (
-            "diagnosis_code", "diagnosis_description", "urgency", "conservative_treatment_weeks", "clinical_summary"
+            "diagnosis_code", "diagnosis_description", "urgency", "conservative_treatment_weeks", "clinical_summary",
+            "caller_name", "caller_role",
         ):
             if field in fields:
                 apply(case, field, field, getattr(update, field))
@@ -207,6 +208,13 @@ class CaseService:
         """Validates identifiers against reference data. Any failure rejects the whole update."""
         fields = update.model_fields_set
         resolved: dict[str, Any] = {}
+
+        if "caller_role" in fields and update.caller_role not in CASE_CALLER_ROLES:
+            raise ValidationFailedError(
+                "Only provider staff or a broker acting for a provider can submit a pre-authorisation request",
+                code="CALLER_NOT_ELIGIBLE",
+                details={"caller_role": update.caller_role, "eligible_roles": sorted(CASE_CALLER_ROLES)},
+            )
 
         if "provider_number" in fields:
             provider = uow.reference.provider_by_number(update.provider_number)

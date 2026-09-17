@@ -2,14 +2,20 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Query, Request, status
+from fastapi import APIRouter, Path, Query, Request, status
 
 from preauth.api.actor import ActorDep
 from preauth.api.errors import error_responses
 from preauth.api.routes.cases import CaseId, _doc, _services
-from preauth.application.commands import HumanDecisionCommand
-from preauth.application.views import CaseStatusView, ReviewDecisionView, ReviewPacketView, ReviewQueueItemView
-from preauth.domain.enums import ReviewQueue
+from preauth.application.commands import HumanDecisionCommand, ResolveCallbackCommand
+from preauth.application.views import (
+    CallbackView,
+    CaseStatusView,
+    ReviewDecisionView,
+    ReviewPacketView,
+    ReviewQueueItemView,
+)
+from preauth.domain.enums import CallbackStatus, ReviewQueue
 
 router = APIRouter(prefix="/api/v1/review", tags=["Human review"])
 
@@ -89,3 +95,46 @@ def record_decision(
     request: Request, actor: ActorDep, case_id: CaseId, body: HumanDecisionCommand
 ) -> ReviewDecisionView:
     return _services(request).review.record_decision(case_id, actor, body)
+
+
+CallbackId = Annotated[
+    str, Path(pattern=r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", description="Callback UUID")
+]
+
+
+@router.get(
+    "/callbacks",
+    summary="List human callback requests",
+    description=_doc(
+        "Callers the voice agent handed to a human (ambiguous or non-standard requests, supplier enquiries, "
+        "complaints, urgent concerns, unsupported languages). Oldest first.",
+        REVIEWER,
+        "None.",
+    ),
+    responses=error_responses(r403="HUMAN_REVIEWER_REQUIRED"),
+)
+def list_callbacks(
+    request: Request,
+    actor: ActorDep,
+    status: CallbackStatus | None = CallbackStatus.OPEN,
+    limit: Annotated[int, Query(ge=1, le=200)] = 50,
+) -> list[CallbackView]:
+    return _services(request).callbacks.list_callbacks(actor, status, limit)
+
+
+@router.post(
+    "/callbacks/{callback_id}/resolution",
+    summary="Resolve a callback request",
+    description=_doc(
+        "Marks a callback as handled with a note. Records `HUMAN_CALLBACK_RESOLVED` on the linked case, if any.",
+        REVIEWER,
+        "None (callback `OPEN` → `RESOLVED`).",
+    ),
+    responses=error_responses(
+        r403="HUMAN_REVIEWER_REQUIRED", r404="CALLBACK_NOT_FOUND", r409="CALLBACK_ALREADY_RESOLVED"
+    ),
+)
+def resolve_callback(
+    request: Request, actor: ActorDep, callback_id: CallbackId, body: ResolveCallbackCommand
+) -> CallbackView:
+    return _services(request).callbacks.resolve_callback(callback_id, actor, body)

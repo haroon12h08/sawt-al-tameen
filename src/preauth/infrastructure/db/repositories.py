@@ -4,10 +4,12 @@ from datetime import date
 from sqlalchemy import exists, func, select
 from sqlalchemy.orm import Session, selectinload
 
-from preauth.domain.enums import CaseStatus, HumanDecisionType
+from preauth.domain.enums import CallbackStatus, CaseStatus, HumanDecisionType
 from preauth.domain.errors import IntegrityViolationError, NotFoundError
 from preauth.infrastructure.db.models import (
     AuditEvent,
+    CallbackRequest,
+    CallRecord,
     CaseDocument,
     CoverageTerm,
     Patient,
@@ -20,6 +22,7 @@ from preauth.infrastructure.db.models import (
     ReviewDecision,
     RuleDefinition,
     RuleEvaluation,
+    VoiceToolInvocation,
 )
 
 
@@ -200,4 +203,73 @@ class AuditRepository:
     def for_case(self, case_id: str) -> list[AuditEvent]:
         return list(
             self._s.scalars(select(AuditEvent).where(AuditEvent.case_id == case_id).order_by(AuditEvent.sequence))
+        )
+
+
+class VoiceChannelRepository:
+    def __init__(self, session: Session):
+        self._s = session
+
+    def add_invocation(self, invocation: VoiceToolInvocation) -> None:
+        self._s.add(invocation)
+
+    def conversation_ids_for_case(self, case_id: str) -> list[str]:
+        return list(
+            self._s.scalars(
+                select(VoiceToolInvocation.conversation_id)
+                .where(VoiceToolInvocation.case_id == case_id)
+                .group_by(VoiceToolInvocation.conversation_id)
+                .order_by(func.min(VoiceToolInvocation.invoked_at))
+            )
+        )
+
+    def case_ids_for_conversation(self, conversation_id: str) -> list[str]:
+        return list(
+            self._s.scalars(
+                select(VoiceToolInvocation.case_id)
+                .where(VoiceToolInvocation.conversation_id == conversation_id, VoiceToolInvocation.case_id.is_not(None))
+                .group_by(VoiceToolInvocation.case_id)
+                .order_by(func.min(VoiceToolInvocation.invoked_at))
+            )
+        )
+
+    def call_record(self, conversation_id: str) -> CallRecord | None:
+        return self._s.scalar(select(CallRecord).where(CallRecord.conversation_id == conversation_id))
+
+    def call_records(self, conversation_ids: Sequence[str]) -> list[CallRecord]:
+        if not conversation_ids:
+            return []
+        return list(
+            self._s.scalars(
+                select(CallRecord).where(CallRecord.conversation_id.in_(conversation_ids)).order_by(CallRecord.received_at)
+            )
+        )
+
+    def add_call_record(self, record: CallRecord) -> None:
+        self._s.add(record)
+
+    def add_callback(self, callback: CallbackRequest) -> None:
+        self._s.add(callback)
+
+    def callback(self, callback_id: str) -> CallbackRequest:
+        callback = self._s.get(CallbackRequest, callback_id)
+        if callback is None:
+            raise NotFoundError(
+                f"Callback request {callback_id} not found",
+                code="CALLBACK_NOT_FOUND",
+                details={"callback_id": callback_id},
+            )
+        return callback
+
+    def callbacks(self, status: CallbackStatus | None, limit: int) -> list[CallbackRequest]:
+        query = select(CallbackRequest).order_by(CallbackRequest.created_at).limit(limit)
+        if status is not None:
+            query = query.where(CallbackRequest.status == status)
+        return list(self._s.scalars(query))
+
+    def callbacks_for_case(self, case_id: str) -> list[CallbackRequest]:
+        return list(
+            self._s.scalars(
+                select(CallbackRequest).where(CallbackRequest.case_id == case_id).order_by(CallbackRequest.created_at)
+            )
         )

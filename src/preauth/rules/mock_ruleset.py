@@ -17,10 +17,13 @@ from preauth.domain.enums import (
     RuleOutcome,
 )
 from preauth.rules.engine import RuleSetEngine
-from preauth.rules.model import MissingInformation, RuleContext, RuleResult
+from preauth.rules.model import MissingInformation, RuleContext, RuleResult, SourceReference
 
 RULESET_NAME = "mock-preauth-ruleset"
-RULESET_VERSION = "2026.09.1"
+RULESET_VERSION = "2026.09.2"
+
+MEMBERSHIP_REGISTER = "Membership and policy register"
+PROVIDER_REGISTER = "Provider network and credentialing register"
 
 COVERAGE_TERMS_MISSING = MissingInformation(
     code="insurer.coverage_terms",
@@ -31,9 +34,17 @@ COVERAGE_TERMS_MISSING = MissingInformation(
 
 class _BaseRule:
     rule_id: str
-    version: str = "1"
+    # Version 2: results cite their sources.
+    version: str = "2"
     description: str
     category: RuleCategory
+
+    def _sources(self, ctx: RuleContext) -> tuple[SourceReference, ...]:
+        """Default: rules that consult coverage terms cite the plan document section they come from."""
+        c = ctx.coverage
+        if c is None or not c.source_document:
+            return ()
+        return (SourceReference(document=c.source_document, section=c.source_section or "Unspecified section"),)
 
     def _result(
         self,
@@ -41,6 +52,7 @@ class _BaseRule:
         explanation: str,
         evidence: dict[str, Any],
         missing: tuple[MissingInformation, ...] = (),
+        ctx: RuleContext | None = None,
     ) -> RuleResult:
         return RuleResult(
             rule_id=self.rule_id,
@@ -49,6 +61,7 @@ class _BaseRule:
             explanation=explanation,
             evidence=evidence,
             missing_information=missing,
+            sources=self._sources(ctx) if ctx is not None else (),
         )
 
     def _coverage_unknown(self, ctx: RuleContext) -> RuleResult:
@@ -57,6 +70,7 @@ class _BaseRule:
             "Cannot evaluate: coverage terms for this plan and procedure are not available",
             {"plan_code": ctx.policy.plan_code, "procedure_code": ctx.request.procedure_code},
             (COVERAGE_TERMS_MISSING,),
+            ctx=ctx,
         )
 
 
@@ -64,6 +78,9 @@ class PolicyActiveRule(_BaseRule):
     rule_id = "ELIG-001-POLICY-ACTIVE"
     description = "The member's policy is active on the requested service date"
     category = RuleCategory.ELIGIBILITY
+
+    def _sources(self, ctx: RuleContext) -> tuple[SourceReference, ...]:
+        return (SourceReference(document=MEMBERSHIP_REGISTER, section=f"Policy {ctx.policy.policy_number}"),)
 
     def evaluate(self, ctx: RuleContext) -> RuleResult:
         p, service_date = ctx.policy, ctx.request.requested_service_date
@@ -75,12 +92,13 @@ class PolicyActiveRule(_BaseRule):
             "requested_service_date": service_date.isoformat(),
         }
         if p.status is not PolicyStatus.ACTIVE:
-            return self._result(RuleOutcome.FAIL, f"Policy status is {p.status}", evidence)
+            return self._result(RuleOutcome.FAIL, f"Policy status is {p.status}", evidence, ctx=ctx)
         if service_date < p.effective_from or (p.effective_to is not None and service_date > p.effective_to):
             return self._result(
-                RuleOutcome.FAIL, "Requested service date is outside the policy effective period", evidence
+                RuleOutcome.FAIL, "Requested service date is outside the policy effective period", evidence,
+                ctx=ctx,
             )
-        return self._result(RuleOutcome.PASS, "Policy is active on the requested service date", evidence)
+        return self._result(RuleOutcome.PASS, "Policy is active on the requested service date", evidence, ctx=ctx)
 
 
 class ProviderCredentialedRule(_BaseRule):
@@ -88,18 +106,27 @@ class ProviderCredentialedRule(_BaseRule):
     description = "The requesting provider holds active credentialing with the insurer"
     category = RuleCategory.ELIGIBILITY
 
+    def _sources(self, ctx: RuleContext) -> tuple[SourceReference, ...]:
+        return (SourceReference(document=PROVIDER_REGISTER, section=f"Provider {ctx.provider.provider_number}"),)
+
     def evaluate(self, ctx: RuleContext) -> RuleResult:
         status = ctx.provider.credentialing_status
         evidence = {"provider_number": ctx.provider.provider_number, "credentialing_status": status}
         if status is CredentialingStatus.ACTIVE:
-            return self._result(RuleOutcome.PASS, "Provider credentialing is active", evidence)
-        return self._result(RuleOutcome.FAIL, f"Provider credentialing status is {status}", evidence)
+            return self._result(RuleOutcome.PASS, "Provider credentialing is active", evidence, ctx=ctx)
+        return self._result(RuleOutcome.FAIL, f"Provider credentialing status is {status}", evidence, ctx=ctx)
 
 
 class ProviderNetworkRule(_BaseRule):
     rule_id = "ELIG-003-PROVIDER-NETWORK"
     description = "The provider is in network, or the plan covers out-of-network providers"
     category = RuleCategory.ELIGIBILITY
+
+    def _sources(self, ctx: RuleContext) -> tuple[SourceReference, ...]:
+        return (
+            SourceReference(document=PROVIDER_REGISTER, section=f"Provider {ctx.provider.provider_number}"),
+            SourceReference(document=MEMBERSHIP_REGISTER, section=f"Plan {ctx.policy.plan_code}"),
+        )
 
     def evaluate(self, ctx: RuleContext) -> RuleResult:
         evidence = {
@@ -109,11 +136,12 @@ class ProviderNetworkRule(_BaseRule):
             "plan_out_of_network_covered": ctx.policy.out_of_network_covered,
         }
         if ctx.provider.network_status is NetworkStatus.IN_NETWORK:
-            return self._result(RuleOutcome.PASS, "Provider is in network", evidence)
+            return self._result(RuleOutcome.PASS, "Provider is in network", evidence, ctx=ctx)
         if ctx.policy.out_of_network_covered:
-            return self._result(RuleOutcome.PASS, "Provider is out of network; plan covers out-of-network care", evidence)
+            return self._result(RuleOutcome.PASS, "Provider is out of network; plan covers out-of-network care", evidence, ctx=ctx)
         return self._result(
-            RuleOutcome.FAIL, "Provider is out of network and the plan does not cover out-of-network care", evidence
+            RuleOutcome.FAIL, "Provider is out of network and the plan does not cover out-of-network care", evidence,
+            ctx=ctx,
         )
 
 
@@ -133,8 +161,8 @@ class ProcedureCoveredRule(_BaseRule):
             "preauth_required": c.preauth_required,
         }
         if not c.covered:
-            return self._result(RuleOutcome.FAIL, "Procedure is excluded from the member's plan", evidence)
-        return self._result(RuleOutcome.PASS, "Procedure is a covered benefit", evidence)
+            return self._result(RuleOutcome.FAIL, "Procedure is excluded from the member's plan", evidence, ctx=ctx)
+        return self._result(RuleOutcome.PASS, "Procedure is a covered benefit", evidence, ctx=ctx)
 
 
 class DiagnosisIndicatedRule(_BaseRule):
@@ -151,11 +179,12 @@ class DiagnosisIndicatedRule(_BaseRule):
             "indicated_diagnosis_codes": list(c.indicated_diagnosis_codes),
         }
         if not c.indicated_diagnosis_codes:
-            return self._result(RuleOutcome.PASS, "Coverage terms define no diagnosis restriction", evidence)
+            return self._result(RuleOutcome.PASS, "Coverage terms define no diagnosis restriction", evidence, ctx=ctx)
         if ctx.request.diagnosis_code in c.indicated_diagnosis_codes:
-            return self._result(RuleOutcome.PASS, "Diagnosis is an accepted indication", evidence)
+            return self._result(RuleOutcome.PASS, "Diagnosis is an accepted indication", evidence, ctx=ctx)
         return self._result(
-            RuleOutcome.FAIL, "Diagnosis is not an accepted indication for this procedure", evidence
+            RuleOutcome.FAIL, "Diagnosis is not an accepted indication for this procedure", evidence,
+            ctx=ctx,
         )
 
 
@@ -189,8 +218,9 @@ class RequiredDocumentsRule(_BaseRule):
                     )
                     for t in missing_types
                 ),
+                ctx=ctx,
             )
-        return self._result(RuleOutcome.PASS, "All required documents are present", evidence)
+        return self._result(RuleOutcome.PASS, "All required documents are present", evidence, ctx=ctx)
 
 
 class ConservativeTreatmentRule(_BaseRule):
@@ -208,7 +238,7 @@ class ConservativeTreatmentRule(_BaseRule):
             "reported_conservative_treatment_weeks": weeks,
         }
         if c.min_conservative_treatment_weeks is None:
-            return self._result(RuleOutcome.PASS, "Coverage terms require no conservative treatment", evidence)
+            return self._result(RuleOutcome.PASS, "Coverage terms require no conservative treatment", evidence, ctx=ctx)
         if weeks is None:
             return self._result(
                 RuleOutcome.UNKNOWN,
@@ -221,14 +251,16 @@ class ConservativeTreatmentRule(_BaseRule):
                         source=MissingInformationSource.PROVIDER,
                     ),
                 ),
+                ctx=ctx,
             )
         if weeks < c.min_conservative_treatment_weeks:
             return self._result(
                 RuleOutcome.FAIL,
                 f"Reported {weeks} weeks of conservative treatment; minimum is {c.min_conservative_treatment_weeks}",
                 evidence,
+                ctx=ctx,
             )
-        return self._result(RuleOutcome.PASS, "Conservative treatment requirement is met", evidence)
+        return self._result(RuleOutcome.PASS, "Conservative treatment requirement is met", evidence, ctx=ctx)
 
 
 class AnnualLimitRule(_BaseRule):
@@ -246,10 +278,10 @@ class AnnualLimitRule(_BaseRule):
             "service_year": ctx.request.requested_service_date.year,
         }
         if c.annual_case_limit is None:
-            return self._result(RuleOutcome.PASS, "Coverage terms define no annual limit", evidence)
+            return self._result(RuleOutcome.PASS, "Coverage terms define no annual limit", evidence, ctx=ctx)
         if ctx.prior_approved_case_count >= c.annual_case_limit:
-            return self._result(RuleOutcome.FAIL, "Annual limit for this procedure has been reached", evidence)
-        return self._result(RuleOutcome.PASS, "Within annual limit", evidence)
+            return self._result(RuleOutcome.FAIL, "Annual limit for this procedure has been reached", evidence, ctx=ctx)
+        return self._result(RuleOutcome.PASS, "Within annual limit", evidence, ctx=ctx)
 
 
 def build_mock_rules_engine() -> RuleSetEngine:

@@ -27,6 +27,13 @@ class _Frozen(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
 
+class SourceReference(_Frozen):
+    """Where a fact used by a rule is written down (policy document section or system-of-record entry)."""
+
+    document: str
+    section: str
+
+
 class MissingInformation(_Frozen):
     code: str
     description: str
@@ -40,6 +47,7 @@ class RuleResult(_Frozen):
     explanation: str
     evidence: dict[str, Any]
     missing_information: tuple[MissingInformation, ...] = ()
+    sources: tuple[SourceReference, ...] = ()
 
     @model_validator(mode="after")
     def _check_outcome_invariants(self) -> "RuleResult":
@@ -83,6 +91,8 @@ class CoverageFacts(_Frozen):
     indicated_diagnosis_codes: tuple[str, ...]
     min_conservative_treatment_weeks: int | None
     annual_case_limit: int | None
+    source_document: str | None = None
+    source_section: str | None = None
 
 
 class DocumentFacts(_Frozen):

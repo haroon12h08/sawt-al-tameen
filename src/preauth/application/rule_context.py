@@ -100,6 +100,8 @@ def build_rule_context(uow, case: PreAuthorizationCase) -> RuleContext:
             indicated_diagnosis_codes=tuple(d.diagnosis_code for d in coverage.indicated_diagnoses),
             min_conservative_treatment_weeks=coverage.min_conservative_treatment_weeks,
             annual_case_limit=coverage.annual_case_limit,
+            source_document=coverage.source_document,
+            source_section=coverage.source_section,
         ),
         documents=tuple(DocumentFacts(document_id=d.id, document_type=d.document_type) for d in case.documents),
         prior_approved_case_count=uow.cases.count_prior_approvals(

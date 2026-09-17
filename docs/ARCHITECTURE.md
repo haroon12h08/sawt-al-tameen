@@ -21,15 +21,15 @@ authorisation decision.
 
 | Requested layer | Implementation |
 |---|---|
-| Conversation | Not built. The conversation runtime will be a client of `agent_tools`. |
-| Agent / orchestration | `agent_tools/toolbox.py`: eight typed tools; each one calls a single application service. |
+| Conversation | ElevenLabs agent (hosted), configured from `voice/` by `scripts/elevenlabs_setup.py`. See [VOICE_AGENT.md](VOICE_AGENT.md). |
+| Agent / orchestration | `agent_tools/toolbox.py`: nine typed tools, each calling one application service. `agent_tools/voice_gateway.py`: the ElevenLabs transport adapter. |
 | Case management | `domain/case_state.py` (transition table), `application/case_service.py` |
 | Provider / patient / request data | `infrastructure/db/models.py` (reference and case tables) |
 | Rules / knowledge | `rules/` (engine and mock ruleset); `application/rule_context.py` (knowledge retrieval) |
 | Decision / recommendation | `recommendation/engine.py` |
 | Human approval | `application/review_service.py`, `api/routes/review.py` |
 | Audit | `AuditRecorder` in `application/unit_of_work.py`; `audit_events` table (append-only) |
-| External integrations | Reference data is stored in database tables for now. Real integrations replace `application/rule_context.py` inputs and `ReferenceDataRepository`. |
+| External integrations | ElevenLabs server tools and post-call webhook (`api/routes/voice.py`, `application/voice_channel_service.py`). Other reference data is stored in database tables; real integrations would replace `application/rule_context.py` inputs and `ReferenceDataRepository`. |
 
 `tests/unit/test_architecture.py` enforces the dependency rules. `domain`, `rules`, and `recommendation` import
 nothing from outer layers or frameworks. Routes never touch the database, rules, or state machine directly.
@@ -85,9 +85,12 @@ The requirement that the system never finalises a decision is enforced at six in
    - Assignment of the case to that reviewer.
    - A mandatory rationale.
    - A reference to the *current* recommendation, which guards against decisions based on stale information.
-3. **Agent boundary.** The toolbox has no tool that decides, assigns reviewers, closes a decided case, or reads the
-   audit trail, and it accepts only `VOICE_AGENT` actors. The recommendation tool returns an explicit notice that
-   the result is not a decision.
+3. **Agent boundary.**
+   - The toolbox has no tool that decides, assigns reviewers, closes a decided case, or reads the audit trail, and it
+     accepts only `VOICE_AGENT` actors.
+   - The recommendation tool returns an explicit notice that the result is not a decision.
+   - Cases touched by a voice conversation cannot receive any human decision until the call's post-call transcript
+     is stored (`CALL_RECORD_PENDING`).
 4. **Views.** Every recommendation is marked `advisory_only: true`.
 5. **Database.** A check constraint ties each `review_decisions.decision` to its resulting status. Recommendations
    and decisions are append-only (enforced by triggers), so a human decision can never overwrite a recommendation.
@@ -105,6 +108,10 @@ The requirement that the system never finalises a decision is enforced at six in
   - Missing information is always `UNKNOWN`, never `FAIL`.
   - Each missing item has a `source`: `PROVIDER` means ask the caller; `INSURER` means a knowledge gap that the
     caller cannot resolve.
+- **Sources.** Every rule result cites what it relied on: the plan document section for coverage rules, or the
+  membership and provider register entries for eligibility rules. Recommendations aggregate these citations. The
+  voice agent's knowledge base is generated from the same data, so every cited section exists in a retrievable
+  document.
 - **Evaluation** runs every rule; none short-circuits another. An exception inside a rule aborts the whole
   evaluation, so no recommendation is ever produced from a partial result.
 - **Rule versions.** `rule_definitions` records every (rule id, version) pair ever used. Changing a rule's
@@ -117,7 +124,7 @@ The requirement that the system never finalises a decision is enforced at six in
 
   An empty result set escalates.
 
-### Mock ruleset (`mock-preauth-ruleset` 2026.09.1)
+### Mock ruleset (`mock-preauth-ruleset` 2026.09.2)
 
 | Rule | Checks | FAIL when | UNKNOWN when |
 |---|---|---|---|
@@ -139,7 +146,8 @@ These rules are illustrative. They are **not** real clinical or insurance policy
 - Events are written in the same transaction as the change they describe. A failed operation therefore leaves no
   partial trail (`test_failed_operation_leaves_no_partial_audit`).
 - Database triggers reject `UPDATE` and `DELETE` on `audit_events`, `rule_evaluations`, `rule_results`,
-  `recommendations`, and `review_decisions`. This is verified on both SQLite and PostgreSQL.
+  `recommendations`, `review_decisions`, `voice_tool_invocations`, and `call_records`. This is verified on both
+  SQLite and PostgreSQL.
 - Information changes record the previous and new values.
 - Internal steps run by the system (validation, evaluation) are attributed to `SYSTEM` and record which actor
   triggered them.
@@ -176,5 +184,13 @@ These gaps are deliberate phase-1 scope limits. They must be resolved before pro
 7. **PostgreSQL test coverage.** The automated suite runs on SQLite, built through the real migrations.
    Migrations, triggers, the seed scenarios, and the HTTP review flow have been verified on PostgreSQL by hand.
    CI should run the whole suite against PostgreSQL.
-8. **Sensitive data in the audit trail.** Audit data contains clinical free text. Retention, access control, and
+8. **Voice channel.**
+   - **Authentication.** The voice channel authenticates with one shared bearer token.
+   - **`X-Conversation-ID` trust.** The header is trusted as supplied by the voice platform; anyone holding the token
+     could forge it.
+   - **Webhook dependency.** If the post-call webhook is misconfigured, reviewers are blocked (by design) until it
+     is fixed.
+   - **Setup script.** `scripts/elevenlabs_setup.py` follows the ElevenLabs API reference but has not been exercised
+     against a live account from this repository.
+9. **Sensitive data in the audit trail.** Audit data contains clinical free text. Retention, access control, and
    encryption policies are still needed.

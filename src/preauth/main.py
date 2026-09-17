@@ -8,4 +8,4 @@ from preauth.infrastructure.settings import Settings
 
 settings = Settings.from_env()
 configure_logging(settings.log_level)
-app = create_app(build_services(build_session_factory(build_engine(settings.database_url))))
+app = create_app(build_services(build_session_factory(build_engine(settings.database_url))), settings)

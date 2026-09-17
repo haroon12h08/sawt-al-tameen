@@ -8,12 +8,24 @@ a typed tool boundary for a future voice agent.
 
 **The system never issues final authorisations or denials.** Only an authorised human reviewer can.
 
+- [Voice agent (ElevenLabs)](docs/VOICE_AGENT.md): tools, setup script, workflow, evaluation, tests.
+- [Deployment and phone numbers](docs/DEPLOYMENT.md): free hosting options, and what is and isn't free for phone
+  numbers (including UAE numbers).
 - [Architecture](docs/ARCHITECTURE.md): layers, state machine, how decision authority is enforced, rules, audit,
   and known limitations.
 - [API reference](docs/API.md), generated from [`docs/openapi.json`](docs/openapi.json).
 - [Implementation plan](docs/IMPLEMENTATION_PLAN.md)
 
 All data in this repository is synthetic.
+
+## Voice agent in three steps
+
+1. Run the backend on a public HTTPS URL. The quickest free route is a Cloudflare quick tunnel; see
+   [DEPLOYMENT.md](docs/DEPLOYMENT.md).
+2. Run `uv run python scripts/elevenlabs_setup.py` with your ElevenLabs API key. It creates the agent, tools,
+   knowledge base, Arabic preset and keyterms.
+3. Add the post-call webhook in the ElevenLabs dashboard, then talk to the agent from the printed browser link or
+   an attached phone number. See [VOICE_AGENT.md](docs/VOICE_AGENT.md).
 
 ## Requirements
 
@@ -84,15 +96,20 @@ curl localhost:8000/api/v1/review/queues/CLINICAL_REVIEW \
 
 | Variable | Default |
 |---|---|
-| `PREAUTH_DATABASE_URL` | `sqlite:///./preauth.db` |
+| `PREAUTH_DATABASE_URL` | `sqlite:///./preauth.db` (hosted `postgres://` URLs are accepted) |
 | `PREAUTH_LOG_LEVEL` | `INFO` |
+| `PREAUTH_VOICE_AGENT_TOKEN` | unset (voice tools disabled) |
+| `PREAUTH_GATEWAY_SECRET` | unset (required on staff and reviewer APIs when set) |
+| `PREAUTH_ELEVENLABS_WEBHOOK_SECRET` | unset (post-call webhook disabled) |
+| `PREAUTH_SEED_SCENARIOS` | unset (container only: create demo cases on first start) |
 
 ## Regenerate API docs
 
-After changing routes or schemas, run:
+After changing routes or schemas, or the seed coverage data, run:
 
 ```bash
 uv run python scripts/export_api_docs.py
+uv run python scripts/generate_knowledge_base.py
 ```
 
-A test fails if the generated docs are out of date.
+Tests fail if the generated API docs or knowledge base are out of date.
