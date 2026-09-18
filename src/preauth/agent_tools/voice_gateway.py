@@ -31,6 +31,9 @@ from preauth.domain.errors import (
 logger = logging.getLogger("preauth.voice.gateway")
 
 VOICE_PLATFORM_ACTOR = Actor(ActorType.VOICE_AGENT, "elevenlabs-agent")
+# The local channel is the same kind of actor with a different name: still VOICE_AGENT, so the review API
+# rejects it exactly as it rejects the hosted agent.
+LOCAL_AGENT_ACTOR = Actor(ActorType.VOICE_AGENT, "local-agent")
 _CONVERSATION_ID = re.compile(r"^[A-Za-z0-9_-]{1,100}$")
 
 _GUIDANCE: list[tuple[type[DomainError], str]] = [
@@ -72,18 +75,27 @@ def _case_id_of(arguments: dict[str, Any], result: dict[str, Any] | None) -> str
 
 
 class VoiceToolGateway:
-    def __init__(self, services: ApplicationServices, toolbox: AgentToolbox):
+    def __init__(
+        self, services: ApplicationServices, toolbox: AgentToolbox, actor: Actor = VOICE_PLATFORM_ACTOR
+    ):
+        if actor.type is not ActorType.VOICE_AGENT:
+            raise AuthorizationError(
+                "The voice gateway may only act as a VOICE_AGENT actor",
+                code="VOICE_AGENT_REQUIRED",
+                details={"actor_type": actor.type},
+            )
         self._services = services
         self._toolbox = toolbox
+        self._actor = actor
 
     def call(
         self, tool_name: str, arguments: dict[str, Any], conversation_id: str | None = None
     ) -> VoiceToolResponse:
         valid_conversation = conversation_id if conversation_id and _CONVERSATION_ID.match(conversation_id) else None
-        bind_voice_context(VOICE_PLATFORM_ACTOR, valid_conversation)
+        bind_voice_context(self._actor, valid_conversation)
         cleaned = _clean(arguments)
         try:
-            result = self._toolbox.invoke(tool_name, VOICE_PLATFORM_ACTOR, cleaned)
+            result = self._toolbox.invoke(tool_name, self._actor, cleaned)
         except DomainError as exc:
             logger.warning(
                 "voice_tool_failed", extra={"tool": tool_name, "error_code": exc.code, "details": exc.details}

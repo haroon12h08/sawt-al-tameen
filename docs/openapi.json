@@ -3628,6 +3628,728 @@
         ]
       }
     },
+    "/api/v1/local/capabilities": {
+      "get": {
+        "description": "Reports the configured local LLM, speech recogniser and speech synthesiser, so the browser knows whether to offer the microphone and whether to expect audio back.\n\n**Authorisation:** None by default: local mode binds to 127.0.0.1. When `PREAUTH_GATEWAY_SECRET` is set, these routes require a matching `X-Gateway-Secret` header like every other route.\n\n**State transitions:** None.",
+        "operationId": "capabilities_api_v1_local_capabilities_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Gateway-Secret",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Gateway-Secret"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Capabilities Api V1 Local Capabilities Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "GATEWAY_SECRET_INVALID"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "CONVERSATION_NOT_FOUND"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "CONVERSATION_CLOSED"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "SPEECH_NOT_RECOGNISED"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "CHANNEL_NOT_CONFIGURED / LOCAL_DEPENDENCY_MISSING"
+          }
+        },
+        "summary": "Which local model and speech engines this process is using",
+        "tags": [
+          "Voice channel (local)"
+        ]
+      }
+    },
+    "/api/v1/local/conversations": {
+      "post": {
+        "description": "Opens a conversation and returns the agent's opening line, with audio when speech synthesis is configured. The `conversation_id` is passed to every tool call, so the case this call touches cannot be signed off until the call is finished and its transcript stored.\n\n**Authorisation:** None by default: local mode binds to 127.0.0.1. When `PREAUTH_GATEWAY_SECRET` is set, these routes require a matching `X-Gateway-Secret` header like every other route.\n\n**State transitions:** None.",
+        "operationId": "start_conversation_api_v1_local_conversations_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Gateway-Secret",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Gateway-Secret"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Start Conversation Api V1 Local Conversations Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "GATEWAY_SECRET_INVALID"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "CONVERSATION_NOT_FOUND"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "CONVERSATION_CLOSED"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "SPEECH_NOT_RECOGNISED"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "CHANNEL_NOT_CONFIGURED / LOCAL_DEPENDENCY_MISSING"
+          }
+        },
+        "summary": "Start a local call",
+        "tags": [
+          "Voice channel (local)"
+        ]
+      }
+    },
+    "/api/v1/local/conversations/{conversation_id}": {
+      "get": {
+        "description": "The turns taken, the tools called, and the current case and human-review status.\n\n**Authorisation:** None by default: local mode binds to 127.0.0.1. When `PREAUTH_GATEWAY_SECRET` is set, these routes require a matching `X-Gateway-Secret` header like every other route.\n\n**State transitions:** None.",
+        "operationId": "conversation_state_api_v1_local_conversations__conversation_id__get",
+        "parameters": [
+          {
+            "description": "Local conversation id",
+            "in": "path",
+            "name": "conversation_id",
+            "required": true,
+            "schema": {
+              "description": "Local conversation id",
+              "pattern": "^local_[0-9a-f]{16}$",
+              "title": "Conversation Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Gateway-Secret",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Gateway-Secret"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Conversation State Api V1 Local Conversations  Conversation Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "GATEWAY_SECRET_INVALID"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "CONVERSATION_NOT_FOUND"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "CONVERSATION_CLOSED"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "SPEECH_NOT_RECOGNISED"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "CHANNEL_NOT_CONFIGURED / LOCAL_DEPENDENCY_MISSING"
+          }
+        },
+        "summary": "Transcript and case state so far",
+        "tags": [
+          "Voice channel (local)"
+        ]
+      }
+    },
+    "/api/v1/local/conversations/{conversation_id}/audio": {
+      "post": {
+        "description": "Transcribes the request body with the local speech recogniser, then handles the result exactly as a typed turn. The body is the raw recording (the browser posts a `webm/opus` blob straight from MediaRecorder); `wav`, `mp3` and `ogg` work too. Unintelligible or empty audio is rejected with `SPEECH_NOT_RECOGNISED` rather than guessed at.\n\n**Authorisation:** None by default: local mode binds to 127.0.0.1. When `PREAUTH_GATEWAY_SECRET` is set, these routes require a matching `X-Gateway-Secret` header like every other route.\n\n**State transitions:** Those of the tools the agent calls. Never `APPROVED` or `DENIED`.",
+        "operationId": "listen_api_v1_local_conversations__conversation_id__audio_post",
+        "parameters": [
+          {
+            "description": "Local conversation id",
+            "in": "path",
+            "name": "conversation_id",
+            "required": true,
+            "schema": {
+              "description": "Local conversation id",
+              "pattern": "^local_[0-9a-f]{16}$",
+              "title": "Conversation Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Two-letter language hint, e.g. en or ar",
+            "in": "query",
+            "name": "language",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Two-letter language hint, e.g. en or ar",
+              "title": "Language"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Gateway-Secret",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Gateway-Secret"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Listen Api V1 Local Conversations  Conversation Id  Audio Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "GATEWAY_SECRET_INVALID"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "CONVERSATION_NOT_FOUND"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "CONVERSATION_CLOSED"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "SPEECH_NOT_RECOGNISED"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "CHANNEL_NOT_CONFIGURED / LOCAL_DEPENDENCY_MISSING"
+          }
+        },
+        "summary": "Send a spoken caller turn",
+        "tags": [
+          "Voice channel (local)"
+        ]
+      }
+    },
+    "/api/v1/local/conversations/{conversation_id}/finish": {
+      "post": {
+        "description": "Writes the conversation to the immutable `call_records` table and adds a `CALL_RECORDED` audit event to every case it touched. Until this runs, reviewers see `CALL_RECORD_PENDING` on those cases and cannot sign them off. Idempotent.\n\n**Authorisation:** None by default: local mode binds to 127.0.0.1. When `PREAUTH_GATEWAY_SECRET` is set, these routes require a matching `X-Gateway-Secret` header like every other route.\n\n**State transitions:** None directly; it unblocks human sign-off on the cases the call touched.",
+        "operationId": "finish_api_v1_local_conversations__conversation_id__finish_post",
+        "parameters": [
+          {
+            "description": "Local conversation id",
+            "in": "path",
+            "name": "conversation_id",
+            "required": true,
+            "schema": {
+              "description": "Local conversation id",
+              "pattern": "^local_[0-9a-f]{16}$",
+              "title": "Conversation Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Gateway-Secret",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Gateway-Secret"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Finish Api V1 Local Conversations  Conversation Id  Finish Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "GATEWAY_SECRET_INVALID"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "CONVERSATION_NOT_FOUND"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "CONVERSATION_CLOSED"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "SPEECH_NOT_RECOGNISED"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "CHANNEL_NOT_CONFIGURED / LOCAL_DEPENDENCY_MISSING"
+          }
+        },
+        "summary": "End the call and store its transcript",
+        "tags": [
+          "Voice channel (local)"
+        ]
+      }
+    },
+    "/api/v1/local/conversations/{conversation_id}/text": {
+      "post": {
+        "description": "Runs one caller turn through the local model, which may call `verify_caller`, `check_coverage_rule` or `log_transcript`. Returns the agent's reply, the tool calls it made, and the state of the case.\n\n**Authorisation:** None by default: local mode binds to 127.0.0.1. When `PREAUTH_GATEWAY_SECRET` is set, these routes require a matching `X-Gateway-Secret` header like every other route.\n\n**State transitions:** Those of the tools the agent calls. Never `APPROVED` or `DENIED`.",
+        "operationId": "say_api_v1_local_conversations__conversation_id__text_post",
+        "parameters": [
+          {
+            "description": "Local conversation id",
+            "in": "path",
+            "name": "conversation_id",
+            "required": true,
+            "schema": {
+              "description": "Local conversation id",
+              "pattern": "^local_[0-9a-f]{16}$",
+              "title": "Conversation Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Gateway-Secret",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Gateway-Secret"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": true,
+                "title": "Body",
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Say Api V1 Local Conversations  Conversation Id  Text Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "GATEWAY_SECRET_INVALID"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "CONVERSATION_NOT_FOUND"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "CONVERSATION_CLOSED"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "SPEECH_NOT_RECOGNISED"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "CHANNEL_NOT_CONFIGURED / LOCAL_DEPENDENCY_MISSING"
+          }
+        },
+        "summary": "Send a typed caller turn",
+        "tags": [
+          "Voice channel (local)"
+        ]
+      }
+    },
+    "/api/v1/local/diagnostics": {
+      "get": {
+        "description": "The same checks as `scripts/check_local.py`, over HTTP. Each failing check carries the command that fixes it.\n\n**Authorisation:** None by default: local mode binds to 127.0.0.1. When `PREAUTH_GATEWAY_SECRET` is set, these routes require a matching `X-Gateway-Secret` header like every other route.\n\n**State transitions:** None.",
+        "operationId": "diagnostics_api_v1_local_diagnostics_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Gateway-Secret",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Gateway-Secret"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Diagnostics Api V1 Local Diagnostics Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "GATEWAY_SECRET_INVALID"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "CONVERSATION_NOT_FOUND"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "CONVERSATION_CLOSED"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "SPEECH_NOT_RECOGNISED"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "CHANNEL_NOT_CONFIGURED / LOCAL_DEPENDENCY_MISSING"
+          }
+        },
+        "summary": "What is still missing before a local call can be taken",
+        "tags": [
+          "Voice channel (local)"
+        ]
+      }
+    },
     "/api/v1/review/callbacks": {
       "get": {
         "description": "Callers the voice agent handed to a human (ambiguous or non-standard requests, supplier enquiries, complaints, urgent concerns, unsupported languages). Oldest first.\n\n**Authorisation:** Actor type `HUMAN_REVIEWER`.\n\n**State transitions:** None.",

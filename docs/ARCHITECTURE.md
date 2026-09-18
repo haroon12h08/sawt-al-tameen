@@ -26,21 +26,30 @@ are computed from each procedure's rule and that tier's threshold, so the data c
 ## Layers
 
 ```
-            ElevenLabs agent (hosted)                     provider portal / reviewer tooling
-                        │                                          │
-                agent_tools/  ── 3 typed tools ──┐        api/  ── HTTP, schemas, errors, actor headers
-                                                 ▼                 ▼
-                                   application/  desk · evaluation · review · callbacks · audit
-                                   │        │          │                 │
-                           domain/      rules/    recommendation/   infrastructure/
-                     state machine,   ruleset      rule results →     ORM, migration,
-                     review policy,   engine       recommendation     repositories,
-                     errors, actors  (pure)       (pure)             logging, clock
+   ElevenLabs agent (hosted)      local channel (this process)      provider portal / reviewer tooling
+              │                    Whisper · Ollama · Piper                      │
+              │                              │                                   │
+              └──────────────┬───────────────┘                                   │
+                             ▼                                                   ▼
+                 agent_tools/  ── 3 typed tools ──┐              api/  ── HTTP, schemas, errors, actors
+                                                  ▼                               ▼
+                                    application/  desk · evaluation · review · callbacks · audit
+                                    │        │          │                 │
+                            domain/      rules/    recommendation/   infrastructure/
+                      state machine,   ruleset      rule results →     ORM, migration,
+                      review policy,   engine       recommendation     repositories,
+                      errors, actors  (pure)       (pure)             logging, clock
 ```
+
+Two voice channels, one system beneath them. `local/` owns speech, the local model and conversation state, and
+reaches the rest of the system only through `agent_tools/` and `application/`. `tests/unit/test_architecture.py`
+fails if it ever imports `preauth.rules`, `preauth.recommendation` or `domain/case_state.py` — there is one rules
+engine and one case lifecycle, and a voice provider does not get its own.
 
 | Layer | Implementation |
 |---|---|
-| Conversation | ElevenLabs agent, configured from `voice/` by `scripts/elevenlabs_setup.py` |
+| Conversation (hosted) | ElevenLabs agent, configured from `voice/` by `scripts/elevenlabs_setup.py` |
+| Conversation (local) | `local/agent.py` over `local/llm.py` (Ollama) and `local/speech.py` (faster-whisper, Piper); see [LOCAL_MODE.md](LOCAL_MODE.md) |
 | Agent / orchestration | `agent_tools/toolbox.py` (three tools), `agent_tools/voice_gateway.py` (transport adapter) |
 | Case management | `domain/case_state.py`, `application/desk_service.py` |
 | Catalogue data | `knowledge_base/` → `seed/catalogue.py` → `infrastructure/db/models.py` |
@@ -48,7 +57,7 @@ are computed from each procedure's rule and that tier's threshold, so the data c
 | Decision / recommendation | `recommendation/engine.py` |
 | Human approval | `application/review_service.py`, `api/routes/review.py` |
 | Audit | `AuditRecorder` in `application/unit_of_work.py`; `audit_events` (append-only) |
-| Voice channel | `api/routes/voice.py`, `application/voice_channel_service.py` |
+| Voice channel | `api/routes/voice.py`, `api/routes/local.py`, `application/voice_channel_service.py` |
 
 `tests/unit/test_architecture.py` enforces the dependency direction: `domain`, `rules` and `recommendation` import
 nothing from outer layers or frameworks, and routes never touch the database or the rules directly.
@@ -100,12 +109,15 @@ actor types may perform it) and writes a `CASE_STATUS_CHANGED` audit event.
 2. **Review service.** A decision needs a human reviewer, the role the queue requires (`CLINICAL_REVIEWER`, or
    `MEDICAL_DIRECTOR` for escalations), assignment of the case, a rationale, and a reference to the current
    recommendation.
-3. **Agent boundary.** Three tools, none of which decides. The voice channel authenticates as `VOICE_AGENT`, which
-   the review API rejects.
+3. **Agent boundary.** Three tools, none of which decides. Both voice channels authenticate as `VOICE_AGENT`
+   (`elevenlabs-agent` and `local-agent`), which the review API rejects. The local model is offered exactly the
+   toolbox's tools, so asking it to approve something returns `TOOL_NOT_FOUND`.
 4. **Verification before cover.** `check_coverage_rule` requires a `verification_id` from a successful
    `verify_caller`; an unverified or lapsed caller cannot get a coverage answer at all.
 5. **Transcript before sign-off.** A case touched by a voice conversation cannot receive any human decision until
-   that call's post-call transcript is stored (`CALL_RECORD_PENDING`).
+   that call's transcript is stored (`CALL_RECORD_PENDING`) — delivered by the ElevenLabs post-call webhook, or
+   written by the local process when the call ends. Both produce the same immutable `call_records` row, told apart
+   by `platform`.
 6. **Database.** A check constraint ties each decision to its resulting status; recommendations and decisions are
    append-only, so a human decision never overwrites a recommendation.
 7. **Tests.** `tests/unit/test_state_machine.py`, `tests/integration/test_human_review.py`,
@@ -175,3 +187,11 @@ optimistic locking and returned as `CONCURRENT_MODIFICATION`.
    against a live account from this repository.
 9. **Sensitive data.** Audit data and call transcripts contain clinical free text. Retention, access control and
    encryption policies are still needed.
+10. **Local conversation state.** A local call's turn buffer lives in the serving process. Everything that matters
+    is already in the database as it happens — the verification, the case, the evaluation, the recommendation, the
+    audit trail — but a restart mid-call loses the unsent turns, and the call must be restarted. Local mode is a
+    single-process developer and demonstration deployment, not a load-balanced one.
+11. **Local model quality.** A 7–8B model on CPU is slower and less reliable at tool calling than a hosted model.
+    That is contained rather than hidden: it cannot state a fact the tools did not return, a tool budget forces it
+    to answer the caller, and a final-decision sentence is stripped before the caller hears it. What it can still
+    do is ask a clumsy question or call a tool with a value the caller did not confirm.

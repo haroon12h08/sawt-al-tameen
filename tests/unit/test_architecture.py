@@ -18,6 +18,9 @@ FORBIDDEN = {
     "application": ("preauth.api", "preauth.agent_tools", "fastapi"),
     "infrastructure": ("preauth.application", "preauth.api", "preauth.agent_tools", "fastapi"),
     "agent_tools": ("preauth.api", "preauth.infrastructure", "fastapi", "sqlalchemy"),
+    # The local channel is an adapter, like agent_tools. It may reach the application layer and the toolbox, but
+    # never the rules or the state machine: there is one rules engine, and local mode does not get its own.
+    "local": ("preauth.api", "preauth.rules", "preauth.recommendation", "preauth.domain.case_state", "fastapi"),
 }
 
 
@@ -47,3 +50,21 @@ def test_routes_contain_no_business_logic():
         imports = _imports(file)
         assert not any(i.startswith(("sqlalchemy", "preauth.infrastructure", "preauth.rules",
                                      "preauth.recommendation", "preauth.domain.case_state")) for i in imports), file
+
+
+def test_local_mode_defines_no_tools_of_its_own():
+    """Local mode presents the toolbox's tools to a model; it may not add, rename or wrap one."""
+    from preauth.agent_tools.toolbox import TOOLS, AgentToolbox
+    from preauth.local.tools import llm_tool_definitions
+
+    class _Services:  # the toolbox only stores it; describe() never touches it
+        pass
+
+    described = AgentToolbox(_Services()).describe()
+    offered = llm_tool_definitions(described)
+    assert [d["function"]["name"] for d in offered] == [t.name for t in TOOLS]
+
+    # And nothing in the local package declares a tool name of its own.
+    sources = "\n".join(f.read_text() for f in (SRC / "local").rglob("*.py"))
+    assert "Tool(" not in sources
+    assert "TOOLS" not in sources or "from preauth.agent_tools" in sources

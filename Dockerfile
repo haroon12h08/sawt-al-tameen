@@ -16,6 +16,8 @@ RUN uv sync --frozen --no-dev --extra postgres --no-install-project
 
 COPY alembic.ini ./
 COPY migrations ./migrations
+# Read at runtime: start.sh seeds the catalogue from knowledge_base/ on first start.
+COPY knowledge_base ./knowledge_base
 COPY src ./src
 COPY scripts/start.sh ./scripts/start.sh
 RUN uv sync --frozen --no-dev --extra postgres && chown -R app:app /app

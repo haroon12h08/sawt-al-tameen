@@ -38,7 +38,17 @@ STATUS_BY_ERROR: list[tuple[type[DomainError], int]] = [
     (IntegrityViolationError, 500),
 ]
 # Registered by name to avoid importing route modules here.
-STATUS_BY_CODE: dict[str, int] = {"CHANNEL_NOT_CONFIGURED": 503}
+STATUS_BY_CODE: dict[str, int] = {
+    "CHANNEL_NOT_CONFIGURED": 503,
+    # Local mode: a missing model or a stopped service is an unavailable dependency, not a bad request.
+    "LOCAL_DEPENDENCY_MISSING": 503,
+    "LOCAL_SERVICE_UNAVAILABLE": 503,
+    "SPEECH_INPUT_DISABLED": 503,
+    "SPEECH_OUTPUT_DISABLED": 503,
+    "SPEECH_NOT_RECOGNISED": 422,
+    "CONVERSATION_NOT_FOUND": 404,
+    "CONVERSATION_CLOSED": 409,
+}
 
 
 class ErrorBody(BaseModel):

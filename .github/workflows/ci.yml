@@ -64,6 +64,49 @@ jobs:
           uv run alembic upgrade head
           uv run python scripts/simulate_conversations.py --quiet
 
+  local-mode:
+    name: local mode starts without any paid credential
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      # `local` only: no model is downloaded, and the voice extras are not needed to prove the wiring.
+      - run: uv sync --frozen --extra local
+      # Deliberately unset throughout: ELEVENLABS_API_KEY, PREAUTH_PUBLIC_BASE_URL, the webhook secret.
+      - name: Migrate, seed and diagnose
+        run: |
+          uv run alembic upgrade head
+          uv run python -m preauth.seed --scenarios
+          # Ollama is not installed on the runner, so the report must fail on the model and nothing else.
+          uv run python scripts/check_local.py || true
+          uv run python scripts/check_local.py --json > report.json || true
+          uv run python -c "$CHECK"
+        env:
+          PREAUTH_RUNTIME_MODE: local
+          PREAUTH_DATABASE_URL: sqlite:///./local.db
+          PREAUTH_LOCAL_STT_PROVIDER: none
+          PREAUTH_LOCAL_TTS_PROVIDER: none
+          CHECK: |
+            import json
+            report = json.load(open("report.json"))
+            failed = {c["name"] for c in report["checks"] if c["status"] == "fail"}
+            assert failed <= {"local LLM"}, f"unexpected failures: {failed}"
+            assert all(c["fix"] for c in report["checks"] if c["status"] != "ok"), "a check failed without a fix"
+            print("local mode is ready except for the model, as expected on a runner with no Ollama")
+
+      - name: The service starts in local mode and serves the console
+        env:
+          PREAUTH_RUNTIME_MODE: local
+          PREAUTH_DATABASE_URL: sqlite:///./local.db
+        run: |
+          uv run uvicorn preauth.main:app --port 8111 &
+          for i in $(seq 1 30); do curl -sf localhost:8111/health && break; sleep 1; done
+          curl -sf localhost:8111/local | grep -q "Sawt Assurance"
+          curl -sf localhost:8111/api/v1/local/capabilities | grep -q '"model"'
+          curl -sf localhost:8111/api/v1/local/conversations -X POST | grep -q '"conversation_id":"local_'
+
   docker:
     name: docker image starts
     runs-on: ubuntu-latest

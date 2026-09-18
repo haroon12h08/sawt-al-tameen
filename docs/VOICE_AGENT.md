@@ -1,7 +1,8 @@
 # Voice agent (ElevenLabs)
 
 How the ElevenLabs agent connects to this backend, what the setup script configures, and what you configure in the
-dashboard.
+dashboard. For the same agent running entirely on your own machine — Whisper, Ollama and Piper instead of
+Scribe, a hosted model and Eleven v3, over the same three tools — see [LOCAL_MODE.md](LOCAL_MODE.md).
 
 ```
  caller (phone via Twilio, or browser)
@@ -46,6 +47,8 @@ Terminology follows UAE practice (see the research notes in the project report):
 4. **Sources are real.** Coverage answers cite the tier's schedule and section, which exist as documents in the
    agent's knowledge base.
 5. **Transcripts precede sign-off.** A case touched by a call cannot be decided until its transcript is stored.
+
+All five hold for the local channel too, because all five are enforced below the voice provider.
 
 ## 1. Run the setup script
 

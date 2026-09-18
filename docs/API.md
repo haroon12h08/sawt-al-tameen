@@ -399,6 +399,149 @@ Receives `post_call_transcription` events, stores the transcript and analysis as
 | 500 | `ErrorResponse` | INTERNAL_ERROR |
 | 503 | `ErrorResponse` | CHANNEL_NOT_CONFIGURED |
 
+## Voice channel (local)
+
+### `GET /api/v1/local/capabilities` — Which local model and speech engines this process is using
+
+Reports the configured local LLM, speech recogniser and speech synthesiser, so the browser knows whether to offer the microphone and whether to expect audio back.
+
+**Authorisation:** None by default: local mode binds to 127.0.0.1. When `PREAUTH_GATEWAY_SECRET` is set, these routes require a matching `X-Gateway-Secret` header like every other route.
+
+**State transitions:** None.
+
+**Request body:** —
+
+| Status | Response | Error codes / meaning |
+|---|---|---|
+| 200 | JSON object (see tool `input_schema` / `output_schema`) | Successful Response |
+| 401 | `ErrorResponse` | GATEWAY_SECRET_INVALID |
+| 404 | `ErrorResponse` | CONVERSATION_NOT_FOUND |
+| 409 | `ErrorResponse` | CONVERSATION_CLOSED |
+| 422 | `ErrorResponse` | SPEECH_NOT_RECOGNISED |
+| 503 | `ErrorResponse` | CHANNEL_NOT_CONFIGURED / LOCAL_DEPENDENCY_MISSING |
+
+### `GET /api/v1/local/diagnostics` — What is still missing before a local call can be taken
+
+The same checks as `scripts/check_local.py`, over HTTP. Each failing check carries the command that fixes it.
+
+**Authorisation:** None by default: local mode binds to 127.0.0.1. When `PREAUTH_GATEWAY_SECRET` is set, these routes require a matching `X-Gateway-Secret` header like every other route.
+
+**State transitions:** None.
+
+**Request body:** —
+
+| Status | Response | Error codes / meaning |
+|---|---|---|
+| 200 | JSON object (see tool `input_schema` / `output_schema`) | Successful Response |
+| 401 | `ErrorResponse` | GATEWAY_SECRET_INVALID |
+| 404 | `ErrorResponse` | CONVERSATION_NOT_FOUND |
+| 409 | `ErrorResponse` | CONVERSATION_CLOSED |
+| 422 | `ErrorResponse` | SPEECH_NOT_RECOGNISED |
+| 503 | `ErrorResponse` | CHANNEL_NOT_CONFIGURED / LOCAL_DEPENDENCY_MISSING |
+
+### `POST /api/v1/local/conversations` — Start a local call
+
+Opens a conversation and returns the agent's opening line, with audio when speech synthesis is configured. The `conversation_id` is passed to every tool call, so the case this call touches cannot be signed off until the call is finished and its transcript stored.
+
+**Authorisation:** None by default: local mode binds to 127.0.0.1. When `PREAUTH_GATEWAY_SECRET` is set, these routes require a matching `X-Gateway-Secret` header like every other route.
+
+**State transitions:** None.
+
+**Request body:** —
+
+| Status | Response | Error codes / meaning |
+|---|---|---|
+| 200 | JSON object (see tool `input_schema` / `output_schema`) | Successful Response |
+| 401 | `ErrorResponse` | GATEWAY_SECRET_INVALID |
+| 404 | `ErrorResponse` | CONVERSATION_NOT_FOUND |
+| 409 | `ErrorResponse` | CONVERSATION_CLOSED |
+| 422 | `ErrorResponse` | SPEECH_NOT_RECOGNISED |
+| 503 | `ErrorResponse` | CHANNEL_NOT_CONFIGURED / LOCAL_DEPENDENCY_MISSING |
+
+### `POST /api/v1/local/conversations/{conversation_id}/text` — Send a typed caller turn
+
+Runs one caller turn through the local model, which may call `verify_caller`, `check_coverage_rule` or `log_transcript`. Returns the agent's reply, the tool calls it made, and the state of the case.
+
+**Authorisation:** None by default: local mode binds to 127.0.0.1. When `PREAUTH_GATEWAY_SECRET` is set, these routes require a matching `X-Gateway-Secret` header like every other route.
+
+**State transitions:** Those of the tools the agent calls. Never `APPROVED` or `DENIED`.
+
+**Parameters:** `conversation_id` (path)
+
+**Request body:** JSON object (see tool `input_schema` / `output_schema`)
+
+| Status | Response | Error codes / meaning |
+|---|---|---|
+| 200 | JSON object (see tool `input_schema` / `output_schema`) | Successful Response |
+| 401 | `ErrorResponse` | GATEWAY_SECRET_INVALID |
+| 404 | `ErrorResponse` | CONVERSATION_NOT_FOUND |
+| 409 | `ErrorResponse` | CONVERSATION_CLOSED |
+| 422 | `ErrorResponse` | SPEECH_NOT_RECOGNISED |
+| 503 | `ErrorResponse` | CHANNEL_NOT_CONFIGURED / LOCAL_DEPENDENCY_MISSING |
+
+### `POST /api/v1/local/conversations/{conversation_id}/audio` — Send a spoken caller turn
+
+Transcribes the request body with the local speech recogniser, then handles the result exactly as a typed turn. The body is the raw recording (the browser posts a `webm/opus` blob straight from MediaRecorder); `wav`, `mp3` and `ogg` work too. Unintelligible or empty audio is rejected with `SPEECH_NOT_RECOGNISED` rather than guessed at.
+
+**Authorisation:** None by default: local mode binds to 127.0.0.1. When `PREAUTH_GATEWAY_SECRET` is set, these routes require a matching `X-Gateway-Secret` header like every other route.
+
+**State transitions:** Those of the tools the agent calls. Never `APPROVED` or `DENIED`.
+
+**Parameters:** `conversation_id` (path), `language` (query)
+
+**Request body:** —
+
+| Status | Response | Error codes / meaning |
+|---|---|---|
+| 200 | JSON object (see tool `input_schema` / `output_schema`) | Successful Response |
+| 401 | `ErrorResponse` | GATEWAY_SECRET_INVALID |
+| 404 | `ErrorResponse` | CONVERSATION_NOT_FOUND |
+| 409 | `ErrorResponse` | CONVERSATION_CLOSED |
+| 422 | `ErrorResponse` | SPEECH_NOT_RECOGNISED |
+| 503 | `ErrorResponse` | CHANNEL_NOT_CONFIGURED / LOCAL_DEPENDENCY_MISSING |
+
+### `GET /api/v1/local/conversations/{conversation_id}` — Transcript and case state so far
+
+The turns taken, the tools called, and the current case and human-review status.
+
+**Authorisation:** None by default: local mode binds to 127.0.0.1. When `PREAUTH_GATEWAY_SECRET` is set, these routes require a matching `X-Gateway-Secret` header like every other route.
+
+**State transitions:** None.
+
+**Parameters:** `conversation_id` (path)
+
+**Request body:** —
+
+| Status | Response | Error codes / meaning |
+|---|---|---|
+| 200 | JSON object (see tool `input_schema` / `output_schema`) | Successful Response |
+| 401 | `ErrorResponse` | GATEWAY_SECRET_INVALID |
+| 404 | `ErrorResponse` | CONVERSATION_NOT_FOUND |
+| 409 | `ErrorResponse` | CONVERSATION_CLOSED |
+| 422 | `ErrorResponse` | SPEECH_NOT_RECOGNISED |
+| 503 | `ErrorResponse` | CHANNEL_NOT_CONFIGURED / LOCAL_DEPENDENCY_MISSING |
+
+### `POST /api/v1/local/conversations/{conversation_id}/finish` — End the call and store its transcript
+
+Writes the conversation to the immutable `call_records` table and adds a `CALL_RECORDED` audit event to every case it touched. Until this runs, reviewers see `CALL_RECORD_PENDING` on those cases and cannot sign them off. Idempotent.
+
+**Authorisation:** None by default: local mode binds to 127.0.0.1. When `PREAUTH_GATEWAY_SECRET` is set, these routes require a matching `X-Gateway-Secret` header like every other route.
+
+**State transitions:** None directly; it unblocks human sign-off on the cases the call touched.
+
+**Parameters:** `conversation_id` (path)
+
+**Request body:** —
+
+| Status | Response | Error codes / meaning |
+|---|---|---|
+| 200 | JSON object (see tool `input_schema` / `output_schema`) | Successful Response |
+| 401 | `ErrorResponse` | GATEWAY_SECRET_INVALID |
+| 404 | `ErrorResponse` | CONVERSATION_NOT_FOUND |
+| 409 | `ErrorResponse` | CONVERSATION_CLOSED |
+| 422 | `ErrorResponse` | SPEECH_NOT_RECOGNISED |
+| 503 | `ErrorResponse` | CHANNEL_NOT_CONFIGURED / LOCAL_DEPENDENCY_MISSING |
+
 ## Operations
 
 ### `GET /health` — Liveness check

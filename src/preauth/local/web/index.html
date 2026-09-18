@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sawt Assurance — local pre-authorisation console</title>
+<link rel="stylesheet" href="/local/assets/styles.css">
+</head>
+<body>
+<header>
+  <div>
+    <h1>Sawt Assurance <span class="muted">pre-authorisation line</span></h1>
+    <p class="sub">Local deployment — everything on this page runs on this machine.</p>
+  </div>
+  <div id="engines" class="engines muted">connecting…</div>
+</header>
+
+<main>
+  <section class="panel transcript-panel">
+    <h2>Call</h2>
+    <div id="transcript" class="transcript" aria-live="polite"></div>
+    <form id="composer" autocomplete="off">
+      <input id="input" type="text" placeholder="Type what the caller says…" aria-label="Caller turn" disabled>
+      <button id="send" type="submit" disabled>Send</button>
+      <button id="mic" type="button" class="mic" disabled title="Hold to record, click to stop">🎙 Record</button>
+    </form>
+    <div class="actions">
+      <button id="start" type="button">Start call</button>
+      <button id="finish" type="button" disabled>End call &amp; store transcript</button>
+      <span id="status" class="status muted"></span>
+    </div>
+  </section>
+
+  <section class="panel state-panel">
+    <h2>Case</h2>
+    <dl id="state">
+      <dt>Conversation</dt><dd id="s-conversation">—</dd>
+      <dt>Caller verified</dt><dd id="s-verified">no</dd>
+      <dt>Case reference</dt><dd id="s-case">—</dd>
+      <dt>Case status</dt><dd id="s-status">—</dd>
+      <dt>Agent recommendation</dt><dd id="s-outcome">—</dd>
+      <dt>Escalation</dt><dd id="s-escalation">—</dd>
+      <dt>Human review</dt><dd id="s-review">—</dd>
+    </dl>
+
+    <h3>Request details collected</h3>
+    <ul id="s-intake" class="checklist"></ul>
+
+    <h3>Documents outstanding</h3>
+    <ul id="s-documents" class="checklist"><li class="muted">—</li></ul>
+
+    <h3>Tool activity</h3>
+    <ol id="s-tools" class="tools"><li class="muted">no tools called yet</li></ol>
+
+    <p class="boundary">
+      This agent prepares recommendations. It has no tool that can approve, deny or finalise an authorisation —
+      a qualified human reviewer decides every case.
+    </p>
+  </section>
+</main>
+
+<audio id="player"></audio>
+<script src="/local/assets/app.js"></script>
+</body>
+</html>

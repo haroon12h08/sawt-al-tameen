@@ -11,8 +11,9 @@ schedule, and prepares a recommendation. **A qualified human always makes the de
 [![Python 3.12](https://img.shields.io/badge/python-3.12-3776AB.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-009688.svg)](https://fastapi.tiangolo.com/)
 [![PostgreSQL & SQLite](https://img.shields.io/badge/PostgreSQL%20%7C%20SQLite-336791.svg)](https://www.postgresql.org/)
-[![Tests](https://img.shields.io/badge/tests-193%20passing-success.svg)](#testing)
+[![Tests](https://img.shields.io/badge/tests-288%20passing-success.svg)](#testing)
 [![Synthetic data](https://img.shields.io/badge/data-synthetic-important.svg)](#everything-here-is-fictional)
+[![Runs offline](https://img.shields.io/badge/runs-fully%20offline-blueviolet.svg)](#two-ways-to-take-a-call)
 
 English and Arabic · AED throughout · Dubai, Abu Dhabi and Sharjah · DHA and DOH structure
 
@@ -42,13 +43,15 @@ Ask the agent to approve something and it declines, every time, because there is
    clinic / broker / supplier
               │  telephone or browser
               ▼
-   ElevenLabs agent ── Scribe STT (keyterm biasing) ── LLM ── Eleven v3 TTS ── knowledge base
-              │
-              │  verify_caller · check_coverage_rule · log_transcript
-              ▼
+   ┌──────────────────────────┬──────────────────────────┐
+   │  ElevenLabs channel      │  local channel           │
+   │  Scribe · v3 · Twilio    │  Whisper · Piper · Ollama│
+   └────────────┬─────────────┴────────────┬─────────────┘
+                │  verify_caller · check_coverage_rule · log_transcript
+                ▼
    this backend ── benefit catalogue · rules engine · recommendation · audit trail
-              │
-              ▼
+                │
+                ▼
    review queue  ──▶  clinical reviewer / medical director  ──▶  APPROVED or DENIED
 ```
 
@@ -111,6 +114,24 @@ An escalation quotes the rule's own words, never a generic "this needs review".
 
 ---
 
+## Two ways to take a call
+
+The insurance system is one implementation. The voice provider is an adapter on top of it, and there are two.
+
+| | Local | ElevenLabs |
+|---|---|---|
+| Speech in / out | faster-whisper / Piper | Scribe v2 / Eleven v3 |
+| Language model | Ollama, on your machine | hosted, with cascading fallback |
+| Telephony | browser microphone | Twilio |
+| Cost | none | account required |
+| Works offline | yes, once models are downloaded | no |
+| Rules, cases, review, audit | **identical** | **identical** |
+
+A test fails if the local package ever imports the rules engine, the recommendation engine or the case state
+machine. There is one of each, and the voice provider does not get its own.
+
+---
+
 ## Quickstart
 
 Requires Python 3.12 and [uv](https://docs.astral.sh/uv/). Docker is optional, for PostgreSQL.
@@ -137,19 +158,53 @@ uv run python scripts/simulate_conversations.py
 | Sleeve gastrectomy (ambiguous) | `ESCALATE` → medical director, ESC-001 |
 | Cosmetic rhinoplasty | `RECOMMEND_DENIAL` → reviewer overrides to approve |
 
-### Connecting the voice agent
+---
 
-1. Put the backend on a public HTTPS URL — a Cloudflare quick tunnel is free and needs no account
-   ([DEPLOYMENT.md](docs/DEPLOYMENT.md)).
-2. Confirm it end to end: `uv run python scripts/verify_deployment.py --base-url https://your-url` (28 checks).
-3. Configure ElevenLabs with your API key:
-   ```bash
-   uv run python scripts/elevenlabs_setup.py
-   ```
-   This creates the tools, uploads the knowledge base, and builds the agent with the system prompt, Arabic preset
-   and 100 speech keyterms.
-4. Add the post-call webhook in the dashboard — reviewers stay blocked until transcripts arrive
-   ([VOICE_AGENT.md](docs/VOICE_AGENT.md)).
+## Talking to it, for free, on your own machine
+
+Nothing paid, nothing hosted, and no Internet once the models are on disk.
+
+```bash
+# Dependencies: `local` is enough to type to the agent; add `local-voice` for microphone and speech.
+uv sync --extra local --extra local-voice
+
+# Ollama and one tool-calling model  (https://ollama.com/download)
+ollama serve &
+ollama pull qwen2.5-coder:7b
+
+# A Piper voice, ~60 MB
+uv run python -m piper.download_voices en_GB-alba-medium --data-dir ./models/piper
+echo 'PREAUTH_LOCAL_TTS_VOICE=./models/piper/en_GB-alba-medium.onnx' >> .env
+
+./scripts/check_local.sh     # says exactly what is still missing, and the command that fixes it
+./scripts/run_local.sh       # migrate, seed, serve
+```
+
+Then open **http://localhost:8000/local** and press *Start call*. Speak or type; the page shows the transcript,
+the tools as they fire, the case reference, the escalation rule and the human-review status side by side.
+
+No microphone, no speakers, or you just want determinism:
+
+```bash
+uv run python -m preauth.local_cli
+```
+
+Full guide, configuration table, offline notes and troubleshooting: **[docs/LOCAL_MODE.md](docs/LOCAL_MODE.md)**.
+
+### Connecting the ElevenLabs agent
+
+After a one-time Cloudflare tunnel setup (described in [`.env.example`](.env.example)), fill in the HOSTED MODE block
+of `.env` and run:
+
+```bash
+./scripts/run_hosted.sh
+```
+
+It starts the backend and a Cloudflare named tunnel, then runs all 28 deployment checks through the public URL and
+stops if any fail. Next it builds the ElevenLabs agent: tools, knowledge base, prompt, Arabic preset and 100
+keyterms. It also registers the post-call webhook through the API and imports your Twilio number if you gave one.
+Finally it prints the browser test-call link. Ctrl+C stops everything. Details:
+[DEPLOYMENT.md → Hosted mode, one command](docs/DEPLOYMENT.md#hosted-mode-one-command).
 
 ---
 
@@ -161,17 +216,20 @@ docker compose up -d --wait                               # PostgreSQL
 PREAUTH_TEST_DATABASE_URL=postgres://preauth:preauth@localhost:55432/preauth uv run pytest
 ```
 
-**193 tests**, green on both databases. Integration tests build their schema through the real Alembic migration,
+**288 tests**, green on both databases. Integration tests build their schema through the real Alembic migration,
 so the migration is tested rather than assumed. Among the things they pin down: all three lapsed members are
 rejected and all seventeen active ones accepted; all eleven ambiguous procedures escalate citing their own rule;
-missing information is never reported as a failure; no rule result can be mutated after the fact; and the audit
-trail stays contiguous.
+missing information is never reported as a failure; no rule result can be mutated after the fact; the audit
+trail stays contiguous; and the local agent cannot reach a tool that decides anything, in any mode. The local
+tests need no model download — the language model, recogniser and synthesiser are replaced by doubles, so what
+they exercise is the agent loop and the guardrails against the real rules and the real database.
 
 | Command | What it proves |
 |---|---|
 | `scripts/verify_deployment.py` | A live deployment behaves correctly, end to end (28 checks) |
 | `scripts/simulate_conversations.py` | Five call shapes, including a caller demanding a decision (30 checks) |
 | `scripts/generate_uae_knowledge_base.py --check` | The catalogue is internally consistent |
+| `scripts/check_local.sh` | What local mode is still missing on this machine, and how to fix each thing |
 
 ---
 
@@ -182,7 +240,8 @@ knowledge_base/          benefit catalogue — the single source of truth
   schedule-*.md            per-tier schedules of benefits (what citations point to)
   escalation_rules.*       ESC-001 … ESC-008, prose and machine-readable
 voice/
-  system_prompt.md         the agent's instructions
+  system_prompt.md         the hosted agent's instructions
+  local_system_prompt.md   the local agent's — shorter, same safety behaviour, tested clause by clause
   agent_tests.json         five dashboard test definitions
 src/preauth/
   domain/                  case state machine, review policy, errors — no I/O
@@ -192,7 +251,9 @@ src/preauth/
   infrastructure/          ORM, migration, repositories, logging
   api/                     HTTP routes, schemas, error envelope
   agent_tools/             the three tools and the ElevenLabs adapter
-scripts/                   setup, verification, simulation, generation
+  local/                   the local channel: Ollama, Whisper, Piper, sessions, browser console
+  local_cli.py             text-only local agent
+scripts/                   setup, verification, simulation, generation, local diagnostics
 docs/                      architecture, voice agent, deployment, API
 ```
 
@@ -203,6 +264,7 @@ docs/                      architecture, voice agent, deployment, API
 | Document | Contents |
 |---|---|
 | [Architecture](docs/ARCHITECTURE.md) | Layers, state machine, how decision authority is enforced, rules, limitations |
+| [Local mode](docs/LOCAL_MODE.md) | Running everything free and offline: install, models, config, offline notes, troubleshooting |
 | [Voice agent](docs/VOICE_AGENT.md) | Tools, setup script, workflow nodes, evaluation criteria, tests, terminology |
 | [Deployment](docs/DEPLOYMENT.md) | Free hosting, and an honest account of UAE phone numbers |
 | [Benefit catalogue](knowledge_base/README.md) | File by file, and how the parts relate |
@@ -213,11 +275,18 @@ docs/                      architecture, voice agent, deployment, API
 
 | Variable | Default |
 |---|---|
+| `PREAUTH_RUNTIME_MODE` | `elevenlabs` — `local` also mounts the local channel and console |
 | `PREAUTH_DATABASE_URL` | `sqlite:///./preauth.db` (hosted `postgres://` URLs accepted) |
 | `PREAUTH_LOG_LEVEL` | `INFO` |
 | `PREAUTH_VOICE_AGENT_TOKEN` | unset — voice tools disabled |
 | `PREAUTH_GATEWAY_SECRET` | unset — when set, required on staff and reviewer APIs |
 | `PREAUTH_ELEVENLABS_WEBHOOK_SECRET` | unset — post-call webhook disabled |
+| `PREAUTH_LOCAL_LLM_MODEL` | `qwen2.5-coder:7b` — any tool-calling model Ollama serves |
+| `PREAUTH_LOCAL_TTS_VOICE` | unset — path to a Piper `.onnx` voice |
+
+Local mode requires none of `ELEVENLABS_API_KEY`, `PREAUTH_PUBLIC_BASE_URL` or the webhook secret. See
+[`.env.example`](.env.example) for the full list and [docs/LOCAL_MODE.md](docs/LOCAL_MODE.md) for what each
+one does.
 
 After changing routes, schemas or the catalogue, regenerate the derived files (tests fail otherwise):
 

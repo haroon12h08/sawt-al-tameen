@@ -10,6 +10,7 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 from preauth.api.app import create_app
+from preauth.infrastructure.settings import RuntimeMode, Settings
 
 DOCS = Path(__file__).resolve().parents[1] / "docs"
 
@@ -24,6 +25,13 @@ def _schema_name(schema: dict | None) -> str:
     if schema.get("type") == "object":
         return "JSON object (see tool `input_schema` / `output_schema`)"
     return f"`{schema.get('type', 'unknown')}`"
+
+
+def _spec() -> dict:
+    """Both channels in one document: the service is the same service whichever one is mounted."""
+    return create_app(
+        MagicMock(), Settings(runtime_mode=RuntimeMode.LOCAL), local_runtime=MagicMock()
+    ).openapi()
 
 
 def render_markdown(spec: dict) -> str:
@@ -63,7 +71,7 @@ def render_markdown(spec: dict) -> str:
 
 
 def main() -> int:
-    spec = create_app(MagicMock()).openapi()
+    spec = _spec()
     rendered = {
         DOCS / "openapi.json": json.dumps(spec, indent=2, sort_keys=True) + "\n",
         DOCS / "API.md": render_markdown(spec) + "\n",

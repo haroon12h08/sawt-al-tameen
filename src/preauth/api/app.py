@@ -1,4 +1,9 @@
+from pathlib import Path
+from typing import Any
+
 from fastapi import FastAPI
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from preauth.agent_tools.toolbox import AgentToolbox
 from preauth.agent_tools.voice_gateway import VoiceToolGateway
@@ -27,7 +32,17 @@ Every response carries `X-Request-ID`. Errors use a uniform envelope: `{"error":
 """
 
 
-def create_app(services: ApplicationServices, settings: Settings | None = None) -> FastAPI:
+def create_app(
+    services: ApplicationServices,
+    settings: Settings | None = None,
+    local_runtime: Any | None = None,
+) -> FastAPI:
+    """Build the HTTP application.
+
+    ``local_runtime`` is a ``preauth.local.runtime.LocalRuntime`` when this process serves the local channel. It
+    is the single place local mode changes anything: with it, the local routes and browser UI are mounted; without
+    it, this is exactly the ElevenLabs-facing service. Nothing below the API layer is aware of the difference.
+    """
     install_log_context()
     app = FastAPI(title="Pre-Authorisation Case Service", version="0.1.0", description=DESCRIPTION)
     app.state.services = services
@@ -40,6 +55,17 @@ def create_app(services: ApplicationServices, settings: Settings | None = None) 
     app.include_router(review.router)
     app.include_router(agent.router)
     app.include_router(voice.router)
+    if local_runtime is not None:
+        from preauth.api.routes import local as local_routes
+
+        app.state.local_runtime = local_runtime
+        app.include_router(local_routes.router)
+        web = Path(__file__).resolve().parent.parent / "local" / "web"
+        app.mount("/local/assets", StaticFiles(directory=web), name="local-assets")
+
+        @app.get("/local", tags=["Voice channel (local)"], summary="Local voice console", include_in_schema=False)
+        def local_console() -> FileResponse:
+            return FileResponse(web / "index.html")
 
     @app.get("/health", tags=["Operations"], summary="Liveness check")
     def health() -> dict[str, str]:
