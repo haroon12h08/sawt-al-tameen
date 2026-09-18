@@ -1,5 +1,5 @@
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import StrEnum
 
 
@@ -37,6 +37,12 @@ class Settings:
     # Which voice channel this process exposes. ``local`` additionally mounts the local agent and its browser UI;
     # it never changes the rules, cases, review or audit layers.
     runtime_mode: RuntimeMode = RuntimeMode.ELEVENLABS
+    # Inbound Twilio calls (register-call). The endpoint is disabled unless all four are set; secrets stay out of repr.
+    twilio_auth_token: str | None = field(default=None, repr=False)
+    elevenlabs_api_key: str | None = field(default=None, repr=False)
+    elevenlabs_agent_id: str | None = None
+    # The https:// address Twilio is configured with; Twilio signs that URL, not the one behind the tunnel.
+    public_base_url: str | None = None
 
     @property
     def local_mode(self) -> bool:
@@ -51,6 +57,10 @@ class Settings:
             voice_agent_token=_optional("PREAUTH_VOICE_AGENT_TOKEN"),
             elevenlabs_webhook_secret=_optional("PREAUTH_ELEVENLABS_WEBHOOK_SECRET"),
             runtime_mode=_runtime_mode(),
+            twilio_auth_token=_optional("TWILIO_AUTH_TOKEN"),
+            elevenlabs_api_key=_optional("ELEVENLABS_API_KEY"),
+            elevenlabs_agent_id=_optional("PREAUTH_ELEVENLABS_AGENT_ID"),
+            public_base_url=(_optional("PREAUTH_PUBLIC_BASE_URL") or "").rstrip("/") or None,
         )
 
 

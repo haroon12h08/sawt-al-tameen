@@ -10,30 +10,60 @@ below. The manual options follow it, and after them an honest account of phone n
 ## Hosted mode, one command
 
 ```bash
-cp .env.example .env        # once; fill in the HOSTED MODE block
+cp .env.example .env        # once; fill in HOSTED MODE — required, plus ONE tunnel provider
 ./scripts/run_hosted.sh     # every time
 ```
 
+### Choosing a tunnel
+
+The ElevenLabs agent needs a public https:// address for this backend that stays the same between runs. Two
+providers are supported, and steps c to g do not care which one you use: they only see the resulting URL.
+
+| | **ngrok (recommended)** | Cloudflare named tunnel |
+|---|---|---|
+| Cost | Free | Free tunnel, but **needs a domain you own** added to Cloudflare |
+| Stable URL | Your free static domain, e.g. `sawt-al-tameen.ngrok-free.app` | A hostname on your domain |
+| One-time setup | Sign up, install `ngrok`, copy the authtoken, claim the static domain | Add a domain, create a tunnel, publish a hostname on `localhost:8000`, install `cloudflared` |
+| `.env` | `NGROK_AUTHTOKEN`, `NGROK_STATIC_DOMAIN` | `CLOUDFLARE_TUNNEL_TOKEN`, `PREAUTH_PUBLIC_BASE_URL` |
+| Bad credentials caught | In step 0, before anything starts | In step b, after the backend has started |
+
+`PREAUTH_TUNNEL_PROVIDER=ngrok` or `cloudflare` chooses explicitly. Left blank, the script uses whichever
+provider has credentials filled in, preferring ngrok when both do, and stops with both options listed when
+neither does.
+
+**ngrok, one time:**
+
+1. Sign up at [dashboard.ngrok.com/signup](https://dashboard.ngrok.com/signup) and install the agent from
+   [ngrok.com/download](https://ngrok.com/download). You never start it yourself; the script does.
+2. Copy your authtoken from
+   [dashboard.ngrok.com/get-started/your-authtoken](https://dashboard.ngrok.com/get-started/your-authtoken) into
+   `NGROK_AUTHTOKEN`.
+3. Claim your free static domain at [dashboard.ngrok.com/domains](https://dashboard.ngrok.com/domains) and put the
+   bare hostname (no `https://`) in `NGROK_STATIC_DOMAIN`.
+
+Things to know about the free plan: one agent can be online at a time, and there is a monthly traffic allowance
+that a demonstration will not approach. A browser opening the URL sees a one-time ngrok notice page first.
+ElevenLabs' tool calls and webhooks are server-to-server and never see it.
+
+**Cloudflare, one time:** the four steps at the end of [`.env.example`](../.env.example). The domain is the only
+part that is not free. A named tunnel is needed rather than a quick one because a quick tunnel's URL changes
+every run, which would break the ElevenLabs tools and webhook each time.
+
 | Step | What happens | If it fails |
 |---|---|---|
-| 0 | Reads `.env`, checks every value is present, and makes one read-only ElevenLabs call to test the API key. Generates the voice-tool token and gateway secret on first run. | Lists every missing value, or says the key was rejected. Nothing is started. |
+| 0 | Reads `.env`, checks every value is present, and makes one read-only ElevenLabs call to test the API key. With ngrok, it also connects briefly with your authtoken and static domain, then disconnects. Generates the voice-tool token and gateway secret on first run. | Lists every missing value, or says which credential was rejected (ElevenLabs key, ngrok authtoken or ngrok domain). Nothing is started. |
 | a | Migrates the database, loads the catalogue if it is empty, and starts the backend on `PREAUTH_HOSTED_PORT`. | Prints the tail of `.hosted/backend.log`. |
-| b | Starts `cloudflared tunnel run` with your token (passed through the environment, not the command line) and waits until `PREAUTH_PUBLIC_BASE_URL/health` answers. | Distinguishes a rejected token, a hostname routed to the wrong port (502) and a hostname that does not resolve. |
+| b | Starts the tunnel and waits until the public URL's `/health` answers. **ngrok:** `ngrok http <port> --url https://<NGROK_STATIC_DOMAIN>`. **Cloudflare:** `cloudflared tunnel run`. The token goes through the environment in both cases, never the command line. | ngrok: prints ngrok's error with the token redacted. Cloudflare: distinguishes a rejected token, a hostname routed to the wrong port (502) and a hostname that does not resolve. |
 | c | Runs `scripts/verify_deployment.py` through the public URL and prints a PASS/FAIL banner. | Stops before touching ElevenLabs, and lists the failed checks. |
 | d | Runs `scripts/elevenlabs_setup.py`: secret, three server tools, knowledge base, agent with prompt, Arabic preset and keyterms. Updates in place on re-runs. | Prints ElevenLabs' error body. |
 | e | Creates an HMAC workspace webhook for `/api/v1/voice/elevenlabs/post-call` (`POST /v1/workspace/webhooks`), stores the signing secret, and points post-call transcripts at it (`PATCH /v1/convai/settings`). Restarts the backend with the secret and re-verifies, including the webhook checks. | If your workspace already sends webhooks elsewhere, it asks before switching, because the setting is workspace-wide. If ElevenLabs returns no secret, it tells you where to copy it and waits. |
-| f | If the three `TWILIO_` values are set, it imports the number (`POST /v1/convai/phone-numbers`) and assigns it to the agent. Otherwise it prints how to get a number, and the run continues. | Prints the Twilio/ElevenLabs error. |
+| f | Checks that `/api/v1/voice/twilio/inbound` is live and enforcing Twilio signatures (an unsigned probe must get 401), then prints the exact Twilio console setting. ElevenLabs' native number import is **not** used. | Never fails the run: if inbound calls are not configured it names the missing variables, and the browser test call still works. |
 | g | Prints the backend URL, the browser test-call link, the phone number and anything still manual. Keeps running until Ctrl+C. | If the backend or tunnel dies later, it says which one and shows its log. |
 
 A second run changes nothing in ElevenLabs if nothing changed. Webhook, tools, knowledge base and phone assignment
 are all reused. Generated secrets live in `.hosted/secrets.env` (git-ignored, mode 600), never in `.env`, so local
-mode is unaffected. `--yes` answers the workspace-webhook question in advance. `--no-tunnel` skips `cloudflared`
-if `PREAUTH_PUBLIC_BASE_URL` already reaches this machine some other way.
-
-**One-time setup** (full steps in `.env.example`): a domain on Cloudflare, a named tunnel with a published
-hostname pointing at `http://localhost:8000`, and `cloudflared` installed. A named tunnel is used rather than a
-quick one because its URL survives restarts. A quick tunnel's URL changes every run, which would break the
-ElevenLabs tools and webhook each time.
+mode is unaffected. `--yes` answers the workspace-webhook question in advance. `--no-tunnel` starts no tunnel,
+for when `PREAUTH_PUBLIC_BASE_URL` already reaches this machine some other way.
 
 Still configured in the dashboard, because no step above needs them for calls to work: the visual workflow with
 per-node tool scoping, evaluation criteria and agent tests ([VOICE_AGENT.md](VOICE_AGENT.md)).
@@ -128,14 +158,53 @@ These are checked facts as of September 2026. Verify them before you rely on the
 - **ElevenLabs Free plan:** 15 agent minutes per month and 4 concurrent calls, with no commercial licence. That is
   enough for a handful of test calls, but not for sustained demos. LLM usage is billed separately on paid plans.
 
-### A real phone number (Twilio native integration)
+### A real phone number (your own Twilio number, via register-call)
 
-- ElevenLabs imports a Twilio number using your Account SID and Auth Token (Agents → Phone Numbers). Inbound calls
-  to that number reach the agent, and no backend change is needed.
-- ElevenLabs' integration page describes needing a paid Twilio account and a purchased number. A new Twilio account
-  comes with trial credit, but trial accounts carry restrictions. Expect to add a card; a US number costs roughly a
-  dollar or two per month plus per-minute charges.
-- Calling a US number from an Indian mobile is an international call, charged by your mobile operator.
+This deployment keeps the number in **your** Twilio account and does not import it into ElevenLabs. Twilio sends
+each incoming call to the backend. The backend checks Twilio's signature, then registers the call with the agent
+(`POST https://api.elevenlabs.io/v1/convai/twilio/register-call`), and passes back the TwiML that ElevenLabs
+returns. From there it is an ordinary ElevenLabs conversation, using the same three tools and the same post-call
+webhook.
+
+**Twilio configuration (exact):**
+
+> Twilio Console → **Phone Numbers** → **Manage** → **Active numbers** → *your number* → **Voice Configuration** →
+> **A call comes in**: **Webhook** · URL `https://<your public URL>/api/v1/voice/twilio/inbound` · HTTP **POST** →
+> **Save configuration**
+
+With ngrok the public URL is `https://<NGROK_STATIC_DOMAIN>`; with Cloudflare it is `PREAUTH_PUBLIC_BASE_URL`.
+`run_hosted.sh` prints the full URL at the end of every run.
+
+**Backend configuration.** The endpoint stays disabled (HTTP 503) until all four of these are set, and it always
+checks the `X-Twilio-Signature` header:
+
+| Variable | Why |
+|---|---|
+| `TWILIO_AUTH_TOKEN` | Verifies each request comes from Twilio (HMAC-SHA1, Twilio's documented algorithm) |
+| `PREAUTH_PUBLIC_BASE_URL` | Twilio signs the public URL it called, not the tunnel's local address, so this is what the signature is checked against |
+| `ELEVENLABS_API_KEY` | Authenticates the register-call request |
+| `PREAUTH_ELEVENLABS_AGENT_ID` | The agent the call is registered with. `run_hosted.sh` fills it in from `.elevenlabs-state.json` |
+
+**Audio format.** Register-call requires the agent to use **μ-law 8000 Hz** for both input and output.
+`scripts/elevenlabs_setup.py` sets this through the API (`conversation_config.asr.user_input_audio_format` and
+`conversation_config.tts.agent_output_audio_format` = `ulaw_8000`), so `run_hosted.sh` applies it automatically.
+In the dashboard, the same settings are under Agent → Voice → *TTS output format* and Agent → Advanced → *User
+input audio format*, both set to "μ-law 8000 Hz". The browser test call still works at this format, at telephone
+quality. `--audio-format pcm_16000` reverts it, for an agent that will never take phone calls.
+
+**Behaviour.**
+- If a request is missing `From` or `To`, it gets `400 TWILIO_CALL_INVALID`.
+- A missing or wrong signature gets `401 TWILIO_SIGNATURE_INVALID`.
+- If ElevenLabs refuses or cannot be reached, the endpoint still returns `200 application/xml` with TwiML that
+  apologises and hangs up. The caller never hears Twilio's generic "application error", and the failure is logged
+  as `elevenlabs_register_call_failed` with the CallSid.
+- Logs carry the CallSid and only the last four digits of each number, never tokens.
+
+**Limits.**
+- ElevenLabs cannot transfer a register-call call, because it has no access to your Twilio credentials.
+- Trial Twilio accounts only accept calls from numbers you have verified in Twilio, and play a trial notice first.
+  A US number costs roughly a dollar or two a month on a paid account, plus per-minute charges.
+- Calling a US number from an Indian mobile is an international call, charged by your operator.
 
 ### A UAE (+971) number
 
@@ -158,5 +227,7 @@ These are checked facts as of September 2026. Verify them before you rely on the
 Sources: [Twilio UAE regulatory guidelines](https://www.twilio.com/en-us/guidelines/ae/regulatory),
 [Twilio UAE number terms](https://www.twilio.com/en-us/legal/service-country-specific-terms/uae-phone-numbers),
 [ElevenLabs Agents pricing](https://elevenlabs.io/pricing/agents),
-[ElevenLabs Twilio native integration](https://elevenlabs.io/docs/eleven-agents/phone-numbers/twilio-integration/native-integration),
+[ElevenLabs register-call](https://elevenlabs.io/docs/api-reference/twilio/register-call),
+[Register Twilio calls](https://elevenlabs.io/docs/eleven-agents/phone-numbers/twilio-integration/register-call),
+[Twilio webhook security](https://www.twilio.com/docs/usage/webhooks/webhooks-security),
 [Connect Twilio to ElevenLabs](https://elevenlabs.io/agents/integrations/twilio).

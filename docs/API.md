@@ -399,6 +399,26 @@ Receives `post_call_transcription` events, stores the transcript and analysis as
 | 500 | `ErrorResponse` | INTERNAL_ERROR |
 | 503 | `ErrorResponse` | CHANNEL_NOT_CONFIGURED |
 
+## Voice channel (Twilio inbound)
+
+### `POST /api/v1/voice/twilio/inbound` — Twilio incoming-call webhook
+
+Set as the Voice webhook of your Twilio number (A call comes in → Webhook → HTTP POST). Accepts Twilio's form-encoded call parameters, registers the call with the ElevenLabs agent (`POST /v1/convai/twilio/register-call`), and returns the TwiML ElevenLabs produces, as `application/xml`. If ElevenLabs cannot be reached, returns TwiML that apologises and hangs up rather than an error, so the caller is never left with Twilio's generic application error.
+
+**Authorisation:** Header `X-Twilio-Signature`, validated with `TWILIO_AUTH_TOKEN` against `PREAUTH_PUBLIC_BASE_URL` + this path. Disabled (503) until `TWILIO_AUTH_TOKEN`, `PREAUTH_PUBLIC_BASE_URL`, `ELEVENLABS_API_KEY` and `PREAUTH_ELEVENLABS_AGENT_ID` are all set.
+
+**State transitions:** None. The call becomes an ElevenLabs conversation using the same tools and post-call webhook.
+
+**Request body:** —
+
+| Status | Response | Error codes / meaning |
+|---|---|---|
+| 200 | — | TwiML for Twilio |
+| 400 | `ErrorResponse` | TWILIO_CALL_INVALID (From or To missing) |
+| 401 | `ErrorResponse` | TWILIO_SIGNATURE_INVALID |
+| 422 | `HTTPValidationError` | Validation Error |
+| 503 | `ErrorResponse` | CHANNEL_NOT_CONFIGURED |
+
 ## Voice channel (local)
 
 ### `GET /api/v1/local/capabilities` — Which local model and speech engines this process is using

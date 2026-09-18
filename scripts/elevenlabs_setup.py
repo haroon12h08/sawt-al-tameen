@@ -44,6 +44,9 @@ DEFAULT_TTS_MODEL = "eleven_v3_conversational"
 DEFAULT_VOICE_ID = "EXAVITQu4vr4xnSDxMaL"
 # Keyterm biasing works best on a focused list; the most collision-prone terms come first.
 KEYTERM_LIMIT = 100
+# Calls on our own Twilio number arrive through register-call, which ElevenLabs requires to use μ-law 8000 Hz in
+# both directions (Twilio's native telephony format). Browser test calls still work at this format, at phone quality.
+DEFAULT_AUDIO_FORMAT = "ulaw_8000"
 
 FIRST_MESSAGE_EN = (
     "Sawt Assurance pre-authorisation line, this is an automated assistant. The call is recorded for audit. "
@@ -104,7 +107,8 @@ def system_tool(name: str) -> dict[str, Any]:
 
 
 def agent_payload(
-    *, tool_ids: list[str], knowledge_base: list[dict[str, str]], llm: str, tts_model: str, voice_id: str
+    *, tool_ids: list[str], knowledge_base: list[dict[str, str]], llm: str, tts_model: str, voice_id: str,
+    audio_format: str = DEFAULT_AUDIO_FORMAT,
 ) -> dict[str, Any]:
     return {
         "name": AGENT_NAME,
@@ -125,8 +129,8 @@ def agent_payload(
                     "knowledge_base": knowledge_base,
                 },
             },
-            "asr": {"keywords": keyterms()},
-            "tts": {"voice_id": voice_id, "model_id": tts_model},
+            "asr": {"keywords": keyterms(), "user_input_audio_format": audio_format},
+            "tts": {"voice_id": voice_id, "model_id": tts_model, "agent_output_audio_format": audio_format},
             "language_presets": {
                 "ar": {"overrides": {"agent": {"first_message": FIRST_MESSAGE_AR, "language": "ar"}}},
             },
@@ -164,6 +168,11 @@ def main() -> int:
     parser.add_argument("--llm", default=DEFAULT_LLM)
     parser.add_argument("--tts-model", default=DEFAULT_TTS_MODEL)
     parser.add_argument("--voice-id", default=DEFAULT_VOICE_ID)
+    parser.add_argument(
+        "--audio-format", default=DEFAULT_AUDIO_FORMAT,
+        help="agent input and output audio format; ulaw_8000 is required for Twilio register-call "
+             "(use pcm_16000 only if the agent will never take phone calls)",
+    )
     args = parser.parse_args()
     documents = knowledge_base_documents()
 
@@ -176,7 +185,7 @@ def main() -> int:
         kb = [{"type": "text", "name": n, "id": "<document_id>", "usage_mode": "auto"} for n in documents]
         print(json.dumps({"tools": tools, "agent": agent_payload(
             tool_ids=["<tool_id>"] * len(tools), knowledge_base=kb,
-            llm=args.llm, tts_model=args.tts_model, voice_id=args.voice_id,
+            llm=args.llm, tts_model=args.tts_model, voice_id=args.voice_id, audio_format=args.audio_format,
         )}, indent=2, ensure_ascii=False))
         return 0
 
@@ -235,6 +244,7 @@ def main() -> int:
         llm=args.llm,
         tts_model=args.tts_model,
         voice_id=args.voice_id,
+        audio_format=args.audio_format,
     )
     if "agent_id" in state:
         client.request("PATCH", f"/v1/convai/agents/{state['agent_id']}", payload)
@@ -245,9 +255,11 @@ def main() -> int:
     STATE_FILE.write_text(json.dumps(state, indent=2))
 
     print(
-        "\nDone. Remaining dashboard steps (docs/VOICE_AGENT.md): post-call webhook -> "
-        f"{base_url}/api/v1/voice/elevenlabs/post-call, workflow + tool scoping, evaluation criteria, tests, "
-        "phone number.\n"
+        f"\nDone. Agent audio: {args.audio_format} in and out (Twilio register-call needs ulaw_8000).\n"
+        "Remaining dashboard steps (docs/VOICE_AGENT.md): post-call webhook -> "
+        f"{base_url}/api/v1/voice/elevenlabs/post-call, workflow + tool scoping, evaluation criteria, tests.\n"
+        f"Twilio number: Voice Configuration -> A call comes in -> Webhook, HTTP POST -> "
+        f"{base_url}/api/v1/voice/twilio/inbound\n"
         f"Test in the browser: https://elevenlabs.io/app/talk-to?agent_id={state['agent_id']}"
     )
     return 0

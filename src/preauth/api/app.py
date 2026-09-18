@@ -9,8 +9,9 @@ from preauth.agent_tools.toolbox import AgentToolbox
 from preauth.agent_tools.voice_gateway import VoiceToolGateway
 from preauth.api.errors import install_error_handlers
 from preauth.api.middleware import RequestContextMiddleware
-from preauth.api.routes import agent, cases, review, voice
+from preauth.api.routes import agent, cases, review, twilio, voice
 from preauth.application.services import ApplicationServices
+from preauth.application.twilio_inbound_service import TwilioInboundService
 from preauth.infrastructure.observability import install_log_context
 from preauth.infrastructure.settings import Settings
 
@@ -55,6 +56,8 @@ def create_app(
     app.include_router(review.router)
     app.include_router(agent.router)
     app.include_router(voice.router)
+    app.state.twilio_inbound = TwilioInboundService.from_settings(app.state.settings)
+    app.include_router(twilio.router)
     if local_runtime is not None:
         from preauth.api.routes import local as local_routes
 

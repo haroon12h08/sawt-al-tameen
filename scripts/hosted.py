@@ -4,11 +4,12 @@ Orchestration only. Every step calls something that already exists — the backe
 ``elevenlabs_setup.py`` — or one documented ElevenLabs endpoint. Nothing here touches cases, rules or prompts.
 
     a. start the backend
-    b. start the Cloudflare named tunnel, and wait until the public URL answers
+    b. start the tunnel (ngrok static domain, or Cloudflare named tunnel), and wait until the public URL
+       answers
     c. verify the deployment through the public URL; stop if anything fails
     d. create or update the ElevenLabs agent, tools, knowledge base and keyterms
     e. register the post-call webhook and point the workspace at it
-    f. import the Twilio number and assign it to the agent, when one is configured
+    f. check the Twilio inbound endpoint and print the one Twilio console setting it needs
     g. print what is live, then keep both processes running until Ctrl+C
 
 Configuration comes from ``.env``; see ``.env.example``. Values this script generates (the voice-tool token, the
@@ -41,10 +42,10 @@ STATE_FILE = ROOT / ".elevenlabs-state.json"  # shared with elevenlabs_setup.py;
 API = os.environ.get("PREAUTH_ELEVENLABS_API_BASE", "https://api.elevenlabs.io").rstrip("/")
 
 WEBHOOK_PATH = "/api/v1/voice/elevenlabs/post-call"
+TWILIO_INBOUND_PATH = "/api/v1/voice/twilio/inbound"
 WEBHOOK_NAME = "sawt-al-tameen post-call"
 DASHBOARD = {
     "agents_settings": "https://elevenlabs.io/app/agents/settings",
-    "phone_numbers": "https://elevenlabs.io/app/agents/phone-numbers",
     "api_keys": "https://elevenlabs.io/app/settings/api-keys",
 }
 _PLACEHOLDER = re.compile(r"^(|<.*>|your[-_ ].*|changeme|x+|\.\.\.)$", re.IGNORECASE)
@@ -219,6 +220,153 @@ def port_free(port: int) -> bool:
 # --------------------------------------------------------------------------- steps
 
 
+TUNNELS = ("ngrok", "cloudflare")
+NGROK_INSTALL = "https://ngrok.com/download"
+CLOUDFLARED_INSTALL = (
+    "https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/downloads/"
+)
+
+
+def choose_tunnel(config: dict[str, str], args: argparse.Namespace, problems: list[str]) -> str:
+    """Pick the tunnel and settle the public URL. Nothing after preflight looks at anything but that URL.
+
+    PREAUTH_TUNNEL_PROVIDER wins when set. Otherwise the provider whose credentials are present is used, ngrok
+    first when both are (it needs no domain). Neither configured is an error that names both options.
+    """
+    if args.no_tunnel:
+        if not is_set(config, "PREAUTH_PUBLIC_BASE_URL"):
+            problems.append("--no-tunnel needs PREAUTH_PUBLIC_BASE_URL: the URL that already reaches this machine")
+        return "none"
+
+    has_ngrok = is_set(config, "NGROK_AUTHTOKEN") or is_set(config, "NGROK_STATIC_DOMAIN")
+    has_cloudflare = is_set(config, "CLOUDFLARE_TUNNEL_TOKEN")
+    chosen = (config.get("PREAUTH_TUNNEL_PROVIDER") or "").strip().lower()
+    if chosen and chosen not in TUNNELS:
+        problems.append(f"PREAUTH_TUNNEL_PROVIDER must be ngrok or cloudflare (got {chosen!r})")
+        return chosen
+    if not chosen:
+        chosen = "ngrok" if has_ngrok else "cloudflare" if has_cloudflare else ""
+    if not chosen:
+        problems.append(
+            "No tunnel is configured. Fill in ONE provider in the HOSTED MODE — tunnel section of .env:\n"
+            "              ngrok (free, no domain needed): NGROK_AUTHTOKEN and NGROK_STATIC_DOMAIN\n"
+            "              Cloudflare (needs a domain):     CLOUDFLARE_TUNNEL_TOKEN and PREAUTH_PUBLIC_BASE_URL"
+        )
+        return "none"
+
+    if chosen == "ngrok":
+        if not is_set(config, "NGROK_AUTHTOKEN"):
+            problems.append("NGROK_AUTHTOKEN is empty — https://dashboard.ngrok.com/get-started/your-authtoken")
+        domain = re.sub(r"^https?://", "", config.get("NGROK_STATIC_DOMAIN", "").strip()).strip("/")
+        if not is_set(config, "NGROK_STATIC_DOMAIN"):
+            problems.append("NGROK_STATIC_DOMAIN is empty — claim your free one at https://dashboard.ngrok.com/domains")
+        elif "/" in domain or "." not in domain:
+            problems.append(f"NGROK_STATIC_DOMAIN must be a bare hostname like name.ngrok-free.app (got {domain!r})")
+        if shutil.which("ngrok") is None:
+            problems.append(f"ngrok is not installed — {NGROK_INSTALL}")
+        # The URL is the reserved domain; it is the same on every run, which is what the ElevenLabs tools and
+        # webhook need.
+        given = config.get("PREAUTH_PUBLIC_BASE_URL", "").strip().rstrip("/")
+        if domain and is_set(config, "PREAUTH_PUBLIC_BASE_URL") and given != f"https://{domain}":
+            warn(f"PREAUTH_PUBLIC_BASE_URL ({given}) is ignored with ngrok; using https://{domain}")
+        config["PREAUTH_PUBLIC_BASE_URL"] = f"https://{domain}"
+        return "ngrok"
+
+    if not is_set(config, "CLOUDFLARE_TUNNEL_TOKEN"):
+        problems.append("CLOUDFLARE_TUNNEL_TOKEN is empty — see the ONE-TIME Cloudflare steps in .env.example")
+    if shutil.which("cloudflared") is None:
+        problems.append(f"cloudflared is not installed — {CLOUDFLARED_INSTALL}")
+    base_url = config.get("PREAUTH_PUBLIC_BASE_URL", "").strip().rstrip("/")
+    if not is_set(config, "PREAUTH_PUBLIC_BASE_URL"):
+        problems.append("PREAUTH_PUBLIC_BASE_URL is empty — the https:// hostname you gave the Cloudflare tunnel")
+    elif not base_url.startswith("https://"):
+        problems.append(f"PREAUTH_PUBLIC_BASE_URL must start with https:// (got {base_url!r})")
+    return "cloudflare"
+
+
+def _redact(text: str, config: dict[str, str]) -> str:
+    """ngrok repeats a rejected authtoken back in its error text; never print it."""
+    token = config.get("NGROK_AUTHTOKEN", "")
+    return text.replace(token, "<NGROK_AUTHTOKEN>") if token else text
+
+
+def _ngrok_error(line: str) -> str | None:
+    try:
+        record = json.loads(line)
+    except ValueError:
+        return None
+    err = record.get("err") or ""
+    if record.get("lvl") in ("eror", "crit") and ("ERR_NGROK_" in err or "authentication failed" in err):
+        return err
+    return None
+
+
+NGROK_HINTS = {
+    "ERR_NGROK_105": "the authtoken is not valid — copy it again from https://dashboard.ngrok.com/get-started/your-authtoken",
+    "ERR_NGROK_107": "the authtoken was reset or revoked — copy the current one from the ngrok dashboard",
+    "ERR_NGROK_108": "another ngrok agent is already running on this account (the free plan allows one); stop it",
+    "ERR_NGROK_4018": "the authtoken is missing or not valid",
+}
+
+
+def probe_ngrok(config: dict[str, str]) -> None:
+    """Connect to ngrok with the real token and domain, then disconnect — all before anything is started.
+
+    A bad authtoken or a domain that is not reserved on this account is reported here, not after the backend
+    is already running. The probe forwards to a port nothing listens on and is stopped as soon as it has either
+    registered the domain or been refused. Success is read from the agent's local API (/api/tunnels), whose shape
+    is stable across ngrok releases, rather than from log wording, which is not.
+    """
+    import queue
+    import threading
+
+    domain = config["PREAUTH_PUBLIC_BASE_URL"]
+    env = {**os.environ, "NGROK_AUTHTOKEN": config["NGROK_AUTHTOKEN"]}  # never on the command line
+    probe = subprocess.Popen(
+        ["ngrok", "http", "1", "--url", domain, "--log", "stdout", "--log-format", "json"],
+        env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, start_new_session=True,
+    )
+    lines: "queue.Queue[str]" = queue.Queue()
+    threading.Thread(target=lambda: [lines.put(l) for l in probe.stdout], daemon=True).start()
+
+    seen, error, started, web = [], None, False, None
+    deadline = time.time() + 25
+    try:
+        while time.time() < deadline and not (error or started):
+            try:
+                line = lines.get(timeout=0.5)
+                seen.append(line.rstrip())
+                error = _ngrok_error(line)
+                record = json.loads(line) if line.startswith("{") else {}
+                if record.get("msg") == "starting web service" and record.get("addr"):
+                    web = record["addr"]
+                if f'"url":"{domain}"' in line:
+                    started = True
+            except queue.Empty:
+                pass
+            if web and not error:
+                status, body = http_status(f"http://{web}/api/tunnels", timeout=2)
+                if status == 200 and domain in body:
+                    started = True
+            if probe.poll() is not None and lines.empty():
+                break
+    finally:
+        if probe.poll() is None:
+            os.killpg(probe.pid, signal.SIGTERM)
+            probe.wait(timeout=10)
+    if error:
+        code = next((c for c in NGROK_HINTS if c in error), None)
+        hint = NGROK_HINTS.get(code) or (
+            f"check that {domain.removeprefix('https://')} is reserved on THIS ngrok account at "
+            "https://dashboard.ngrok.com/domains"
+        )
+        raise Stop(f"ngrok refused the tunnel: {hint}.\n          ngrok said: " + _redact(error.strip(), config))
+    if not started:
+        tail = "\n".join("          | " + _redact(l, config) for l in seen[-5:])
+        raise Stop(f"ngrok did not register {domain} within 25 s. Check the network.\n{tail}")
+    ok(f"ngrok accepted the authtoken and {domain.removeprefix('https://')}")
+
+
 def preflight(config: dict[str, str], args: argparse.Namespace) -> None:
     step("0", "Checking .env")
     if not ENV_FILE.exists():
@@ -227,33 +375,28 @@ def preflight(config: dict[str, str], args: argparse.Namespace) -> None:
     problems = []
     if not is_set(config, "ELEVENLABS_API_KEY"):
         problems.append(f"ELEVENLABS_API_KEY is empty — create one at {DASHBOARD['api_keys']}")
-    if not args.no_tunnel:
-        if not is_set(config, "CLOUDFLARE_TUNNEL_TOKEN"):
-            problems.append("CLOUDFLARE_TUNNEL_TOKEN is empty — see the ONE-TIME tunnel steps in .env.example")
-        if shutil.which("cloudflared") is None:
-            problems.append("cloudflared is not installed — https://developers.cloudflare.com/cloudflare-one/"
-                            "networks/connectors/cloudflare-tunnel/downloads/")
+    provider = choose_tunnel(config, args, problems)
     base_url = config.get("PREAUTH_PUBLIC_BASE_URL", "").strip().rstrip("/")
-    if not is_set(config, "PREAUTH_PUBLIC_BASE_URL"):
-        problems.append("PREAUTH_PUBLIC_BASE_URL is empty — the https:// hostname you gave the tunnel")
-    elif not args.no_tunnel and not base_url.startswith("https://"):
-        problems.append(f"PREAUTH_PUBLIC_BASE_URL must start with https:// (got {base_url!r})")
 
-    twilio = [n for n in ("TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_PHONE_NUMBER") if is_set(config, n)]
-    if twilio and len(twilio) < 3:
-        missing = sorted({"TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_PHONE_NUMBER"} - set(twilio))
-        problems.append(f"Twilio is half-configured; also set {', '.join(missing)} (or clear all three)")
+    if is_set(config, "TWILIO_PHONE_NUMBER") and not is_set(config, "TWILIO_AUTH_TOKEN"):
+        problems.append("TWILIO_PHONE_NUMBER is set but TWILIO_AUTH_TOKEN is not; the backend needs the token to "
+                        "verify Twilio's signatures (console.twilio.com → Account Info → Auth Token)")
     if is_set(config, "TWILIO_PHONE_NUMBER") and not _E164.match(config["TWILIO_PHONE_NUMBER"].replace(" ", "")):
         problems.append("TWILIO_PHONE_NUMBER must be in international format, e.g. +14155550123")
 
     if problems:
         raise Stop("Fix these in .env and run again:\n" + "\n".join(f"          - {p}" for p in problems))
     config["PREAUTH_PUBLIC_BASE_URL"] = base_url
-    ok(".env has everything this run needs")
+    config["_TUNNEL"] = provider
+    if not is_set(config, "PREAUTH_ELEVENLABS_AGENT_ID") and load_state().get("agent_id"):
+        config["PREAUTH_ELEVENLABS_AGENT_ID"] = load_state()["agent_id"]
+    ok(f".env has everything this run needs (tunnel: {provider})")
 
     # Fail fast on a bad key, before anything is started.
     elevenlabs(config, "GET", "/v1/convai/agents?page_size=1")
     ok("ElevenLabs accepted the API key")
+    if provider == "ngrok":
+        probe_ngrok(config)
 
     for name in ("PREAUTH_VOICE_AGENT_TOKEN", "PREAUTH_GATEWAY_SECRET"):
         if not is_set(config, name):
@@ -275,6 +418,7 @@ def backend_env(config: dict[str, str]) -> dict[str, str]:
     env["PREAUTH_RUNTIME_MODE"] = "elevenlabs"
     env.pop("CLOUDFLARE_TUNNEL_TOKEN", None)
     env.pop("TUNNEL_TOKEN", None)
+    env.pop("NGROK_AUTHTOKEN", None)
     return env
 
 
@@ -307,6 +451,40 @@ def start_backend(config: dict[str, str], processes: Processes) -> None:
 
 
 def start_tunnel(config: dict[str, str], processes: Processes) -> None:
+    if config["_TUNNEL"] == "ngrok":
+        start_ngrok_tunnel(config, processes)
+    else:
+        start_cloudflare_tunnel(config, processes)
+
+
+def start_ngrok_tunnel(config: dict[str, str], processes: Processes) -> None:
+    public = config["PREAUTH_PUBLIC_BASE_URL"]
+    env = {**os.environ, "NGROK_AUTHTOKEN": config["NGROK_AUTHTOKEN"]}  # via env, never on the command line
+    processes.start(
+        "tunnel",
+        ["ngrok", "http", config["PREAUTH_HOSTED_PORT"], "--url", public, "--log", "stdout", "--log-format", "json"],
+        env,
+    )
+    info(f"waiting for {public} to answer (up to 60 s)")
+    last = None
+    for _ in range(30):
+        log_path = HOSTED_DIR / "tunnel.log"
+        for line in (log_path.read_text(errors="replace").splitlines() if log_path.exists() else []):
+            error = _ngrok_error(line)
+            if error:
+                raise Stop("ngrok refused the tunnel.\n          ngrok said: " + _redact(error.strip(), config))
+        if processes.exited() == "tunnel":
+            raise Stop("ngrok exited.\n" + _redact(log_tail("tunnel"), config))
+        last, body = http_status(f"{public}/health", timeout=8)
+        if last == 200 and '"ok"' in body:
+            ok(f"tunnel is up: {public} reaches this backend via ngrok (log: .hosted/tunnel.log)")
+            return
+        time.sleep(2)
+    raise Stop(f"{public}/health never answered through ngrok (last: HTTP {last}).\n"
+               + _redact(log_tail("tunnel"), config))
+
+
+def start_cloudflare_tunnel(config: dict[str, str], processes: Processes) -> None:
     env = {**os.environ, "TUNNEL_TOKEN": config["CLOUDFLARE_TUNNEL_TOKEN"]}  # via env, never on the command line
     processes.start("tunnel", ["cloudflared", "tunnel", "--no-autoupdate", "run"], env)
     public = config["PREAUTH_PUBLIC_BASE_URL"]
@@ -450,46 +628,49 @@ def confirm(question: str, args: argparse.Namespace) -> bool:
 
 
 def wire_phone_number(config: dict[str, str], agent_id: str) -> str | None:
-    if not is_set(config, "TWILIO_PHONE_NUMBER"):
-        warn("no TWILIO_PHONE_NUMBER in .env — phone calling is off; the browser test call still works.")
-        for line in (
-            "To take real calls (ONE-TIME):",
-            "  1. Sign up at https://www.twilio.com/try-twilio (trial accounts include credit).",
-            "  2. Console → Phone Numbers → Manage → Buy a number (Voice-capable).",
-            "  3. Console → Account → API keys & tokens: copy Account SID and Auth Token.",
-            "  4. Put TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER in .env and re-run;",
-            f"     this script then imports it. (Manual alternative: {DASHBOARD['phone_numbers']} → Import.)",
-            "  Trial numbers only take calls from numbers you verify in Twilio, and play a trial notice.",
-        ):
-            info(line)
-        return None
+    """Inbound calls reach the agent through our own backend, never through ElevenLabs' native number import.
 
-    number = config["TWILIO_PHONE_NUMBER"].replace(" ", "")
-    state = load_state()
-    listed = elevenlabs(config, "GET", "/v1/convai/phone-numbers")
-    items = listed if isinstance(listed, list) else listed.get("phone_numbers", [])
-    existing = next((p for p in items if (p.get("phone_number") or "").replace(" ", "") == number), None)
-    if existing:
-        phone_id = existing["phone_number_id"]
-        assigned = (existing.get("assigned_agent") or {}).get("agent_id")
-        if assigned != agent_id:
-            elevenlabs(config, "PATCH", f"/v1/convai/phone-numbers/{phone_id}", {"agent_id": agent_id})
-            info(f"phone {number}: reassigned to the agent")
-        else:
-            info(f"phone {number}: already assigned to the agent")
+    Twilio posts each incoming call to /api/v1/voice/twilio/inbound; the backend registers it with the agent and
+    returns ElevenLabs' TwiML. This step checks that the endpoint is live and tells you the one Twilio setting to
+    make. It never fails the deployment: the browser test call works regardless.
+    """
+    inbound = config["PREAUTH_PUBLIC_BASE_URL"] + TWILIO_INBOUND_PATH
+    # An unsigned probe: 401 means configured and enforcing signatures; 503 names what is missing. No call is made.
+    status, body = _post_status(inbound)
+    if status == 401:
+        ok(f"inbound endpoint is live and verifying Twilio signatures: {inbound}")
+    elif status == 503:
+        missing = re.findall(r"TWILIO_AUTH_TOKEN|PREAUTH_PUBLIC_BASE_URL|ELEVENLABS_API_KEY|PREAUTH_ELEVENLABS_AGENT_ID",
+                             body)
+        warn(f"inbound calls are disabled until these are set: {', '.join(sorted(set(missing))) or 'see backend log'}")
     else:
-        created = elevenlabs(config, "POST", "/v1/convai/phone-numbers", {
-            "provider": "twilio", "phone_number": number, "label": "Sawt Assurance pre-authorisation line",
-            "sid": config["TWILIO_ACCOUNT_SID"], "token": config["TWILIO_AUTH_TOKEN"], "agent_id": agent_id,
-        })
-        phone_id = created["phone_number_id"]
-        # Some API versions ignore agent_id on import; assigning explicitly makes the result certain.
-        elevenlabs(config, "PATCH", f"/v1/convai/phone-numbers/{phone_id}", {"agent_id": agent_id})
-        info(f"phone {number}: imported from Twilio and assigned to the agent")
-    state["phone_number"] = {"id": phone_id, "number": number}
-    save_state(state)
-    ok(f"calls to {number} are answered by the agent")
+        warn(f"the inbound endpoint answered HTTP {status}; check .hosted/backend.log")
+
+    number = config.get("TWILIO_PHONE_NUMBER", "").replace(" ", "") if is_set(config, "TWILIO_PHONE_NUMBER") else None
+    for line in (
+        "Twilio setting (ONE-TIME, in the Twilio console — there is nothing to click in ElevenLabs):",
+        f"  Phone Numbers → Manage → Active numbers → {number or 'your number'} → Voice Configuration →",
+        "  A call comes in: Webhook   URL:",
+        f"  {inbound}",
+        "  HTTP: POST   → Save configuration",
+        "  Trial accounts only accept calls from numbers verified in Twilio, and play a trial notice first.",
+    ):
+        info(line)
+    if not number:
+        info("To get a number: sign up at https://www.twilio.com/try-twilio, then Phone Numbers → Buy a number.")
     return number
+
+
+def _post_status(url: str) -> tuple[int | None, str]:
+    request = urllib.request.Request(url, method="POST", data=b"",
+                                     headers={"content-type": "application/x-www-form-urlencoded"})
+    try:
+        with urllib.request.urlopen(request, timeout=10) as response:
+            return response.status, response.read(2000).decode(errors="replace")
+    except urllib.error.HTTPError as e:
+        return e.code, e.read(2000).decode(errors="replace")
+    except (urllib.error.URLError, OSError, TimeoutError):
+        return None, ""
 
 
 # --------------------------------------------------------------------------- main
@@ -500,7 +681,7 @@ def main() -> int:
     parser.add_argument("--yes", action="store_true", help="answer yes to confirmation prompts")
     parser.add_argument(
         "--no-tunnel", action="store_true",
-        help="do not start cloudflared; PREAUTH_PUBLIC_BASE_URL already reaches this machine some other way",
+        help="start no tunnel; PREAUTH_PUBLIC_BASE_URL already reaches this machine some other way",
     )
     args = parser.parse_args()
 
@@ -520,7 +701,7 @@ def main() -> int:
         step("a", "Starting the backend")
         start_backend(config, processes)
 
-        step("b", "Starting the Cloudflare tunnel")
+        step("b", f"Starting the tunnel ({config['_TUNNEL']})")
         if args.no_tunnel:
             info("--no-tunnel: using PREAUTH_PUBLIC_BASE_URL as given")
         else:
@@ -531,16 +712,20 @@ def main() -> int:
 
         step("d", "Configuring the ElevenLabs agent")
         agent_id = setup_agent(config)
+        # Inbound Twilio calls are registered with this agent by the backend, so it must know the id.
+        agent_changed = config.get("PREAUTH_ELEVENLABS_AGENT_ID") != agent_id
+        config["PREAUTH_ELEVENLABS_AGENT_ID"] = agent_id
 
         step("e", "Registering the post-call webhook")
-        if register_webhook(config, args):
-            info("restarting the backend so it verifies webhook signatures with the new secret")
+        webhook_changed = register_webhook(config, args)
+        if webhook_changed or agent_changed:
+            info("restarting the backend so it picks up the new webhook secret and agent id")
             processes.stop("backend")
             start_backend(config, processes)
             step("e", "Re-verifying, now including the post-call webhook")
             verify(config, "with webhook")
 
-        step("f", "Phone number")
+        step("f", "Phone number (Twilio → register-call)")
         number = wire_phone_number(config, agent_id)
 
         step("g", "Summary")
@@ -549,7 +734,9 @@ def main() -> int:
         print(f"  Backend          {config['PREAUTH_PUBLIC_BASE_URL']}   (API docs: /docs)")
         print(f"  Test in browser  {talk}")
         print(f"  Phone            {number or 'not configured (see step f above)'}")
+        print(f"  Twilio webhook   {config['PREAUTH_PUBLIC_BASE_URL']}{TWILIO_INBOUND_PATH}  (POST)")
         print(f"  Transcripts      {config['PREAUTH_PUBLIC_BASE_URL']}{WEBHOOK_PATH}")
+        print(f"  Tunnel           {config['_TUNNEL']}")
         print("  Logs             .hosted/backend.log, .hosted/tunnel.log")
         print("\n  Still manual, optional (docs/VOICE_AGENT.md): the visual workflow with per-node tool scoping,")
         print("  evaluation criteria, and dashboard agent tests. None is needed for calls to work.")
